@@ -1,7 +1,9 @@
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 
-from src.sensor.BasicSensor import BasicSensor
+from src.sensor.DSimpleSensor import BasicSensor
+from src.sensor import SensorFactory
+
 
 class EntityType(Enum):
     """Enum for entity types."""
@@ -24,8 +26,8 @@ class EntityBase(metaclass=ABCMeta):
         """
         Initiate the sensors with their respective parameters.
         """
-        for id, sensor in self.sensor_dict.items():
-            self.sensors[id] = BasicSensor(sensor)
+        for sensor_id, sensor in self.sensor_dict.items():
+            self.sensors[sensor_id] = SensorFactory.create_sensor(sensor['type'], sensor['settings'])
 
     @abstractmethod
     def run(self):

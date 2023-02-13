@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseStationBase(metaclass=ABCMeta):
+class NodeBase(metaclass=ABCMeta):
     """Base class for all base station classes."""
 
     @abstractmethod
