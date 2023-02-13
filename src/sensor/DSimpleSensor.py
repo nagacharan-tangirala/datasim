@@ -1,7 +1,7 @@
-from src.sensor.BSensor import SensorBase, SensorName
+from src.sensor.BSensor import SensorBase
 
 
-class BasicSensor(SensorBase):
+class SimpleSensor(SensorBase):
     def __init__(self, params: dict):
         """
         Initialize the sensor.

@@ -4,9 +4,10 @@ from abc import ABCMeta, abstractmethod
 
 class SensorType(StrEnum):
     """Enum for sensor types."""
-    BASIC = 'basic'
-    INTERMITTENT = 'intermittent'
+    SIMPLE = 'simple'
+    PERIODIC = 'periodic'
     RANDOM = 'random'
+    MARKOV = 'markov'
 
 
 class SensorName(StrEnum):

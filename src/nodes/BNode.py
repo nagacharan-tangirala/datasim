@@ -4,10 +4,10 @@ from abc import ABCMeta, abstractmethod
 class NodeBase(metaclass=ABCMeta):
     """Base class for all base station classes."""
 
-    @abstractmethod
-    def __init__(self, *args, **kwargs):
+    def __init__(self, params: dict):
         """Initialize the base station."""
         pass
+
 
     @abstractmethod
     def run(self):

@@ -1,7 +1,7 @@
-from src.basestation.BNode import BaseNode
+from src.nodes.BNode import NodeBase
 
 
-class BaseStation(BaseNode):
+class BaseStation(NodeBase):
     def __init__(self, params: dict):
         """
         Initialize the base station.

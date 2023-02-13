@@ -1,9 +1,6 @@
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 
-from src.sensor.DSimpleSensor import BasicSensor
-from src.sensor import SensorFactory
-
 
 class EntityType(Enum):
     """Enum for entity types."""
