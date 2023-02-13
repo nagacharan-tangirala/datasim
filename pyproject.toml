@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "abstract-netsim"
+version = "0.1.0"
+description = ""
+authors = ["Nagacharan Teja Tangirala <nagacharan.tangirala@tum.de>"]
+readme = "README.md"
+packages = [{include = "abstract_netsim"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
