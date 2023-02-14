@@ -8,7 +8,6 @@ class NodeBase(metaclass=ABCMeta):
         """Initialize the base station."""
         pass
 
-
     @abstractmethod
     def run(self):
         """Run the base station."""
@@ -41,7 +40,7 @@ class NodeBase(metaclass=ABCMeta):
 
     @abstractmethod
     def get_name(self):
-        """Get the name of the base station."""
+        """Get the mode of the base station."""
         pass
 
     @abstractmethod

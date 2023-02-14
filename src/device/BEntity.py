@@ -21,10 +21,9 @@ class EntityBase(metaclass=ABCMeta):
 
     def initiate_sensors(self):
         """
-        Initiate the sensors with their respective parameters.
+        Initiate the sensor_params with their respective parameters.
         """
-        for sensor_id, sensor in self.sensor_dict.items():
-            self.sensors[sensor_id] = SensorFactory.create_sensor(sensor['type'], sensor['settings'])
+        self.sensor_ids = list(self.sensor_dict.keys())
 
     @abstractmethod
     def run(self):
@@ -58,7 +57,7 @@ class EntityBase(metaclass=ABCMeta):
 
     @abstractmethod
     def get_name(self):
-        """Get the name of the entity."""
+        """Get the mode of the entity."""
         pass
 
     @abstractmethod

@@ -41,7 +41,7 @@ class TrafficControlBase(metaclass=ABCMeta):
 
     @abstractmethod
     def get_name(self):
-        """Get the name of the traffic control."""
+        """Get the mode of the traffic control."""
         pass
 
     @abstractmethod

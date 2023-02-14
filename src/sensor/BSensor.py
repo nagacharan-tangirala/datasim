@@ -2,15 +2,15 @@ from enum import StrEnum
 from abc import ABCMeta, abstractmethod
 
 
-class SensorType(StrEnum):
+class SensorMode(StrEnum):
     """Enum for sensor types."""
-    SIMPLE = 'simple'
-    PERIODIC = 'periodic'
     RANDOM = 'random'
     MARKOV = 'markov'
+    CUSTOM = 'custom'
+    REGULAR = 'regular'
 
 
-class SensorName(StrEnum):
+class SensorType(StrEnum):
     """Enum for sensor types."""
     CAMERA = 'camera'
     RADAR = 'radar'
@@ -41,7 +41,7 @@ class SensorBase(metaclass=ABCMeta):
         self.id = params.get('id', None)
         self.entity_id = params.get('entity_id', None)
 
-        self.name = params.get('name', None)
+        self.mode = params.get('mode', None)
         self.type = params.get('type', None)
 
         self.last_update_time = 0
@@ -72,9 +72,9 @@ class SensorBase(metaclass=ABCMeta):
         """Get the entity ID to which the sensor belongs to."""
         return self.entity_id
 
-    def get_name(self):
-        """Get the name of the sensor."""
-        return self.name
+    def get_mode(self):
+        """Get the mode of the sensor."""
+        return self.mode
 
     @abstractmethod
     def get_data_size(self):

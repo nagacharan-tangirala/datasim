@@ -1,11 +1,18 @@
-from src.sensor.BSensor import SensorType
-from src.sensor.DSimpleSensor import SimpleSensor
+from src.sensor.BSensor import SensorMode
+from src.sensor.DRegularSensor import RegularSensor
 
 
-def create_sensor(sensor_type: SensorType, params: dict):
-    if sensor_type == SensorType.SIMPLE:
-        return SimpleSensor(params)
-    # elif sensor_type == SensorType.INTERMITTENT:
+class SensorFactory:
+    def __init__(self):
+        pass
+
+    def create_sensor(params: dict):
+        sensor_mode = params.get('sensor_mode', None)
+        if sensor_mode == SensorMode.REGULAR:
+            return RegularSensor(params)
+        # elif sensor_mode == SensorMode.INTERMITTENT:
         # return CameraSensor(params)
-    else:
-        raise ValueError("Sensor type not supported.")
+        elif sensor_mode == SensorMode.CUSTOM:
+            if params.get('custom_ti')
+        else:
+            raise ValueError("Sensor mode not supported.")

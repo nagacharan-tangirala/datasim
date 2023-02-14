@@ -1,7 +1,7 @@
 from src.sensor.BSensor import SensorBase
 
 
-class SimpleSensor(SensorBase):
+class RegularSensor(SensorBase):
     def __init__(self, params: dict):
         """
         Initialize the sensor.
