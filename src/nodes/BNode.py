@@ -1,109 +1,65 @@
 from abc import ABCMeta, abstractmethod
+from enum import Enum
+
+
+class NodeType(Enum):
+    """Enum for node types."""
+
+    BASE_STATION = 'base_station'
+    INTERMEDIATE = 'intermediate'
 
 
 class NodeBase(metaclass=ABCMeta):
-    """Base class for all base station classes."""
+    """Base class for all node classes."""
 
     def __init__(self, params: dict):
-        """Initialize the base station."""
-        pass
+        """
+        Initialize the node class.
 
-    @abstractmethod
-    def run(self):
-        """Run the base station."""
-        pass
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing all the parameters for the node.
+        """
+        self.node_id = params.get('id', None)
+        self.location = params.get('location', None)
 
-    @abstractmethod
-    def stop(self):
-        """Stop the base station."""
-        pass
+        self.type: NodeType = NodeType.BASE_STATION
 
-    @abstractmethod
-    def get_status(self):
-        """Get the status of the base station."""
-        pass
+    def get_id(self) -> int:
+        """
+        Get the ID of the node.
+
+        Returns
+        ----------
+        int
+            The ID of the ndoe.
+        """
+        return self.node_id
+
+    def get_location(self) -> list[float]:
+        """
+        Get the location of the node.
+
+        Returns
+        ----------
+        tuple
+            Tuple containing the x and y coordinates of the node.
+        """
+        return self.location
+
+    def get_type(self) -> str:
+        """
+        Get the type of the node.
+
+        Returns
+        ----------
+        str
+            The type of the node as a string.
+        """
+        return self.type.value
 
     @abstractmethod
     def get_statistics(self):
-        """Get the statistics of the base station."""
-        pass
-
-    @abstractmethod
-    def get_version(self):
-        """Get the version of the base station."""
-        pass
-
-    @abstractmethod
-    def get_id(self):
-        """Get the ID of the base station."""
-        pass
-
-    @abstractmethod
-    def get_name(self):
-        """Get the mode of the base station."""
-        pass
-
-    @abstractmethod
-    def get_location(self):
-        """Get the location of the base station."""
-        pass
-
-    @abstractmethod
-    def get_type(self):
-        """Get the type of the base station."""
-        pass
-
-    @abstractmethod
-    def get_description(self):
-        """Get the description of the base station."""
-        pass
-
-    @abstractmethod
-    def get_capabilities(self):
-        """Get the capabilities of the base station."""
-        pass
-
-    @abstractmethod
-    def get_configuration(self):
-        """Get the configuration of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network(self):
-        """Get the network of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_status(self):
-        """Get the network status of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_statistics(self):
-        """Get the network statistics of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_configuration(self):
-        """Get the network configuration of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_capabilities(self):
-        """Get the network capabilities of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_interfaces(self):
-        """Get the network interfaces of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_interface_status(self, interface):
-        """Get the network interface status of the base station."""
-        pass
-
-    @abstractmethod
-    def get_network_interface_statistics(self, interface):
-        """Get the network interface statistics of the base station."""
+        """Get the statistics of the node."""
         pass

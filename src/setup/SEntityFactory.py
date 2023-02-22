@@ -1,9 +1,26 @@
+from src.device.DVehicleEntity import VehicleEntity
+
+
 class EntityFactory:
     def __init__(self):
-        self._entity_types = {'test': TestEntity}
+        pass
 
-    def create_entity(self, entity_type, params):
-        if entity_type in self._entity_types:
-            return self._entity_types[entity_type](params)
+    @staticmethod
+    def create_entity(params: dict, sensors: dict):
+        """
+        Create an entity from the given parameters.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing all the parameters for the entity.
+        sensors : dict
+            Dictionary containing all the sensors for the entity.
+        """
+        entity_type = params.get('type', None)
+        if entity_type == 'vehicle':
+            return VehicleEntity(params, sensors)
+        # elif entity_type == 'rsu':
+        #    return
         else:
             raise ValueError("Entity type not supported.")

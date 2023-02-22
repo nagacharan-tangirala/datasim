@@ -1,5 +1,8 @@
+from os import makedirs
 from os.path import exists, dirname, join
 import xml.etree.ElementTree as Et
+
+from typing import List, Dict
 
 
 class ConfigDict:
@@ -7,6 +10,8 @@ class ConfigDict:
         self.sensor_params = {}
         self.node_params = {}
         self.entity_params = {}
+        self.controller_params = {}
+        self.simulation_params = {}
 
 
 class ConfigReader:
@@ -28,7 +33,9 @@ class ConfigReader:
         return self.config_dict
 
     def _read_config(self):
-        """Read the config file."""
+        """
+        Read the config file.
+        """
         for child in self.config_root:
             if child.tag == 'sensor_params':
                 self._read_sensor_xml(child.text)
@@ -36,6 +43,10 @@ class ConfigReader:
                 self._read_nodes_xml(child.text)
             elif child.tag == 'entity_params':
                 self._read_entities_xml(child.text)
+            elif child.tag == 'control':
+                self._read_control_xml(child.text)
+            elif child.tag == 'simulation':
+                self._read_simulation_params(child.text)
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
@@ -64,6 +75,11 @@ class ConfigReader:
     def _read_sensor_params(self, sensor_data: Et.Element):
         """
         Read the parameters of a single sensor and store them in the config dict.
+
+        Parameters
+        ----------
+        sensor_data : Et.Element
+            The xml element containing the sensor parameters.
         """
         sensor_id = sensor_data.attrib['id']
         sensor_params = {'sensor_type': sensor_data.attrib['type'], 'sensor_mode': sensor_data.attrib['mode']}
@@ -90,7 +106,7 @@ class ConfigReader:
 
     def _read_nodes_xml(self, nodes_xml: str):
         """
-        Read the node_params xml file and parse the parameters of the nodes.
+        Read the nodes xml file and parse the parameters of the nodes.
 
         Parameters
         ----------
@@ -129,7 +145,7 @@ class ConfigReader:
 
     def _read_entities_xml(self, entities_xml: str):
         """
-        Read the entity_params xml file and parse the parameters of the entities.
+        Read the entities xml file and parse the parameters of the entities.
 
         Parameters
         ----------
@@ -155,4 +171,145 @@ class ConfigReader:
         entity_data : Et.Element
             The entity data element from the config file.
         """
+        entity_id = entity_data.attrib['id']
+        entity_params = {'entity_type': entity_data.attrib['type']}
 
+        # Read the entity parameters
+        for child in entity_data:
+            if child.tag == 'sensors':
+                sensor_list = self._convert_string_to_list(child.text)
+                entity_params['sensors'] = sensor_list
+            elif child.tag == 'positions':
+                position_list = self._parse_positions(child)
+                entity_params['positions'] = position_list
+            else:
+                raise ValueError('Invalid tag in entities config file: %s' % child.tag)
+
+        # Store the entity params
+        self.config_dict.entity_params[entity_id] = entity_params
+
+    @staticmethod
+    def _convert_string_to_list(ids_string: str) -> List[int]:
+        """
+        Parse the string to convert it to a list of numbers.
+
+        Parameters
+        ----------
+        ids_string : str
+            The ids in the form of a string.
+
+        Returns
+        -------
+        List[int]
+            The list of sensor ids.
+        """
+        if len(ids_string) == 0:
+            return []
+        ids_string = ids_string.split(' ')
+        ids_list = [int(each_id.strip()) for each_id in ids_string]
+        return ids_list
+
+    @staticmethod
+    def _parse_positions(positions: Et.Element) -> Dict[int, List[float]]:
+        """
+        Parse the positions from the config file.
+
+        Parameters
+        ----------
+        positions : str
+            The positions in the config file.
+
+        Returns
+        -------
+        Dict[int, List[float]]
+            The list of positions with the time as key.
+        """
+        timed_positions = {}
+        for child in positions:
+            if child.tag == 'xy':
+                position_time = int(child.attrib['time'])
+                position = [float(x) for x in child.text.split(',')]
+                timed_positions[position_time] = position
+            else:
+                raise ValueError('Invalid tag in positions data: %s' % child.tag)
+
+        return timed_positions
+
+    def _read_control_xml(self, control_xml: str):
+        """
+        Read the control xml file and parse the parameters of the traffic controller.
+
+        Parameters
+        ----------
+        control_xml : str
+            The relative path to the controller config file.
+        """
+        control_xml = join(self.project_path, control_xml)
+        if not exists(control_xml):
+            raise FileNotFoundError('Control config file not found: %s' % control_xml)
+        root_xml = Et.parse(control_xml).getroot()
+        for child in root_xml:
+            if child.tag == 'control':
+                self._read_control_params(child)
+            else:
+                raise ValueError('Invalid tag in control config file: %s' % child.tag)
+
+    def _read_control_params(self, controller_data: Et.Element):
+        """
+        Read the parameters of the control and store them in the config dict.
+
+        Parameters
+        ----------
+        controller_data : Et.Element
+            The controller data element from the config file.
+        """
+        entity_id = controller_data.attrib['id']
+        controller_params = {}
+        for child in controller_data:
+            if child.tag == 'location':
+                controller_params['location'] = [float(x) for x in child.text.split(',')]
+            elif child.tag == 'nodes':
+                controller_params['nodes'] = self._convert_string_to_list(child.text)
+            else:
+                raise ValueError('Invalid tag in control config file: %s' % child.tag)
+
+        # Store the controller params
+        self.config_dict.controller_params[entity_id] = controller_params
+
+    def _read_simulation_params(self, simulation_data: Et.Element):
+        """
+        Read the parameters of the simulation and store them in the config dict.
+
+        Parameters
+        ----------
+        simulation_data : Et.Element
+            The simulation data element from the config file.
+        """
+        sim_params = {}
+        for child in simulation_data:
+            if child.tag == 'step':
+                sim_params['step'] = int(child.text)
+            elif child.tag == 'start':
+                sim_params['start'] = int(child.text)
+            elif child.tag == 'end':
+                sim_params['end'] = int(child.text)
+            elif child.tag == 'seed':
+                sim_params['seed'] = int(child.text)
+            elif child.tag == 'lazy_step':
+                sim_params['lazy_step'] = int(child.text)
+            elif child.tag == 'output':
+                sim_params['output'] = self._create_output_dir(child.text)
+            else:
+                raise ValueError('Invalid tag in simulation config file: %s' % child.tag)
+
+        # Store the simulation params
+        self.config_dict.simulation_params = sim_params
+
+    def _create_output_dir(self, output_dir: str):
+        """
+        Create the output directory if it does not exist.
+        """
+        output_dir = join(self.project_path, output_dir)
+        if not exists(output_dir):
+            makedirs(output_dir)
+        return output_dir

@@ -38,7 +38,7 @@ class SensorBase(metaclass=ABCMeta):
             Dictionary containing all the parameters for the sensor.
 
         """
-        self.id = params.get('id', None)
+        self.sensor_id = params.get('id', None)
         self.entity_id = params.get('entity_id', None)
 
         self.mode = params.get('mode', None)
@@ -60,21 +60,38 @@ class SensorBase(metaclass=ABCMeta):
         """
         self.is_active = False
 
-    def get_status(self):
-        """Get the status of the sensor."""
+    def is_active(self):
+        """
+        Check if the sensor is active.
+
+        Returns
+        ----------
+        bool
+            True if the sensor is active, False otherwise.
+        """
         return self.is_active
 
-    def get_id(self):
-        """Get the ID of the sensor."""
-        return self.id
+    def get_id(self) -> int:
+        """
+        Get the ID of the sensor.
 
-    def get_entity_id(self):
-        """Get the entity ID to which the sensor belongs to."""
-        return self.entity_id
+        Returns
+        ----------
+        int
+            The ID of the sensor.
+        """
+        return self.sensor_id
 
     def get_mode(self):
-        """Get the mode of the sensor."""
-        return self.mode
+        """
+        Get the mode of the sensor.
+
+        Returns
+        ----------
+        str
+            The mode of the sensor as a string.
+        """
+        return self.mode.value
 
     @abstractmethod
     def get_data_size(self):

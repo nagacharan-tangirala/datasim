@@ -1,20 +1,20 @@
-from os.path import exists
-from src.setup.SSimulationSetup import SimulationSetup
 import argparse
 
+from os.path import exists
+from src.Simulation import Simulation
 
-class Simulation:
-    def __init__(self, config_file: str):
-        # Create the simulation setup object if the config file exists
-        if not exists(config_file):
-            raise FileNotFoundError('Config file not found: %s' % config_file)
-        self.sim_setup = SimulationSetup(config_file)
 
-        # Read the config file
-        self.sim_setup.setup_simulation()
+def create_simulation(config_file: str) -> Simulation:
+    # Create the simulation setup object if the config file exists
+    if not exists(config_file):
+        raise FileNotFoundError('Config file not found: %s' % config_file)
+    simulation = Simulation(config_file)
 
-    def run(self):
-        pass
+    # Setup the simulation.
+    simulation.setup_simulation()
+
+    # Return the simulation object
+    return simulation
 
 
 if __name__ == "__main__":
@@ -25,6 +25,7 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
 
-    # Create the simulation object and run it
-    simulation = Simulation(args.config)
-    simulation.run()
+    # Create the simulation and run it
+    net_simulation = create_simulation(args.config)
+    net_simulation.run()
+

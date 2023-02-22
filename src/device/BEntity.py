@@ -1,131 +1,125 @@
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 
+from src.sensor.BSensor import SensorBase
+from src.device.DStaticMobilityModel import StaticMobilityModel
+from src.device.DTraceMobilityModel import TraceMobilityModel
+
+
+class EntityStatus(Enum):
+    """Enum for entity status."""
+
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+    OFFLINE = 'OFFLINE'
+
 
 class EntityType(Enum):
     """Enum for entity types."""
 
-    RSU = 0
-    VEHICLE = 1
-    INFRA = 2
-    IOT = 3
+    RSU = 'RSU'
+    VEHICLE = 'VEHICLE'
+    INFRA = 'INFRA'
+    IOT = 'IOT'
     
 
 class EntityBase(metaclass=ABCMeta):
     """Base class for all entity classes."""
 
-    def __init__(self, entity_info: dict):
-        """Initialize the entity."""
-        self.sensor_dict = entity_info.get('sensor_dict', None)
-        self.sensors = {}
-
-    def initiate_sensors(self):
+    def __init__(self, params: dict, sensors: dict):
         """
-        Initiate the sensor_params with their respective parameters.
+        Initialize the entity.
+
+        Parameters
+        ----------
+        params : dict
+            Dictionary containing all the parameters for the entity.
+        sensors : dict
+            Dictionary containing all the sensors for the entity.
         """
-        self.sensor_ids = list(self.sensor_dict.keys())
+        self.entity_id = params.get('id', None)
+        self.positions: dict = params.get('positions', None)
+
+        self.type: EntityType = EntityType.VEHICLE
+        self.status: EntityStatus = EntityStatus.INACTIVE
+
+        self.collected_data = 0
+        self.location = [0.0, 0.0]
+
+        self.sensors: dict[int, SensorBase] = sensors
+
+        self._initiate_models()
+
+    def _initiate_models(self):
+        """
+        Initiate the models related to this entity.
+        """
+        # Create the mobility model
+        self._create_mobility_model(self.positions)
+
+    def _create_mobility_model(self, positions: dict):
+        """
+        Create a mobility model for the entity.
+
+        Parameters
+        ----------
+        positions : list
+            List of positions for the entity.
+        """
+        if len(positions) == 1:
+            # Static entity, create a static mobility model
+            self.mobility_model = StaticMobilityModel(positions)
+        else:
+            # Mobile entity, create a trace mobility model
+            self.mobility_model = TraceMobilityModel(positions)
+
+    def get_status(self) -> str:
+        """
+        Get the status of the entity.
+
+        Returns
+        ----------
+        str
+            The current status of the entity as a string.
+        """
+        return self.status.value
+
+    def get_id(self) -> int:
+        """
+        Get the ID of the entity.
+
+        Returns
+        ----------
+        int
+            The ID of the entity.
+        """
+        return self.entity_id
+
+    def get_type(self) -> str:
+        """
+        Get the type of the entity.
+
+        Returns
+        ----------
+        str
+            The type of the entity as a string.
+        """
+        return self.type.value
 
     @abstractmethod
-    def run(self):
-        """Run the entity."""
-        pass
-
-    @abstractmethod
-    def stop(self):
-        """Stop the entity."""
-        pass
-
-    @abstractmethod
-    def get_status(self):
-        """Get the status of the entity."""
-        pass
-
-    @abstractmethod
-    def get_statistics(self):
-        """Get the statistics of the entity."""
-        pass
-
-    @abstractmethod
-    def get_version(self):
-        """Get the version of the entity."""
-        pass
-
-    @abstractmethod
-    def get_id(self):
-        """Get the ID of the entity."""
-        pass
-
-    @abstractmethod
-    def get_name(self):
-        """Get the mode of the entity."""
-        pass
-
-    @abstractmethod
-    def get_location(self):
+    def get_location(self) -> list[float]:
         """Get the location of the entity."""
         pass
 
-    @abstractmethod
-    def get_type(self):
-        """Get the type of the entity."""
-        pass
+    def update(self, time: int):
+        """
+        Update the entity.
+        """
+        # Update the location of the entity
+        self.mobility_model.update_location(time)
+        self.location = self.mobility_model.get_current_location()
 
-    @abstractmethod
-    def get_description(self):
-        """Get the description of the entity."""
-        pass
+        # Get the data collected by the sensors
 
-    @abstractmethod
-    def get_ip(self):
-        """Get the IP address of the entity."""
-        pass
-
-    @abstractmethod
-    def get_mac(self):
-        """Get the MAC address of the entity."""
-        pass
-
-    @abstractmethod
-    def get_port(self):
-        """Get the port of the entity."""
-        pass
-
-    @abstractmethod
-    def get_username(self):
-        """Get the username of the entity."""
-        pass
-
-    @abstractmethod
-    def get_password(self):
-        """Get the password of the entity."""
-        pass
-
-    @abstractmethod
-    def get_protocol(self):
-        """Get the protocol of the entity."""
-        pass
-
-    @abstractmethod
-    def get_os(self):
-        """Get the OS of the entity."""
-        pass
-
-    @abstractmethod
-    def get_os_version(self):
-        """Get the OS version of the entity."""
-        pass
-
-    @abstractmethod
-    def get_os_architecture(self):
-        """Get the OS architecture of the entity."""
-        pass
-
-    @abstractmethod
-    def get_os_kernel(self):
-        """Get the OS kernel of the entity."""
-        pass
-
-    @abstractmethod
-    def get_os_release(self):
-        """Get the OS release of the entity."""
-        pass
+        for sensor in self.sensors.values():
+            sensor.get_collected_data_size(time)

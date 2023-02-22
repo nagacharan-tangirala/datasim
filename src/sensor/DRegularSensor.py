@@ -22,7 +22,7 @@ class RegularSensor(SensorBase):
     def get_data_size(self):
         pass
 
-    def get_collected_data_size(self, sim_time):
+    def get_collected_data_size(self, sim_time: int) -> int:
         """
         Collect data from the sensor.
 
