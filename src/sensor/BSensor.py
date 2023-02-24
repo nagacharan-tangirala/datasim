@@ -8,6 +8,7 @@ class SensorMode(StrEnum):
     MARKOV = 'markov'
     CUSTOM = 'custom'
     REGULAR = 'regular'
+    ALWAYS_ON = 'always_on'
 
 
 class SensorType(StrEnum):
@@ -44,21 +45,34 @@ class SensorBase(metaclass=ABCMeta):
         self.mode = params.get('mode', None)
         self.type = params.get('type', None)
 
+        self.start_time = params.get('start_time', None)
+        self.end_time = params.get('end_time', None)
+
+        self.frequency = params.get('frequency', None)
+        self.data_size = params.get('data_size', None)
+
         self.last_update_time = 0
         self.data = None
         self.is_active = False
 
-    def activate_sensor(self):
+    @abstractmethod
+    def _update_sensor_status(self, sim_time: int):
         """
-        Activate the sensor. This method is called by the entity when the start time of the sensor is reached.
-        """
-        self.is_active = True
+        Update the sensor status based on the constraints. This method is called before collecting data.
 
-    def deactivate_sensor(self):
+        Parameters
+        ----------
+        sim_time : int
+            The current simulation time.
         """
-        Disable the sensor. This method is called by the entity when the end time of the sensor is reached.
+        pass
+
+    @abstractmethod
+    def get_data_size(self):
         """
-        self.is_active = False
+        Get the data size of the sensor.
+        """
+        pass
 
     def is_active(self):
         """
@@ -93,13 +107,7 @@ class SensorBase(metaclass=ABCMeta):
         """
         return self.mode.value
 
-    @abstractmethod
-    def get_data_size(self):
-        """Get the data size of the sensor."""
-        pass
-
-    @abstractmethod
-    def get_collected_data_size(self, sim_time: int):
+    def get_collected_data_size(self):
         """
         Collect data from the sensor.
 
@@ -109,9 +117,15 @@ class SensorBase(metaclass=ABCMeta):
             The amount of data collected from the sensor.
 
         """
-        pass
+        return self.data * self.data_size
 
-    @abstractmethod
-    def _collect_data(self, sim_time: int):
-        """Collect data from the sensor."""
-        pass
+    def collect_data(self, sim_time: int):
+        """
+        Collect data from the sensor.
+        """
+        self._update_sensor_status(sim_time)
+        if not self.is_active:
+            self.data = 0
+        else:
+            self.data = ((sim_time - self.last_update_time) / 1000) * self.frequency
+        self.last_update_time = sim_time
