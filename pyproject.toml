@@ -8,6 +8,7 @@ packages = [{include = "abstract_netsim"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+geopandas = "^0.12.2"
 
 
 [build-system]
