@@ -37,16 +37,16 @@ class ConfigReader:
         Read the config file.
         """
         for child in self.config_root:
-            if child.tag == 'sensor_params':
+            if child.tag == 'sensors':
                 self._read_sensor_xml(child.text)
-            elif child.tag == 'base_station':
+            elif child.tag == 'nodes':
                 self._read_nodes_xml(child.text)
-            elif child.tag == 'entity_params':
+            elif child.tag == 'entities':
                 self._read_entities_xml(child.text)
             elif child.tag == 'control':
                 self._read_control_xml(child.text)
             elif child.tag == 'simulation':
-                self._read_simulation_params(child.text)
+                self._read_simulation_params(child)
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
@@ -81,22 +81,20 @@ class ConfigReader:
         sensor_data : Et.Element
             The xml element containing the sensor parameters.
         """
-        sensor_id = sensor_data.attrib['id']
-        sensor_params = {'sensor_type': sensor_data.attrib['type'], 'sensor_mode': sensor_data.attrib['mode']}
+        sensor_id = int(sensor_data.attrib['id'])
+        sensor_params = {'type': sensor_data.attrib['type'], 'mode': sensor_data.attrib['mode']}
 
         # Read the sensor parameters
         for child in sensor_data:
             if child.tag == 'data_size':
-                sensor_params['data_size'] = child.text
+                sensor_params['data_size'] = float(child.text)
             elif child.tag == 'start_time':
-                sensor_params['start_time'] = child.text
+                sensor_params['start_time'] = int(child.text)
             elif child.tag == 'end_time':
-                sensor_params['end_time'] = child.text
-            elif child.tag == 'collect_frequency':
-                sensor_params['collect_frequency'] = child.text
-            elif child.tag == 'transmit_frequency':
-                sensor_params['transmit_frequency'] = child.text
-            elif child.tag == ['custom_times'] and sensor_params['sensor_mode'] == 'custom':
+                sensor_params['end_time'] = int(child.text)
+            elif child.tag == 'frequency':
+                sensor_params['frequency'] = int(child.text)
+            elif child.tag == ['custom_times'] and sensor_params['mode'] == 'custom':
                 sensor_params['custom_times'] = child.text
             else:
                 raise ValueError('Invalid tag in sensor config file: %s' % child.tag)
@@ -115,13 +113,13 @@ class ConfigReader:
         """
         nodes_xml = join(self.project_path, nodes_xml)
         if not exists(nodes_xml):
-            raise FileNotFoundError('Base station config file not found: %s' % nodes_xml)
+            raise FileNotFoundError('Node config file not found: %s' % nodes_xml)
         root_xml = Et.parse(nodes_xml).getroot()
         for child in root_xml:
-            if child.tag == 'base_station':
+            if child.tag == 'node':
                 self._read_node_params(child)
             else:
-                raise ValueError('Invalid tag in base station config file: %s' % child.tag)
+                raise ValueError('Invalid tag in node config file: %s' % child.tag)
 
     def _read_node_params(self, node_data: Et.Element):
         """
@@ -132,8 +130,8 @@ class ConfigReader:
         node_data : Et.Element
             The node data element from the config file.
         """
-        node_id = node_data.attrib['id']
-        node_params = {'node_type': node_data.attrib['type']}
+        node_id = int(node_data.attrib['id'])
+        node_params = {'id': node_id, 'type': node_data.attrib['type']}
 
         # Read the node parameters
         for child in node_data:
@@ -171,8 +169,8 @@ class ConfigReader:
         entity_data : Et.Element
             The entity data element from the config file.
         """
-        entity_id = entity_data.attrib['id']
-        entity_params = {'entity_type': entity_data.attrib['type']}
+        entity_id = int(entity_data.attrib['id'])
+        entity_params = {'id': entity_id, 'type': entity_data.attrib['type'], 'start_time': entity_data.attrib['start_time'], 'end_time': entity_data.attrib['end_time']}
 
         # Read the entity parameters
         for child in entity_data:
@@ -249,7 +247,7 @@ class ConfigReader:
             raise FileNotFoundError('Control config file not found: %s' % control_xml)
         root_xml = Et.parse(control_xml).getroot()
         for child in root_xml:
-            if child.tag == 'control':
+            if child.tag == 'controller':
                 self._read_control_params(child)
             else:
                 raise ValueError('Invalid tag in control config file: %s' % child.tag)
@@ -263,8 +261,9 @@ class ConfigReader:
         controller_data : Et.Element
             The controller data element from the config file.
         """
-        entity_id = controller_data.attrib['id']
-        controller_params = {}
+        controller_id = int(controller_data.attrib['id'])
+        controller_params = {'id': controller_id, 'type': controller_data.attrib['type']}
+
         for child in controller_data:
             if child.tag == 'location':
                 controller_params['location'] = [float(x) for x in child.text.split(',')]
@@ -274,7 +273,7 @@ class ConfigReader:
                 raise ValueError('Invalid tag in control config file: %s' % child.tag)
 
         # Store the controller params
-        self.config_dict.controller_params[entity_id] = controller_params
+        self.config_dict.controller_params[controller_id] = controller_params
 
     def _read_simulation_params(self, simulation_data: Et.Element):
         """
@@ -290,15 +289,17 @@ class ConfigReader:
             if child.tag == 'step':
                 sim_params['step'] = int(child.text)
             elif child.tag == 'start':
-                sim_params['start'] = int(child.text)
+                sim_params['start'] = float(child.text)
             elif child.tag == 'end':
-                sim_params['end'] = int(child.text)
+                sim_params['end'] = float(child.text)
             elif child.tag == 'seed':
                 sim_params['seed'] = int(child.text)
-            elif child.tag == 'lazy_step':
-                sim_params['lazy_step'] = int(child.text)
+            elif child.tag == 'update_step':
+                sim_params['update_step'] = int(child.text)
+            elif child.tag == 'output_step':
+                sim_params['output_step'] = int(child.text)
             elif child.tag == 'output':
-                sim_params['output'] = self._create_output_dir(child.text)
+                sim_params['output_dir'] = self._create_output_dir(child.text)
             else:
                 raise ValueError('Invalid tag in simulation config file: %s' % child.tag)
 
@@ -308,6 +309,11 @@ class ConfigReader:
     def _create_output_dir(self, output_dir: str):
         """
         Create the output directory if it does not exist.
+
+        Parameters
+        ----------
+        output_dir : str
+            The relative path to the output directory.
         """
         output_dir = join(self.project_path, output_dir)
         if not exists(output_dir):
