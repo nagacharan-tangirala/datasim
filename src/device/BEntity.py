@@ -2,8 +2,7 @@ from enum import Enum
 from abc import ABCMeta, abstractmethod
 
 from src.sensor.BSensor import SensorBase
-from src.device.DStaticMobilityModel import StaticMobilityModel
-from src.device.DTraceMobilityModel import TraceMobilityModel
+from src.device.SEntityModelFactory import EntityModelFactory
 
 
 class EntityStatus(Enum):
@@ -37,13 +36,16 @@ class EntityBase(metaclass=ABCMeta):
         sensors : dict
             Dictionary containing all the sensors for the entity.
         """
-        self.entity_id = params.get('id', None)
+        self.entity_id = int(params.get('id', 0))
         self.positions: dict = params.get('positions', None)
+
+        self.start_time = int(params.get('start_time', 0))
+        self.end_time = int(params.get('end_time', 0))
 
         self.type: EntityType = EntityType.VEHICLE
         self.status: EntityStatus = EntityStatus.INACTIVE
 
-        self.collected_data = 0
+        self.total_sensor_data_size = 0
         self.location = [0.0, 0.0]
 
         self.sensors: dict[int, SensorBase] = sensors
@@ -54,24 +56,11 @@ class EntityBase(metaclass=ABCMeta):
         """
         Initiate the models related to this entity.
         """
+        # Create the entity model factory
+        self.model_creator = EntityModelFactory()
+
         # Create the mobility model
-        self._create_mobility_model(self.positions)
-
-    def _create_mobility_model(self, positions: dict):
-        """
-        Create a mobility model for the entity.
-
-        Parameters
-        ----------
-        positions : list
-            List of positions for the entity.
-        """
-        if len(positions) == 1:
-            # Static entity, create a static mobility model
-            self.mobility_model = StaticMobilityModel(positions)
-        else:
-            # Mobile entity, create a trace mobility model
-            self.mobility_model = TraceMobilityModel(positions)
+        self.mobility_model = self.model_creator.create_mobility_model(self.positions)
 
     def get_status(self) -> str:
         """
@@ -106,20 +95,70 @@ class EntityBase(metaclass=ABCMeta):
         """
         return self.type.value
 
+    def get_total_sensor_data_size(self):
+        """
+        Get the total sensor data size.
+
+        Returns
+        ----------
+        int
+            The total sensor data size collected since the previous update.
+        """
+        return self.total_sensor_data_size
+
+    def is_entity_active(self) -> bool:
+        """
+        Check if the entity is active.
+
+        Returns
+        ----------
+        bool
+            True if the entity is active, False otherwise.
+        """
+        return self.status == EntityStatus.ACTIVE
+
+    def get_start_and_end_time(self) -> tuple[int, int]:
+        """
+        Get the start and end time of the entity.
+
+        Returns
+        ----------
+        tuple
+            The start and end time of the entity as a tuple.
+        """
+        return self.start_time, self.end_time
+
+    def update_sensor_status(self, time: int):
+        """
+        Update the status of the sensors.
+
+        Parameters
+        ----------
+        time : int
+            The current time in the simulation.
+        """
+        for sensor in self.sensors.values():
+            sensor.update_sensor_status(time)
+
+    @abstractmethod
+    def toggle_entity_status(self):
+        """
+        Toggle the status of the entity.
+        """
+        pass
+
     @abstractmethod
     def get_location(self) -> list[float]:
         """Get the location of the entity."""
         pass
 
-    def update(self, time: int):
+    @abstractmethod
+    def process_entity(self, time: int):
         """
-        Update the entity.
+        Update the location and collect data from the sensors associated with this entity.
+        Parameters
+        ----------
+        time : int
+            The current time in the simulation.
         """
-        # Update the location of the entity
-        self.mobility_model.update_location(time)
-        self.location = self.mobility_model.get_current_location()
-
-        # Get the data collected by the sensors
-
-        for sensor in self.sensors.values():
-            sensor.get_collected_data_size(time)
+        pass
