@@ -5,16 +5,35 @@ from src.Simulation import Simulation
 
 
 def create_simulation(config_file: str) -> Simulation:
-    # Create the simulation setup object if the config file exists
+    """
+    This function creates the simulation object.
+
+    Parameters
+    ----------
+    config_file : str
+        The path to the config file.
+    """
     if not exists(config_file):
         raise FileNotFoundError('Config file not found: %s' % config_file)
     simulation = Simulation(config_file)
 
-    # Setup the simulation.
+    # Set up the simulation.
     simulation.setup_simulation()
 
     # Return the simulation object
     return simulation
+
+
+def run_simulation(simulation: Simulation):
+    """
+    This function initiates the simulation.
+
+    Parameters
+    ----------
+    simulation : Simulation
+        The simulation object to run.
+    """
+    simulation.run()
 
 
 if __name__ == "__main__":
@@ -25,7 +44,8 @@ if __name__ == "__main__":
     # Parse the arguments
     args = parser.parse_args()
 
-    # Create the simulation and run it
+    # Create the simulation object
     net_simulation = create_simulation(args.config)
-    net_simulation.run()
 
+    # Run the simulation
+    run_simulation(net_simulation)
