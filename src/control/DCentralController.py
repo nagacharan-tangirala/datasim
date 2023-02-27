@@ -15,3 +15,6 @@ class CentralController(TrafficControllerBase):
         """
         super().__init__(params, nodes)
         self.type = TrafficControllerType.CENTRAL
+
+    def get_location(self):
+        pass

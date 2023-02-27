@@ -32,6 +32,8 @@ class TrafficControllerBase(metaclass=ABCMeta):
             Dictionary containing all the nodes for the traffic controller.
         """
         self.controller_id = params.get('id', None)
+        self.position = params.get('position', None)
+
         self.nodes = nodes
 
         self.status = None
