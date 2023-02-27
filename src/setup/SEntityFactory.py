@@ -1,4 +1,5 @@
 from src.device.DVehicleEntity import VehicleEntity
+from src.device.DRSUEntity import RSUEntity
 
 
 class EntityFactory:
@@ -20,7 +21,7 @@ class EntityFactory:
         entity_type = params.get('type', None)
         if entity_type == 'vehicle':
             return VehicleEntity(params, sensors)
-        # elif entity_type == 'rsu':
-        #    return
+        elif entity_type == 'rsu':
+            return RSUEntity(params, sensors)
         else:
             raise ValueError("Entity type not supported.")
