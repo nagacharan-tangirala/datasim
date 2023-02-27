@@ -22,4 +22,4 @@ class NodeFactory:
         elif node_type == 'intermediate':
             return IntermediateNode(params)
         else:
-            raise ValueError("Node type not supported.")
+            raise ValueError("Node {} type not supported.".format(node_type))
