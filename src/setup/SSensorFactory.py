@@ -1,5 +1,6 @@
 from src.sensor.BSensor import SensorMode
 from src.sensor.DRegularSensor import RegularSensor
+from src.sensor.DAlwaysOnSensor import AlwaysOnSensor
 
 
 class SensorFactory:
@@ -16,9 +17,11 @@ class SensorFactory:
         params : dict
             Dictionary containing all the parameters for the sensor.
         """
-        sensor_mode = params.get('sensor_mode', None)
+        sensor_mode = params.get('mode', None)
         if sensor_mode == SensorMode.REGULAR:
             return RegularSensor(params)
+        elif sensor_mode == SensorMode.ALWAYS_ON:
+            return AlwaysOnSensor(params)
         # elif sensor_mode == SensorMode.INTERMITTENT:
         # return CameraSensor(params)
         # elif sensor_mode == SensorMode.CUSTOM:
