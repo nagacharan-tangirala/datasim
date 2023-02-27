@@ -42,6 +42,17 @@ class ParticipantFactory:
         self._create_entities()
         self._create_controllers()
 
+    def get_controllers(self) -> dict:
+        """
+        Get the controllers in the simulation.
+
+        Returns
+        ----------
+        dict
+            Dictionary containing the controllers.
+        """
+        return self.controllers
+
     def get_nodes(self) -> dict:
         """
         Get the nodes in the simulation.
