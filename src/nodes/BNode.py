@@ -60,6 +60,30 @@ class NodeBase(metaclass=ABCMeta):
         return self.type.value
 
     @abstractmethod
-    def get_statistics(self):
-        """Get the statistics of the node."""
+    def process_node(self, time: int):
+        """
+        Update the node.
+
+        Parameters
+        ----------
+        time : int
+            The current time.
+        """
+        pass
+
+    @abstractmethod
+    def get_collected_data_size(self, time: int) -> int:
+        """
+        Get the collected data size.
+
+        Parameters
+        ----------
+        time : int
+            The current time.
+
+        Returns
+        ----------
+        int
+            The collected data size.
+        """
         pass

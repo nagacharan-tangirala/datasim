@@ -14,5 +14,35 @@ class IntermediateNode(NodeBase):
         super().__init__(params)
         self.type = NodeType.INTERMEDIATE
 
-    def get_statistics(self):
-        pass
+        self.in_range_nodes = []
+        self.nodes_data = 0
+
+    def get_collected_data_size(self, time: int) -> int:
+        """
+        Get the collected data size.
+
+        Parameters
+        ----------
+        time : int
+            The current time.
+
+        Returns
+        ----------
+        int
+            The collected data size.
+        """
+        return self.nodes_data
+
+    def process_node(self, time: int):
+        """
+        Update the node. This includes collecting data from all the entities which are in range.
+
+        Parameters
+        ----------
+        time : int
+            The current time.
+        """
+        # Get the data collected by the nodes associated with the intermediate node.
+        self.nodes_data = 0
+        for node in self.in_range_nodes:
+            self.nodes_data = self.nodes_data + node.get_collected_data_size(time)
