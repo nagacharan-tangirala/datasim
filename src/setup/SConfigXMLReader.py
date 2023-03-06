@@ -296,15 +296,35 @@ class ConfigReader:
                 sim_params['seed'] = int(child.text)
             elif child.tag == 'update_step':
                 sim_params['update_step'] = int(child.text)
-            elif child.tag == 'output_step':
-                sim_params['output_step'] = int(child.text)
             elif child.tag == 'output':
-                sim_params['output_dir'] = self._create_output_dir(child.text)
+                sim_params = self._parse_output_params(child, sim_params)
             else:
                 raise ValueError('Invalid tag in simulation config file: %s' % child.tag)
 
         # Store the simulation params
         self.config_dict.simulation_params = sim_params
+
+    def _parse_output_params(self, child, sim_params):
+        """
+        Parse the output parameters from the config file.
+
+        Parameters
+        ----------
+        child : Et.Element
+            The output element from the config file.
+        sim_params : Dict[str, Any]
+            The simulation parameters parsed from the config file.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The simulation output parameters with the output parameters added.
+        """
+        sim_params['output_dir'] = self._create_output_dir(child.attrib['path'])
+        sim_params['output_step'] = int(child.attrib['step'])
+        sim_params['output_level'] = child.attrib['level']
+        sim_params['output_type'] = child.attrib['type']
+        return sim_params
 
     def _create_output_dir(self, output_dir: str):
         """

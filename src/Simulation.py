@@ -7,6 +7,8 @@ from src.setup.SConfigXMLReader import ConfigReader
 
 from src.device.BEntity import EntityBase
 
+from src.output.SOutputFactory import OutputFactory
+
 
 class Simulation(metaclass=ABCMeta):
     def __init__(self, config_xml: str):
@@ -113,6 +115,7 @@ class Simulation(metaclass=ABCMeta):
 
             1. Set the seed for the random number generator.
             2. Prepare a dictionary with time step as the key and the respective entities to activate in that time step.
+            3. Prepare the output dictionaries to store the output of the simulation.
         """
         # 1.
         self._set_seed()
@@ -121,7 +124,7 @@ class Simulation(metaclass=ABCMeta):
         self._prepare_active_entities_dict()
 
         # 3.
-        self._prepare_output_dicts()
+        self._prepare_output()
 
     def _set_seed(self):
         """
@@ -147,10 +150,14 @@ class Simulation(metaclass=ABCMeta):
             else:
                 self.update_time_entities_map[end_time].append(entity)
 
-    def _prepare_output_dicts(self):
+    def _prepare_output(self):
         """
         Prepare the output dictionaries to store the output of the simulation.
         """
+        # Create the output helper object
+        self.output_helper = OutputFactory().get_output_helper(self.config_dict)
+
+        # Prepare the output dictionaries
         for time_step in range(self.start_time, self.end_time, self.step_size):
             self.entities_output[time_step] = {}
             self.nodes_output[time_step] = {}
@@ -203,7 +210,7 @@ class Simulation(metaclass=ABCMeta):
             entity.process_entity(time_step)
 
             # Get the sensor data volume collected by this entity
-            self.entities_output[entity.get_id()] = entity.get_total_sensor_data_size()
+            self.entities_output[time_step][entity.get_id()] = entity.get_total_sensor_data_size()
 
         # Update the nodes and compute the total sensor data size collected by the nodes
         for node in self.nodes.values():
@@ -211,7 +218,7 @@ class Simulation(metaclass=ABCMeta):
             node.process_node(time_step)
 
             # Get the sensor data volume collected by this node
-            self.nodes_output[node.get_id()] = node.get_total_sensor_data_size()
+            self.nodes_output[time_step][node.get_id()] = node.get_collected_data_size()
 
     def _update_active_entities(self, time_step: int):
         """
@@ -257,4 +264,6 @@ class Simulation(metaclass=ABCMeta):
         time_step : int
             The time step of the simulation.
         """
+        # Write the output to the output directory
+        self.output_helper.write_output(time_step, self.entities_output[time_step], self.nodes_output[time_step])
         print('Output step: ' + str(time_step))
