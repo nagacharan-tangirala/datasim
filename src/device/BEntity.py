@@ -128,18 +128,6 @@ class EntityBase(metaclass=ABCMeta):
         """
         return self.start_time, self.end_time
 
-    def update_sensor_status(self, time: int):
-        """
-        Update the status of the sensors.
-
-        Parameters
-        ----------
-        time : int
-            The current time in the simulation.
-        """
-        for sensor in self.sensors.values():
-            sensor.update_sensor_status(time)
-
     @abstractmethod
     def toggle_entity_status(self):
         """
