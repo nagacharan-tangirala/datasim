@@ -72,14 +72,9 @@ class NodeBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_collected_data_size(self, time: int) -> int:
+    def get_collected_data_size(self) -> int:
         """
         Get the collected data size.
-
-        Parameters
-        ----------
-        time : int
-            The current time.
 
         Returns
         ----------

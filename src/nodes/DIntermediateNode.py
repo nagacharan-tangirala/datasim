@@ -17,14 +17,9 @@ class IntermediateNode(NodeBase):
         self.in_range_nodes = []
         self.nodes_data = 0
 
-    def get_collected_data_size(self, time: int) -> int:
+    def get_collected_data_size(self) -> int:
         """
         Get the collected data size.
-
-        Parameters
-        ----------
-        time : int
-            The current time.
 
         Returns
         ----------
