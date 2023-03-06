@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "abstract-netsim"
+name = "datasim"
 version = "0.1.0"
 description = ""
 authors = ["Nagacharan Teja Tangirala <nagacharan.tangirala@tum.de>"]
 readme = "README.md"
-packages = [{include = "abstract_netsim"}]
+packages = [{include = "datasim"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
