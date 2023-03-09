@@ -1,3 +1,4 @@
+import datetime
 import time
 
 from src.output.BOutput import OutputBase
@@ -11,15 +12,27 @@ class OutputCSV(OutputBase):
         """
         super().__init__(params)
 
-        time_now = time.time()
+        time_now = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
 
-        self.nodes_file = join(self.output_dir, "output.csv")
+        self.nodes_file = join(self.output_dir, "nodes_output.csv")
         if exists(self.nodes_file):
             self.nodes_file = join(self.output_dir, "nodes_output_{}.csv".format(time_now))
 
         self.entities_file = join(self.output_dir, "entities_output.csv")
         if exists(self.entities_file):
             self.entities_file = join(self.output_dir, "entities_output_{}.csv".format(time_now))
+
+        self._write_headers_to_csv()
+
+    def _write_headers_to_csv(self):
+        """
+        Write the headers to the output CSV files.
+        """
+        with open(self.nodes_file, 'w') as f:
+            f.write("time,node_id,data_collected\n")
+
+        with open(self.entities_file, 'w') as f:
+            f.write("time,entity_id,data_collected\n")
 
     def _write_data(self, entities: dict, nodes: dict):
         """
@@ -41,11 +54,13 @@ class OutputCSV(OutputBase):
 
         Parameters
         ----------
-        nodes : dict
+        nodes : dict[dict[list]]
             Dictionary of nodes in the simulation.
         """
-        with open(self.nodes_file, 'w') as f:
-            f.write("node_id, data_collected")
+        with open(self.nodes_file, 'a') as f:
+            for ts, node_data_ts in nodes.items():
+                for node_id, data_collected in node_data_ts.items():
+                    f.write("{},{},{}\n".format(ts, node_id, data_collected))
 
     def _write_entities_output(self, entities: dict):
         """
@@ -56,5 +71,7 @@ class OutputCSV(OutputBase):
         entities : dict
             Dictionary of entities in the simulation.
         """
-        with open(self.entities_output, 'w') as f:
-            f.write("entity_id, data_collected")
+        with open(self.entities_file, 'a') as f:
+            for ts, entity_data_ts in entities.items():
+                for entity_id, data_collected in entity_data_ts.items():
+                    f.write("{},{},{}\n".format(ts, entity_id, data_collected))
