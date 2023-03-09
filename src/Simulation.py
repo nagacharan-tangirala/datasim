@@ -155,12 +155,12 @@ class Simulation(metaclass=ABCMeta):
         Prepare the output dictionaries to store the output of the simulation.
         """
         # Create the output helper object
-        self.output_helper = OutputFactory().get_output_helper(self.config_dict)
+        self.output_helper = OutputFactory().get_output_helper(self.config_dict.simulation_params)
 
         # Prepare the output dictionaries
-        for time_step in range(self.start_time, self.end_time, self.step_size):
-            self.entities_output[time_step] = {}
-            self.nodes_output[time_step] = {}
+        # for time_step in range(self.start_time, self.end_time, self.step_size):
+        #    self.entities_output[time_step] = {}
+        #    self.nodes_output[time_step] = {}
 
     def run(self):
         """
@@ -204,12 +204,16 @@ class Simulation(metaclass=ABCMeta):
         time_step : int
             The time step of the simulation.
         """
+        # Add the time step to the output dictionary
+        self.entities_output[time_step] = {}
+        self.nodes_output[time_step] = {}
+
         # Update the entities and compute the total sensor data size collected by the entities
         for entity in self.active_entities:
             # Process this entity
             entity.process_entity(time_step)
 
-            # Get the sensor data volume collected by this entity
+            # Get the sensor data volume collected by this entity and store it in the output dictionary
             self.entities_output[time_step][entity.get_id()] = entity.get_total_sensor_data_size()
 
         # Update the nodes and compute the total sensor data size collected by the nodes
@@ -217,7 +221,7 @@ class Simulation(metaclass=ABCMeta):
             # Process this node
             node.process_node(time_step)
 
-            # Get the sensor data volume collected by this node
+            # Get the sensor data volume collected by this node and store it in the output dictionary
             self.nodes_output[time_step][node.get_id()] = node.get_collected_data_size()
 
     def _update_active_entities(self, time_step: int):
@@ -253,7 +257,8 @@ class Simulation(metaclass=ABCMeta):
         time_step : int
             The time step of the simulation.
         """
-        print('Update step: ' + str(time_step) + ' skipped for now')
+        pass
+        # print('Update step: ' + str(time_step) + ' skipped for now')
 
     def _run_output_step(self, time_step: int):
         """
@@ -265,5 +270,9 @@ class Simulation(metaclass=ABCMeta):
             The time step of the simulation.
         """
         # Write the output to the output directory
-        self.output_helper.write_output(time_step, self.entities_output[time_step], self.nodes_output[time_step])
+        self.output_helper.write_output(time_step, self.entities_output, self.nodes_output)
         print('Output step: ' + str(time_step))
+
+        # Clear the output dictionaries
+        self.entities_output = {}
+        self.nodes_output = {}
