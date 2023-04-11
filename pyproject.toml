@@ -9,6 +9,7 @@ packages = [{include = "datasim"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 geopandas = "^0.12.2"
+h5py = "^3.8.0"
 
 
 [build-system]
