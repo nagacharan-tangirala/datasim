@@ -1,4 +1,4 @@
-from src.setup.SConfigXMLReader import ConfigDict
+from src.setup.BConfigReader import ConfigDict
 
 from src.setup.SEntityFactory import EntityFactory
 from src.setup.SSensorFactory import SensorFactory

@@ -107,7 +107,7 @@ class SensorBase(metaclass=ABCMeta):
         """
         return self.mode.value
 
-    def get_collected_data_size(self):
+    def get_collected_data_size(self) -> int:
         """
         Collect data from the sensor.
 

@@ -3,7 +3,7 @@ from abc import ABCMeta
 from typing import Dict
 
 from src.setup.SParticipantFactory import ParticipantFactory
-from src.setup.SConfigXMLReader import ConfigReader
+from src.setup.SConfigHDF5Reader import ConfigHDF5Reader
 
 from src.device.BEntity import EntityBase
 
@@ -11,11 +11,11 @@ from src.output.SOutputFactory import OutputFactory
 
 
 class Simulation(metaclass=ABCMeta):
-    def __init__(self, config_xml: str):
+    def __init__(self, config_file: str):
         """
         Initialize the simulation setup object. This class is responsible for setting up the simulation.
         """
-        self.config_xml = config_xml
+        self.config_file = config_file
         self.participant_factory = None
         self.config_dict = None
 
@@ -71,11 +71,16 @@ class Simulation(metaclass=ABCMeta):
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        config_reader = ConfigReader(self.config_xml)
+        config_reader = None
+        # if self.config_file.endswith(".xml"):
+        #     config_reader = ConfigXMLReader(self.config_file)
+        # elif self.config_file.endswith(".hdf5"):
+        config_reader = ConfigHDF5Reader(self.config_file)
+
         config_reader.read_config()
 
         # Get the parsed config params
-        self.config_dict = config_reader.get_parsed_config_params()
+        self.config_dict = config_reader.get_config_dict()
 
     def _create_participants(self):
         """
