@@ -42,6 +42,9 @@ class VehicleEntity(EntityBase):
         self.mobility_model.update_location(ts)
         self.location = self.mobility_model.get_current_location()
 
+        # Update the neighbours of the entity
+        self._update_neighbours(ts)
+
         # Update and get the data collected by the sensors
         self.total_sensor_data_size = 0
         for sensor in self.sensors.values():
@@ -53,3 +56,14 @@ class VehicleEntity(EntityBase):
         Toggle the status of the entity.
         """
         self.status = EntityStatus.ACTIVE if self.status == EntityStatus.INACTIVE else EntityStatus.INACTIVE
+
+    def _update_neighbours(self, ts: int):
+        """
+        Update the neighbours of the entity.
+        """
+
+
+    def get_neighbours_data(self, time: int):
+        """
+        Get the data collected by the sensors of the neighbouring entities.
+        """
