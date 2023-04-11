@@ -2,7 +2,7 @@ from src.device.BEntityMobilityModel import MobilityModelBase
 
 
 class TraceMobilityModel(MobilityModelBase):
-    def __init__(self, positions: dict):
+    def __init__(self, positions: dict, start_time: int):
         """
         Initialize the trace mobility model.
 
@@ -11,8 +11,8 @@ class TraceMobilityModel(MobilityModelBase):
         positions : dict
             Dictionary of positions for the entity with the time as key.
         """
-        super().__init__(positions)
-        self.current_location = positions.get(0)
+        super().__init__(positions, start_time)
+        self.current_location = positions[0]
 
     def update_location(self, time):
         """
@@ -23,6 +23,10 @@ class TraceMobilityModel(MobilityModelBase):
         time : int
             The current time.
         """
-        # Update the location of the entity if there is a position for the current time. Otherwise, keep the current location.
-        if time in self.positions:
-            self.current_location = self.positions.get(time)
+        # Convert time to index
+        index = time - self.start_time
+
+        # Check if the index is less than the length of the positions
+        if index < len(self.positions):
+            self.current_location = self.positions[index]
+

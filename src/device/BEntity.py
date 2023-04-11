@@ -60,7 +60,7 @@ class EntityBase(metaclass=ABCMeta):
         self.model_creator = EntityModelFactory()
 
         # Create the mobility model
-        self.mobility_model = self.model_creator.create_mobility_model(self.positions)
+        self.mobility_model = self.model_creator.create_mobility_model(self.positions, self.start_time)
 
     def get_status(self) -> str:
         """
