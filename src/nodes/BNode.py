@@ -60,7 +60,7 @@ class NodeBase(metaclass=ABCMeta):
         return self.type.value
 
     @abstractmethod
-    def process_node(self, time: int):
+    def update_node(self, time: int):
         """
         Update the node.
 

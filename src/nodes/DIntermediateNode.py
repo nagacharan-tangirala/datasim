@@ -28,7 +28,7 @@ class IntermediateNode(NodeBase):
         """
         return self.nodes_data
 
-    def process_node(self, time: int):
+    def update_node(self, time: int):
         """
         Update the node. This includes collecting data from all the entities which are in range.
 

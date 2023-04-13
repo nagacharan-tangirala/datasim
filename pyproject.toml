@@ -4,11 +4,12 @@ version = "0.1.0"
 description = ""
 authors = ["Nagacharan Teja Tangirala <nagacharan.tangirala@tum.de>"]
 readme = "README.md"
-packages = [{include = "datasim"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 geopandas = "^0.12.2"
+h5py = "^3.8.0"
+cython = "^0.29.34"
 
 
 [build-system]

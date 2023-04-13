@@ -2,7 +2,7 @@ from src.device.BEntityMobilityModel import MobilityModelBase
 
 
 class StaticMobilityModel(MobilityModelBase):
-    def __init__(self, positions: dict):
+    def __init__(self, positions: dict, start_time: int):
         """
         Initialize the static mobility model.
 
@@ -10,9 +10,10 @@ class StaticMobilityModel(MobilityModelBase):
         ----------
         positions : dict
             Dictionary of positions for the entity with the time as key.
+        start_time : int
+            The start time of the entity.
         """
-        super().__init__(positions)
-        self.current_location = positions.get(0)
+        super().__init__(positions, start_time)
 
     def update_location(self, time):
         """
@@ -23,5 +24,5 @@ class StaticMobilityModel(MobilityModelBase):
         time : int
             The current time.
         """
-        # Location is static, no need to update
-        pass
+        # Location is static,
+        self.current_location = self.positions[0]

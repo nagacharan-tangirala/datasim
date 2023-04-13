@@ -47,6 +47,7 @@ class EntityBase(metaclass=ABCMeta):
 
         self.total_sensor_data_size = 0
         self.location = [0.0, 0.0]
+        self.neighbours = []
 
         self.sensors: dict[int, SensorBase] = sensors
 
@@ -60,7 +61,7 @@ class EntityBase(metaclass=ABCMeta):
         self.model_creator = EntityModelFactory()
 
         # Create the mobility model
-        self.mobility_model = self.model_creator.create_mobility_model(self.positions)
+        self.mobility_model = self.model_creator.create_mobility_model(self.positions, self.start_time)
 
     def get_status(self) -> str:
         """
@@ -95,7 +96,7 @@ class EntityBase(metaclass=ABCMeta):
         """
         return self.type.value
 
-    def get_total_sensor_data_size(self):
+    def get_collected_data_size(self):
         """
         Get the total sensor data size.
 
@@ -128,6 +129,17 @@ class EntityBase(metaclass=ABCMeta):
         """
         return self.start_time, self.end_time
 
+    def set_neighbours(self, neighbours: list):
+        """
+        Set the neighbours of the entity.
+
+        Parameters
+        ----------
+        neighbours : list
+            List of neighbours of the entity.
+        """
+        self.neighbours = neighbours
+
     @abstractmethod
     def toggle_entity_status(self):
         """
@@ -141,7 +153,7 @@ class EntityBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def process_entity(self, time: int):
+    def update_entity(self, time: int):
         """
         Update the location and collect data from the sensors associated with this entity.
         Parameters

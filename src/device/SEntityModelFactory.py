@@ -7,7 +7,7 @@ class EntityModelFactory:
         pass
 
     @staticmethod
-    def create_mobility_model(positions: dict):
+    def create_mobility_model(positions: dict, start_time: int):
         """
         Create a mobility model from the given parameters.
 
@@ -15,8 +15,17 @@ class EntityModelFactory:
         ----------
         positions : dict
             Dictionary containing all the positions.
+        start_time : int
+            The start time of the entity.
         """
         if len(positions) == 1:
-            return StaticMobilityModel(positions)
+            return StaticMobilityModel(positions, start_time)
         else:
-            return TraceMobilityModel(positions)
+            return TraceMobilityModel(positions, start_time)
+
+    @staticmethod
+    def create_neighbor_model():
+        """
+        Create a neighbor model from the given parameters.
+        """
+        return

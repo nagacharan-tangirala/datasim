@@ -1,7 +1,7 @@
 import argparse
 
 from os.path import exists
-from src.Simulation import Simulation
+from src.core.Simulation import Simulation
 
 
 def create_simulation(config_file: str) -> Simulation:

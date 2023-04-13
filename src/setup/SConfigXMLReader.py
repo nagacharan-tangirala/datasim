@@ -1,78 +1,39 @@
-from os import makedirs
-from os.path import exists, dirname, join
+from os.path import exists, join
 import xml.etree.ElementTree as Et
+
+from src.setup.BConfigReader import ConfigReader
 
 from typing import List, Dict
 
 
-class ConfigDict:
-    def __init__(self):
-        self.sensor_params = {}
-        self.node_params = {}
-        self.entity_params = {}
-        self.controller_params = {}
-        self.simulation_params = {}
-
-
-class ConfigReader:
+class ConfigXMLReader(ConfigReader):
     def __init__(self, config_file: str):
+        super().__init__(config_file)
         self.config_root = Et.parse(config_file).getroot()
-        self.project_path = dirname(config_file)
 
-        # Create the objects to read and store input params
-        self.config_dict = ConfigDict()
-
-    def read_config(self):
-        """Read the config file."""
-        self._read_config()
-
-    def get_parsed_config_params(self) -> ConfigDict:
-        """
-        Return the parsed configs.
-        """
-        return self.config_dict
-
-    def _read_config(self):
-        """
-        Read the config file.
-        """
-        for child in self.config_root:
-            if child.tag == 'sensors':
-                self._read_sensor_xml(child.text)
-            elif child.tag == 'nodes':
-                self._read_nodes_xml(child.text)
-            elif child.tag == 'entities':
-                self._read_entities_xml(child.text)
-            elif child.tag == 'control':
-                self._read_control_xml(child.text)
-            elif child.tag == 'simulation':
-                self._read_simulation_params(child)
-            else:
-                raise ValueError('Invalid tag in config file: %s' % child.tag)
-
-    def _read_sensor_xml(self, sensor_xml: str):
+    def _read_sensors(self, sensors_file: str):
         """
         Read the sensor xml file and parse the parameters of the sensors.
 
         Parameters
         ----------
-        sensor_xml : str
+        sensors_file : str
             The relative path to the sensor config file.
         """
         # Check if the file exists
-        sensor_xml = join(self.project_path, sensor_xml)
-        if not exists(sensor_xml):
-            raise FileNotFoundError('Sensor config file not found: %s' % sensor_xml)
+        sensors_file = join(self.project_path, sensors_file)
+        if not exists(sensors_file):
+            raise FileNotFoundError('Sensor config file not found: %s' % sensors_file)
 
         # Read the file
-        sensor_root = Et.parse(sensor_xml).getroot()
+        sensor_root = Et.parse(sensors_file).getroot()
         for child in sensor_root:
             if child.tag == 'sensor':
-                self._read_sensor_params(child)
+                self._read_sensor_params_xml(child)
             else:
                 raise ValueError('Invalid tag in sensor config file: %s' % child.tag)
 
-    def _read_sensor_params(self, sensor_data: Et.Element):
+    def _read_sensor_params_xml(self, sensor_data: Et.Element):
         """
         Read the parameters of a single sensor and store them in the config dict.
 
@@ -102,7 +63,7 @@ class ConfigReader:
         # Store the sensor params
         self.config_dict.sensor_params[sensor_id] = sensor_params
 
-    def _read_nodes_xml(self, nodes_xml: str):
+    def _read_nodes(self, nodes_xml: str):
         """
         Read the nodes xml file and parse the parameters of the nodes.
 
@@ -141,19 +102,20 @@ class ConfigReader:
         # Store the node params
         self.config_dict.node_params[node_id] = node_params
 
-    def _read_entities_xml(self, entities_xml: str):
+    def _read_entities(self, entities_file: str):
         """
         Read the entities xml file and parse the parameters of the entities.
 
         Parameters
         ----------
-        entities_xml : str
+        entities_file : str
             The relative path to the entity_params config file.
         """
-        entities_xml = join(self.project_path, entities_xml)
-        if not exists(entities_xml):
-            raise FileNotFoundError('Entities config file not found: %s' % entities_xml)
-        root_xml = Et.parse(entities_xml).getroot()
+        entities_file = join(self.project_path, entities_file)
+
+        if not exists(entities_file):
+            raise FileNotFoundError('Entities config file not found: %s' % entities_file)
+        root_xml = Et.parse(entities_file).getroot()
         for child in root_xml:
             if child.tag == 'entity':
                 self._read_entity_params(child)
@@ -170,7 +132,7 @@ class ConfigReader:
             The entity data element from the config file.
         """
         entity_id = int(entity_data.attrib['id'])
-        entity_params = {'id': entity_id, 'type': entity_data.attrib['type'], 'start_time': entity_data.attrib['start_time'], 'end_time': entity_data.attrib['end_time']}
+        entity_params = {'type': entity_data.attrib['type'], 'start_time': entity_data.attrib['start_time'], 'end_time': entity_data.attrib['end_time']}
 
         # Read the entity parameters
         for child in entity_data:
@@ -233,7 +195,7 @@ class ConfigReader:
 
         return timed_positions
 
-    def _read_control_xml(self, control_xml: str):
+    def _read_control(self, control_xml: str):
         """
         Read the control xml file and parse the parameters of the traffic controller.
 
@@ -274,68 +236,3 @@ class ConfigReader:
 
         # Store the controller params
         self.config_dict.controller_params[controller_id] = controller_params
-
-    def _read_simulation_params(self, simulation_data: Et.Element):
-        """
-        Read the parameters of the simulation and store them in the config dict.
-
-        Parameters
-        ----------
-        simulation_data : Et.Element
-            The simulation data element from the config file.
-        """
-        sim_params = {}
-        for child in simulation_data:
-            if child.tag == 'step':
-                sim_params['step'] = int(child.text)
-            elif child.tag == 'start':
-                sim_params['start'] = float(child.text)
-            elif child.tag == 'end':
-                sim_params['end'] = float(child.text)
-            elif child.tag == 'seed':
-                sim_params['seed'] = int(child.text)
-            elif child.tag == 'update_step':
-                sim_params['update_step'] = int(child.text)
-            elif child.tag == 'output':
-                sim_params = self._parse_output_params(child, sim_params)
-            else:
-                raise ValueError('Invalid tag in simulation config file: %s' % child.tag)
-
-        # Store the simulation params
-        self.config_dict.simulation_params = sim_params
-
-    def _parse_output_params(self, child, sim_params):
-        """
-        Parse the output parameters from the config file.
-
-        Parameters
-        ----------
-        child : Et.Element
-            The output element from the config file.
-        sim_params : Dict[str, Any]
-            The simulation parameters parsed from the config file.
-
-        Returns
-        -------
-        Dict[str, Any]
-            The simulation output parameters with the output parameters added.
-        """
-        sim_params['output_dir'] = self._create_output_dir(child.attrib['path'])
-        sim_params['output_step'] = int(child.attrib['step'])
-        sim_params['output_level'] = child.attrib['level']
-        sim_params['output_type'] = child.attrib['type']
-        return sim_params
-
-    def _create_output_dir(self, output_dir: str):
-        """
-        Create the output directory if it does not exist.
-
-        Parameters
-        ----------
-        output_dir : str
-            The relative path to the output directory.
-        """
-        output_dir = join(self.project_path, output_dir)
-        if not exists(output_dir):
-            makedirs(output_dir)
-        return output_dir
