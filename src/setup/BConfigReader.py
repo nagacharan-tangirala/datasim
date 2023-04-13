@@ -12,6 +12,7 @@ class ConfigDict:
         self.entity_params = {}
         self.controller_params = {}
         self.simulation_params = {}
+        self.model_params = {}
 
 
 class ConfigReader(metaclass=ABCMeta):
@@ -38,6 +39,8 @@ class ConfigReader(metaclass=ABCMeta):
                 self._read_control(child.text)
             elif child.tag == 'simulation':
                 self._read_simulation_params(child)
+            elif child.tag == 'model':
+                self._read_model_params(child)
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
@@ -85,6 +88,25 @@ class ConfigReader(metaclass=ABCMeta):
     @abstractmethod
     def _read_control(self, control_file):
         pass
+
+    def _read_model_params(self, model_data: Et.Element):
+        """
+        Read the parameters of the model and store them in the config dict.
+
+        Parameters
+        ----------
+        model_data : Et.Element
+            The model data element from the config file.
+        """
+        for child in model_data:
+            model_name = child.tag
+            model_params = {'type': child.attrib['type']}
+            # Get the model parameters
+            for param in child:
+                model_params[param.attrib['name']] = param.attrib['value']
+
+            # Store the model params
+            self.config_dict.model_params[model_name] = model_params
 
     def _parse_output_params(self, child, sim_params):
         """

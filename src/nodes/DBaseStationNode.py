@@ -23,7 +23,7 @@ class BaseStation(NodeBase):
     def get_statistics(self):
         pass
 
-    def process_node(self, time: int):
+    def update_node(self, time: int):
         """
         Update the node. This includes collecting data from all the entities which are in range.
 

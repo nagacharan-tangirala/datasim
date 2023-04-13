@@ -8,6 +8,7 @@ from src.setup.SConfigHDF5Reader import ConfigHDF5Reader
 from src.device.BEntity import EntityBase
 
 from src.output.SOutputFactory import OutputFactory
+from src.core.SSimModelFactory import SimModelFactory
 
 
 class Simulation(metaclass=ABCMeta):
@@ -17,6 +18,7 @@ class Simulation(metaclass=ABCMeta):
         """
         self.config_file = config_file
         self.participant_factory = None
+        self.model_factory = None
         self.config_dict = None
 
         # Create the dictionaries to store the participants in the simulation
@@ -38,6 +40,9 @@ class Simulation(metaclass=ABCMeta):
         self.output_dir = 0
         self.output_step = 0
 
+        # Define the models required for the simulation
+        self.coverage_model = None
+
         # Output dictionaries
         self.entities_output = {}
         self.nodes_output = {}
@@ -58,7 +63,7 @@ class Simulation(metaclass=ABCMeta):
         self._create_participants()
 
         # 3.
-        self._get_main_participants()
+        self._get_participants()
 
         # 4.
         self._get_simulation_parameters()
@@ -92,9 +97,9 @@ class Simulation(metaclass=ABCMeta):
         # Create the participants in the simulation.
         self.participant_factory.create_participants()
 
-    def _get_main_participants(self):
+    def _get_participants(self):
         """
-        Get the main participants required for the simulation. The subcomponents are updated by the main participants.
+        Get the participants to be updated through the simulation.
         """
         # Get the nodes and entities
         self.nodes = self.participant_factory.get_nodes()
@@ -130,6 +135,9 @@ class Simulation(metaclass=ABCMeta):
 
         # 3.
         self._prepare_output()
+
+        # 4.
+        self._create_models()
 
     def _set_seed(self):
         """
@@ -167,6 +175,16 @@ class Simulation(metaclass=ABCMeta):
         #    self.entities_output[time_step] = {}
         #    self.nodes_output[time_step] = {}
 
+    def _create_models(self):
+        """
+        Create the models required for the simulation.
+        """
+        # Create the model factory
+        model_factory = SimModelFactory()
+
+        # Create the coverage model
+        self.coverage_model = model_factory.create_coverage_model(self.config_dict.model_params['coverage'])
+
     def run(self):
         """
         Run the simulation based on the parameters read from the config file.
@@ -194,44 +212,18 @@ class Simulation(metaclass=ABCMeta):
         time_step : int
             The time step of the simulation.
         """
-        # Update active entities
-        self._update_active_entities(time_step)
+        # Refresh active entities
+        self._refresh_active_entities(time_step)
 
-        # Process the entities and nodes
-        self._process_entities_and_nodes(time_step)
+        # Update node and entity associations based on coverage
+        self._update_coverage(time_step)
 
-    def _process_entities_and_nodes(self, time_step: int):
+        # Update the entities and nodes
+        self._update_entities_and_nodes(time_step)
+
+    def _refresh_active_entities(self, time_step: int):
         """
-        Process the entities and nodes in the simulation at the given time step.
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        # Add the time step to the output dictionary
-        self.entities_output[time_step] = {}
-        self.nodes_output[time_step] = {}
-
-        # Update the entities and compute the total sensor data size collected by the entities
-        for entity in self.active_entities:
-            # Process this entity
-            entity.process_entity(time_step)
-
-            # Get the sensor data volume collected by this entity and store it in the output dictionary
-            self.entities_output[time_step][entity.get_id()] = entity.get_total_sensor_data_size()
-
-        # Update the nodes and compute the total sensor data size collected by the nodes
-        for node in self.nodes.values():
-            # Process this node
-            node.process_node(time_step)
-
-            # Get the sensor data volume collected by this node and store it in the output dictionary
-            self.nodes_output[time_step][node.get_id()] = node.get_collected_data_size()
-
-    def _update_active_entities(self, time_step: int):
-        """
-        Update the active entities in the simulation at the given time step.
+        Refresh the active entities in the simulation at the given time step.
         If the time for activation/deactivation of an entity has come, then activate/deactivate the entity.
         Only retain the active entities in the list of active entities and remove the inactive entities.
 
@@ -251,6 +243,42 @@ class Simulation(metaclass=ABCMeta):
                 self.active_entities.append(entity)
             else:
                 self.active_entities.remove(entity)
+
+    def _update_coverage(self, time_step: int):
+        """
+        Update the neighbouring entities for each entity at the current time step.
+        """
+        if self.coverage_model is not None and len(self.active_entities) > 0:
+            self.coverage_model.update_coverage(self.active_entities, self.nodes, time_step)
+
+    def _update_entities_and_nodes(self, time_step: int):
+        """
+        Update the entities and nodes in the simulation at the given time step.
+
+        Parameters
+        ----------
+        time_step : int
+            The time step of the simulation.
+        """
+        # Add the time step to the output dictionary
+        self.entities_output[time_step] = {}
+        self.nodes_output[time_step] = {}
+
+        # Update the entities and compute the total sensor data size collected by the entities
+        for entity in self.active_entities:
+            # Update this entity
+            entity.update_entity(time_step)
+
+            # Get the sensor data volume collected by this entity and store it in the output dictionary
+            self.entities_output[time_step][entity.get_id()] = entity.get_collected_data_size()
+
+        # Update the nodes and compute the total sensor data size collected by the nodes
+        for node in self.nodes.values():
+            # Update this node
+            node.update_node(time_step)
+
+            # Get the sensor data volume collected by this node and store it in the output dictionary
+            self.nodes_output[time_step][node.get_id()] = node.get_collected_data_size()
 
     def _run_update_step(self, time_step: int):
         """

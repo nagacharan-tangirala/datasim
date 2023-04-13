@@ -34,7 +34,7 @@ class RSUEntity(EntityBase):
         """
         return self.location
 
-    def process_entity(self, time: int):
+    def update_entity(self, time: int):
         """
         Update the location and collect data from the sensors associated with this entity.
 

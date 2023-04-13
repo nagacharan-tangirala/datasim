@@ -10,7 +10,7 @@ class MobilityModelBase(metaclass=ABCMeta):
         """
         self.positions = positions
         self.start_time = start_time
-        self.current_location = [0.0, 0.0]
+        self.current_location: list[float] = []
 
     def get_current_location(self) -> list[float]:
         """

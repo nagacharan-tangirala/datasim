@@ -14,7 +14,6 @@ class StaticMobilityModel(MobilityModelBase):
             The start time of the entity.
         """
         super().__init__(positions, start_time)
-        self.current_location = positions[0]
 
     def update_location(self, time):
         """
@@ -25,5 +24,5 @@ class StaticMobilityModel(MobilityModelBase):
         time : int
             The current time.
         """
-        # Location is static, no need to update
-        pass
+        # Location is static,
+        self.current_location = self.positions[0]

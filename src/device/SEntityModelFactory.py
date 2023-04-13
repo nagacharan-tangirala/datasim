@@ -22,3 +22,10 @@ class EntityModelFactory:
             return StaticMobilityModel(positions, start_time)
         else:
             return TraceMobilityModel(positions, start_time)
+
+    @staticmethod
+    def create_neighbor_model():
+        """
+        Create a neighbor model from the given parameters.
+        """
+        return

@@ -29,7 +29,7 @@ class VehicleEntity(EntityBase):
         """
         return self.location
 
-    def process_entity(self, ts: int):
+    def update_entity(self, ts: int):
         """
         Update the location and collect data from the sensors associated with this entity.
 
@@ -61,7 +61,7 @@ class VehicleEntity(EntityBase):
         """
         Update the neighbours of the entity.
         """
-
+        pass
 
     def get_neighbours_data(self, time: int):
         """

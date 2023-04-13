@@ -12,7 +12,6 @@ class TraceMobilityModel(MobilityModelBase):
             Dictionary of positions for the entity with the time as key.
         """
         super().__init__(positions, start_time)
-        self.current_location = positions[0]
 
     def update_location(self, time):
         """
@@ -29,4 +28,3 @@ class TraceMobilityModel(MobilityModelBase):
         # Check if the index is less than the length of the positions
         if index < len(self.positions):
             self.current_location = self.positions[index]
-
