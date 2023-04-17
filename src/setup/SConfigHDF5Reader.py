@@ -47,7 +47,7 @@ class ConfigHDF5Reader(ConfigReader):
                              'positions': entity.get('positions')}
 
             # Add the entity parameters to the config dict
-            self.config_dict.entity_params[int(entity_id)] = entity_params
+            self.config_dict.device_params[int(entity_id)] = entity_params
 
         # Get the sensors group
         sensors_group = self.h5_file['sensors']

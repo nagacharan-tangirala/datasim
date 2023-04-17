@@ -5,7 +5,6 @@ class VehicleEntity(EntityBase):
     """
     Vehicle entity class designed to mimic the behavior of vehicles.
     """
-
     def __init__(self, params: dict, sensors: dict):
         """
         Initialize the vehicle entity.

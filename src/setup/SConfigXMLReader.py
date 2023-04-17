@@ -109,7 +109,7 @@ class ConfigXMLReader(ConfigReader):
         Parameters
         ----------
         entities_file : str
-            The relative path to the entity_params config file.
+            The relative path to the device_params config file.
         """
         entities_file = join(self.project_path, entities_file)
 
@@ -120,7 +120,7 @@ class ConfigXMLReader(ConfigReader):
             if child.tag == 'entity':
                 self._read_entity_params(child)
             else:
-                raise ValueError('Invalid tag in entity_params config file: %s' % child.tag)
+                raise ValueError('Invalid tag in device_params config file: %s' % child.tag)
 
     def _read_entity_params(self, entity_data: Et.Element):
         """
@@ -146,7 +146,7 @@ class ConfigXMLReader(ConfigReader):
                 raise ValueError('Invalid tag in entities config file: %s' % child.tag)
 
         # Store the entity params
-        self.config_dict.entity_params[entity_id] = entity_params
+        self.config_dict.device_params[entity_id] = entity_params
 
     @staticmethod
     def _convert_string_to_list(ids_string: str) -> List[int]:

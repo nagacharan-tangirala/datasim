@@ -9,7 +9,7 @@ class ConfigDict:
     def __init__(self):
         self.sensor_params = {}
         self.node_params = {}
-        self.entity_params = {}
+        self.device_params = {}
         self.controller_params = {}
         self.simulation_params = {}
         self.model_params = {}

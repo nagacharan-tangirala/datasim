@@ -1,6 +1,6 @@
 from src.setup.BConfigReader import ConfigDict
 
-from src.setup.SEntityFactory import EntityFactory
+from src.setup.SDeviceFactory import DeviceFactory
 from src.setup.SSensorFactory import SensorFactory
 from src.setup.SNodeFactory import NodeFactory
 from src.setup.SControllerFactory import ControllerFactory
@@ -21,37 +21,14 @@ class ParticipantFactory:
         # Create the factories needed to create the participants.
         self._node_factory = NodeFactory()
         self._sensor_factory = SensorFactory()
-        self._entity_factory = EntityFactory()
+        self._device_factory = DeviceFactory()
         self._controller_factory = ControllerFactory()
 
         # Create the dictionaries to store the participants in the simulation
         self.sensors = {}
         self.nodes = {}
-        self.entities = {}
+        self.devices = {}
         self.controllers = {}
-
-    def create_participants(self):
-        """
-        Create the participants in the simulation.
-        """
-        # First create the sensors and nodes.
-        self._create_sensors()
-        self._create_nodes()
-
-        # Create the nodes and entities in the simulation. Order does not matter for these.
-        self._create_entities()
-        self._create_controllers()
-
-    def get_controllers(self) -> dict:
-        """
-        Get the controllers in the simulation.
-
-        Returns
-        ----------
-        dict
-            Dictionary containing the controllers.
-        """
-        return self.controllers
 
     def get_nodes(self) -> dict:
         """
@@ -64,16 +41,60 @@ class ParticipantFactory:
         """
         return self.nodes
 
-    def get_entities(self) -> dict:
+    def create_participants_of_type(self, participant_type: str):
         """
-        Get the entities in the simulation.
+        Create the participants of the given type in the simulation.
+
+        Parameters
+        ----------
+        participant_type : str
+            The type of participant to create.
+        """
+        if participant_type == 'sensor':
+            self._create_sensors()
+        elif participant_type == 'node':
+            self._create_nodes()
+        elif participant_type == 'controller':
+            self._create_controllers()
+        elif participant_type == 'entity':
+            self._create_devices_as_entities()
+        elif participant_type == 'agent':
+            self._create_devices_as_agents()
+        else:
+            raise ValueError("Participant type not valid.")
+
+    def get_controllers(self) -> dict:
+        """
+        Get the controllers in the simulation.
 
         Returns
         ----------
         dict
-            Dictionary containing the entities in the simulation.
+            Dictionary containing the controllers.
         """
-        return self.entities
+        return self.controllers
+
+    def get_devices(self) -> dict:
+        """
+        Get the devices in the simulation.
+
+        Returns
+        ----------
+        dict
+            Dictionary containing the devices in the simulation.
+        """
+        return self.devices
+
+    def get_sensors(self) -> dict:
+        """
+        Get the sensors in the simulation.
+
+        Returns
+        ----------
+        dict
+            Dictionary containing the sensors in the simulation.
+        """
+        return self.sensors
 
     def _create_sensors(self):
         """
@@ -89,11 +110,11 @@ class ParticipantFactory:
         for node_id, node_params in self.config_dict.node_params.items():
             self.nodes[node_id] = self._node_factory.create_node(node_params)
 
-    def _create_entities(self):
+    def _create_devices_as_entities(self):
         """
-        Create the entities in the simulation.
+        Create the devices in the simulation as entities.
         """
-        for entity_id, entity_params in self.config_dict.entity_params.items():
+        for entity_id, entity_params in self.config_dict.device_params.items():
             # Check if the sensors specified for the entity are present in the simulation.
             sensor_list = entity_params.get('sensors', None)
             if sensor_list is None:
@@ -106,7 +127,7 @@ class ParticipantFactory:
                     raise ValueError("Sensor {} not found in the simulation.".format(sensor_id))
                 entity_sensors[sensor_id] = self.sensors[sensor_id]
 
-            self.entities[entity_id] = self._entity_factory.create_entity(entity_params, entity_sensors)
+            self.devices[entity_id] = self._device_factory.create_entity(entity_params, entity_sensors)
 
     def _create_controllers(self):
         """
@@ -130,3 +151,22 @@ class ParticipantFactory:
                     controller_nodes[node_id] = self.nodes[node_id]
 
             self.controllers[controller_id] = self._controller_factory.create_controller(controller_params, controller_nodes)
+
+    def _create_devices_as_agents(self):
+        """
+        Create the agents in the simulation as agents.
+        """
+        for agent_id, agent_params in self.config_dict.device_params.items():
+            # Check if the sensors specified for the entity are present in the simulation.
+            sensor_list = agent_params.get('sensors', None)
+            if sensor_list is None:
+                raise ValueError("No sensors specified for entity {}".format(agent_id))
+
+            # Get the list of sensors for the entity.
+            agent_sensors = {}
+            for sensor_id in sensor_list:
+                if sensor_id not in self.sensors:
+                    raise ValueError("Sensor {} not found in the simulation.".format(sensor_id))
+                agent_sensors[sensor_id] = self.sensors[sensor_id]
+
+            self.devices[agent_id] = self._device_factory.create_agent(agent_params, agent_sensors)
