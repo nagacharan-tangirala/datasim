@@ -1,4 +1,3 @@
-from src.core.DSimulationSimple import SimulationSimple
 from src.core.DSimulationABM import SimulationABM
 
 
@@ -25,9 +24,7 @@ class SimulationFactory:
         config_file : str
             The path to the config file.
         """
-        if sim_type == 'simple':
-            return SimulationSimple(config_file)
-        elif sim_type == 'abm':
+        if sim_type == 'abm':
             return SimulationABM(config_file)
         else:
             raise ValueError('Invalid simulation type: %s' % sim_type)

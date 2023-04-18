@@ -1,8 +1,6 @@
-from mesa import Model, Agent
-
 from src.core.BSimulation import SimulationBase
 from src.setup.SParticipantFactory import ParticipantFactory
-from src.abm_model.ABMModel import ABMModel
+from src.device.MAgent import ABMModel
 
 
 class SimulationABM(SimulationBase):
@@ -28,7 +26,6 @@ class SimulationABM(SimulationBase):
         """
         # Create a participant factory object and create the participants
         participant_factory = ParticipantFactory(self.config_dict)
-        participant_factory.create_participants_of_type('sensor')
         participant_factory.create_participants_of_type('node')
         participant_factory.create_participants_of_type('agent')
         participant_factory.create_participants_of_type('controller')

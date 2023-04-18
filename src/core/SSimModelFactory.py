@@ -1,4 +1,4 @@
-from src.coverage.DUnitDiskCoverageModel import UnitDiskCoverageModel
+from src.device.DUnitDiskCoverageModel import UnitDiskCoverageModel
 
 
 class SimModelFactory:

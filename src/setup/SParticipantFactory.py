@@ -1,7 +1,6 @@
 from src.setup.BConfigReader import ConfigDict
 
 from src.setup.SDeviceFactory import DeviceFactory
-from src.setup.SSensorFactory import SensorFactory
 from src.setup.SNodeFactory import NodeFactory
 from src.setup.SControllerFactory import ControllerFactory
 
@@ -20,7 +19,6 @@ class ParticipantFactory:
 
         # Create the factories needed to create the participants.
         self._node_factory = NodeFactory()
-        self._sensor_factory = SensorFactory()
         self._device_factory = DeviceFactory()
         self._controller_factory = ControllerFactory()
 
@@ -50,9 +48,7 @@ class ParticipantFactory:
         participant_type : str
             The type of participant to create.
         """
-        if participant_type == 'sensor':
-            self._create_sensors()
-        elif participant_type == 'node':
+        if participant_type == 'node':
             self._create_nodes()
         elif participant_type == 'controller':
             self._create_controllers()
@@ -95,13 +91,6 @@ class ParticipantFactory:
             Dictionary containing the sensors in the simulation.
         """
         return self.sensors
-
-    def _create_sensors(self):
-        """
-        Create the sensors in the simulation.
-        """
-        for sensor_id, sensor_params in self.config_dict.sensor_params.items():
-            self.sensors[sensor_id] = self._sensor_factory.create_sensor(sensor_params)
 
     def _create_nodes(self):
         """
@@ -163,10 +152,12 @@ class ParticipantFactory:
                 raise ValueError("No sensors specified for entity {}".format(agent_id))
 
             # Get the list of sensors for the entity.
-            agent_sensors = {}
+            sensor_params = {}
             for sensor_id in sensor_list:
-                if sensor_id not in self.sensors:
-                    raise ValueError("Sensor {} not found in the simulation.".format(sensor_id))
-                agent_sensors[sensor_id] = self.sensors[sensor_id]
+                if sensor_id not in self.config_dict.sensor_params:
+                    raise ValueError("Sensor {} not found in the input data.".format(sensor_id))
+                sensor_params[sensor_id] = self.config_dict.sensor_params[sensor_id]
 
-            self.devices[agent_id] = self._device_factory.create_agent(agent_params, agent_sensors)
+            # Create the agent.
+            self.devices[agent_id] = self._device_factory.create_agent(agent_params, sensor_params)
+
