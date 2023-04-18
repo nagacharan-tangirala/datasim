@@ -1,15 +1,17 @@
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
+from mesa import Agent, Model
 
 
-class MobilityModelBase(metaclass=ABCMeta):
+class AgentMobility(Agent):
     """Base class for all mobility model classes."""
 
-    def __init__(self, positions, start_time):
+    def __init__(self, positions):
         """
         Initialize the mobility model.
         """
+        super().__init__(0, None)
         self.positions = positions
-        self.start_time = start_time
+        self.index = 0
         self.current_location: list[float] = []
 
     def get_current_location(self) -> list[float]:
@@ -24,13 +26,15 @@ class MobilityModelBase(metaclass=ABCMeta):
         return self.current_location
 
     @abstractmethod
-    def update_location(self, time):
+    def step(self):
         """
-        Update the location of the entity.
-
-        Parameters
-        ----------
-        time : int
-            The current time.
+        Step through the model, should be implemented by the child class.
         """
         pass
+
+    def activate(self):
+        """
+        Activate the mobility model.
+        """
+        self.index = 0
+        self.model.schedule.add(self)
