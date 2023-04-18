@@ -1,13 +1,13 @@
-from src.device.DStaticMobilityModel import StaticMobilityModel
-from src.device.DTraceMobilityModel import TraceMobilityModel
+from src.device.AStaticMobility import StaticMobility
+from src.device.ATraceMobility import TraceMobility
 
 
-class EntityModelFactory:
+class AgentMobilityFactory:
     def __init__(self):
         pass
 
     @staticmethod
-    def create_mobility_model(positions: dict, start_time: int):
+    def create_mobility(positions: dict):
         """
         Create a mobility model from the given parameters.
 
@@ -15,13 +15,11 @@ class EntityModelFactory:
         ----------
         positions : dict
             Dictionary containing all the positions.
-        start_time : int
-            The start time of the entity.
         """
         if len(positions) == 1:
-            return StaticMobilityModel(positions, start_time)
+            return StaticMobility(positions)
         else:
-            return TraceMobilityModel(positions, start_time)
+            return TraceMobility(positions)
 
     @staticmethod
     def create_neighbor_model():

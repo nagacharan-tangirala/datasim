@@ -1,6 +1,5 @@
-from src.coverage.BCoverageModel import CoverageModel
+from src.device.BCoverageModel import CoverageModel
 from src.coverage.KDTree import KDTree
-from src.device.BEntity import EntityBase
 from src.nodes.BNode import NodeBase
 
 
@@ -12,7 +11,7 @@ class UnitDiskCoverageModel(CoverageModel):
         super().__init__()
         self.radius = params.get('radius', 100.0)
 
-    def update_coverage(self, entities: list[EntityBase], nodes: list[NodeBase], ts: int):
+    def update_coverage(self, entities, nodes: list[NodeBase], ts: int):
         """
         Update the coverage of the nodes and entities.
 

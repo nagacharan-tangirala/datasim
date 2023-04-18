@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # Create the argument parser
     parser = argparse.ArgumentParser(description='Run the simulation.')
     parser.add_argument('--config', type=str, help='The path to the config file.')
-    parser.add_argument('--simtype', type=str, help='The type of simulation to run. (default: "simple")', default="simple")
+    parser.add_argument('--simtype', type=str, help='The type of simulation to run. (default: "abm")', default="abm")
 
     # Parse the arguments
     args = parser.parse_args()
