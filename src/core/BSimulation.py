@@ -4,7 +4,6 @@ from typing import Dict
 
 from src.setup.SConfigHDF5Reader import ConfigHDF5Reader
 
-from src.device.BEntity import EntityBase
 from src.core.SSimModelFactory import SimModelFactory
 
 
@@ -19,7 +18,6 @@ class SimulationBase(metaclass=ABCMeta):
         # Create the dictionaries to store the participants in the simulation
         self.nodes = {}
         self.sensors = {}
-        self.entities: Dict[int, EntityBase] = {}
 
         # Simulation parameters
         self.start_time = 0
