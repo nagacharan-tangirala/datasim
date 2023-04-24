@@ -35,6 +35,8 @@ class ConfigReader(metaclass=ABCMeta):
                 self._read_nodes(child.text)
             elif child.tag == 'entities':
                 self._read_entities(child.text)
+            elif child.tag == 'coverage':
+                self._read_agents_coverage(child.text)
             elif child.tag == 'control':
                 self._read_control(child.text)
             elif child.tag == 'simulation':

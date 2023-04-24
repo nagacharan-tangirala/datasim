@@ -1,4 +1,4 @@
-from src.device.BCoverageModel import CoverageModel
+from src.device.MCoverage import CoverageModel
 from src.coverage.KDTree import KDTree
 from src.nodes.BNode import NodeBase
 

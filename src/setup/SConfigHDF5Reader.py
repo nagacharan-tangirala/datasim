@@ -66,5 +66,25 @@ class ConfigHDF5Reader(ConfigReader):
             # Add the sensor parameters to the config dict
             self.config_dict.sensor_params[int(sensor_id)] = sensor_params
 
+    def _read_agents_coverage(self, coverage_file: str):
+        """
+        Read the coverage HDF5 file and parse the parameters of the coverage.
+        """
+        # Get the coverage group
+        self.h5_file = h5py.File(join(self.project_path, coverage_file), 'r')
+        coverage_group = self.h5_file['entities']
+
+        # Read the coverage
+        for coverage_id, coverage in coverage_group.items():
+            # Create a dict to store the coverage parameters
+            coverage_params = {'id': int(coverage_id),
+                               'type': coverage.attrs['type'],
+                               'start_time': int(coverage.attrs['start_time']),
+                               'end_time': int(coverage.attrs['end_time']),
+                               'coverage': coverage.get('coverage')}
+
+            # Add the coverage parameters to the config dict
+            self.config_dict.node_params[int(coverage_id)] = coverage_params
+
     def _read_control(self, control_file):
         pass
