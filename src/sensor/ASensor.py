@@ -2,6 +2,8 @@ from abc import abstractmethod
 from enum import StrEnum
 from mesa import Agent, Model
 
+from collections import deque
+
 
 class SensorMode(StrEnum):
     """Enum for sensor types."""
@@ -57,6 +59,8 @@ class SensorBase(Agent):
         self.data = None
         self.active = False
 
+        self.data_cache = deque(maxlen=3)
+
     @abstractmethod
     def step(self):
         """
@@ -78,17 +82,6 @@ class SensorBase(Agent):
         self.active = False
         self.sensor_model.schedule.remove(self)
 
-    def _update_sensor_status(self, sim_time: int):
-        """
-        Update the sensor status based on the constraints. This method is called before collecting data.
-
-        Parameters
-        ----------
-        sim_time : int
-            The current simulation time.
-        """
-        pass
-
     def get_collected_data_size(self) -> float:
         """
         Get the size of the data collected by the sensor.
@@ -99,4 +92,4 @@ class SensorBase(Agent):
             The amount of data collected from the sensor.
 
         """
-        return self.data * self.data_size
+        return self.data
