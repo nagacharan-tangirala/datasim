@@ -1,7 +1,8 @@
-from src.device.AAgent import AgentBase
+from src.device.ABase import AgentBase
 
 from src.sensor.MSensor import SensorModel
 from src.device.MMobility import MobilityModel
+from src.device.MCoverage import CoverageModel
 
 
 class VehicleAgent(AgentBase):
@@ -10,6 +11,7 @@ class VehicleAgent(AgentBase):
         Initialize the vehicle agent.
         """
         super().__init__(params, sensor_params)
+        self.coverage_file = params.get('coverage_file', None)
 
     def step(self):
         """
@@ -19,12 +21,28 @@ class VehicleAgent(AgentBase):
         if not self.active:
             return
 
-        # Step through the models
-        self.sensor_model.step()
+        # Step through the mobility model
         self.mobility_model.step()
 
-        # Update the data collected by the sensors
-        self.total_data = self.sensor_model.get_collected_data_size()
+        # Collect the data from the sensors
+        self.sensor_model.step()
+        vehicle_data = self.sensor_model.get_collected_data_size()
+
+        # Step through the coverage model
+        self.coverage_model.step(self.sim_model.current_time)
+
+        # Get the neighbours
+        neighbors = self.coverage_model.get_agents_in_coverage()
+
+        # Collect the data from the agents within the coverage area
+        neighbor_data = 0
+        for neighbor in neighbors:
+            if neighbor == self.unique_id:
+                continue
+            neighbor_data += self.sim_model.agents[neighbor].get_cached_data()
+
+        # Update the data collected by the agent
+        self.total_data += vehicle_data + neighbor_data
 
     def _initiate_models(self):
         """
@@ -39,7 +57,7 @@ class VehicleAgent(AgentBase):
         self.mobility_model.activate()
 
         # Create the coverage model
-        self.coverage_model = CoverageModel(self.positions)
+        self.coverage_model = CoverageModel(self.unique_id, self.coverage_file)
         self.coverage_model.activate()
 
     def _deactivate_models(self):
@@ -51,3 +69,6 @@ class VehicleAgent(AgentBase):
 
         # Deactivate the mobility model
         self.mobility_model.deactivate()
+
+        # Deactivate the coverage model
+        self.coverage_model.deactivate()

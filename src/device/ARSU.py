@@ -1,8 +1,14 @@
 from mesa import Model
-from src.device.AAgent import AgentBase
+from src.device.ABase import AgentBase
 
 
 class RSUAgent(AgentBase):
+    def _initiate_models(self):
+        pass
+
+    def _deactivate_models(self):
+        pass
+
     def __init__(self, params: dict, sensors: dict):
         """
         Initialize the RSU agent.

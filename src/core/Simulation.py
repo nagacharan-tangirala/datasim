@@ -1,13 +1,9 @@
-from abc import ABCMeta, abstractmethod
-
-from typing import Dict
-
-from src.setup.SConfigHDF5Reader import ConfigHDF5Reader
-
-from src.core.SSimModelFactory import SimModelFactory
+from src.setup.SParticipantFactory import ParticipantFactory
+from src.setup.SConfigReader import ConfigHDF5Reader
+from src.device.MAgent import AgentModel
 
 
-class SimulationBase(metaclass=ABCMeta):
+class Simulation:
     def __init__(self, config_file: str):
         """
         Initialize the simulation setup object. This class is responsible for setting up the simulation.
@@ -29,6 +25,14 @@ class SimulationBase(metaclass=ABCMeta):
         self.output_step = 0
 
     def setup_simulation(self):
+        """
+        Set up the simulation.
+        """
+        self._perform_initial_steps()
+        self._create_participants()
+        self._create_simulation()
+
+    def _perform_initial_steps(self):
         """
         Set up the simulation according to the type of simulation.
         """
@@ -61,19 +65,28 @@ class SimulationBase(metaclass=ABCMeta):
         self.output_dir = simulation_parameters['output_dir']
         self.output_step = simulation_parameters['output_step']
 
-    def _create_models(self):
+    def _create_participants(self):
         """
-        Create the models required for the simulation.
+        Create the participants in the simulation. These are the non-mesa agents.
         """
-        # Create the model factory
-        model_factory = SimModelFactory()
+        # Create a participant factory object and create the participants
+        participant_factory = ParticipantFactory(self.config_dict)
+        participant_factory.create_participants_of_type('node')
+        participant_factory.create_participants_of_type('agent')
+        participant_factory.create_participants_of_type('controller')
 
-        # Create the coverage model
-        self.coverage_model = model_factory.create_coverage_model(self.config_dict.model_params['coverage'])
+        # Get the nodes and agents
+        self.nodes = participant_factory.get_nodes()
+        self.agents = participant_factory.get_agents()
 
-    @abstractmethod
+    def _create_simulation(self):
+        """
+        Create the agent model.
+        """
+        self.model = AgentModel(self.config_dict.simulation_params, self.agents)
+
     def run(self):
         """
-        Run the simulation based on the parameters read from the config file.
+        Run the simulation.
         """
-        pass
+        self.model.run()

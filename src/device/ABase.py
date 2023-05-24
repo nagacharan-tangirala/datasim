@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
 from mesa import Agent
+from collections import deque
 
 
 class AgentBase(Agent):
@@ -22,6 +23,9 @@ class AgentBase(Agent):
 
         self.sensor_params = sensor_params
         self.active = False
+
+        self.data_cache = deque(maxlen=3)
+        self.data_cache.append(0)
 
     @abstractmethod
     def step(self):
@@ -70,3 +74,9 @@ class AgentBase(Agent):
         Get the start and end time of the agent.
         """
         return self.start_time, self.end_time
+
+    def get_cached_data(self):
+        """
+        Get the data cached by the agent.
+        """
+        return self.data_cache.pop()

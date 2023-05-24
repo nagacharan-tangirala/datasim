@@ -16,12 +16,12 @@ class AgentMobility(Agent):
 
     def get_current_location(self) -> list[float]:
         """
-        Get the current location of the entity.
+        Get the current location of the agent.
 
         Returns
         ----------
         list
-            The current location of the entity.
+            The current location of the agent.
         """
         return self.current_location
 
@@ -36,5 +36,4 @@ class AgentMobility(Agent):
         """
         Activate the mobility model.
         """
-        self.index = 0
         self.model.schedule.add(self)
