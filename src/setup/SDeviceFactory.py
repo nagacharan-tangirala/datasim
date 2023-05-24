@@ -1,5 +1,5 @@
-from src.device.AVehicleAgent import VehicleAgent
-from src.device.ARSUAgent import RSUAgent
+from src.device.AVehicle import VehicleAgent
+from src.device.ARSU import RSUAgent
 
 
 class DeviceFactory:

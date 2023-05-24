@@ -1,4 +1,4 @@
-from src.setup.BConfigReader import ConfigDict
+from src.setup.SConfigReader import ConfigDict
 
 from src.setup.SDeviceFactory import DeviceFactory
 from src.setup.SNodeFactory import NodeFactory
@@ -25,7 +25,7 @@ class ParticipantFactory:
         # Create the dictionaries to store the participants in the simulation
         self.sensors = {}
         self.nodes = {}
-        self.devices = {}
+        self.agents = {}
         self.controllers = {}
 
     def get_nodes(self) -> dict:
@@ -52,10 +52,8 @@ class ParticipantFactory:
             self._create_nodes()
         elif participant_type == 'controller':
             self._create_controllers()
-        elif participant_type == 'entity':
-            self._create_devices_as_entities()
         elif participant_type == 'agent':
-            self._create_devices_as_agents()
+            self._create_agents()
         else:
             raise ValueError("Participant type not valid.")
 
@@ -70,16 +68,16 @@ class ParticipantFactory:
         """
         return self.controllers
 
-    def get_devices(self) -> dict:
+    def get_agents(self) -> dict:
         """
-        Get the devices in the simulation.
+        Get the agents in the simulation.
 
         Returns
         ----------
         dict
-            Dictionary containing the devices in the simulation.
+            Dictionary containing the agents in the simulation.
         """
-        return self.devices
+        return self.agents
 
     def get_sensors(self) -> dict:
         """
@@ -98,25 +96,6 @@ class ParticipantFactory:
         """
         for node_id, node_params in self.config_dict.node_params.items():
             self.nodes[node_id] = self._node_factory.create_node(node_params)
-
-    def _create_devices_as_entities(self):
-        """
-        Create the devices in the simulation as entities.
-        """
-        for entity_id, entity_params in self.config_dict.device_params.items():
-            # Check if the sensors specified for the entity are present in the simulation.
-            sensor_list = entity_params.get('sensors', None)
-            if sensor_list is None:
-                raise ValueError("No sensors specified for entity {}".format(entity_id))
-
-            # Get the list of sensors for the entity.
-            entity_sensors = {}
-            for sensor_id in sensor_list:
-                if sensor_id not in self.sensors:
-                    raise ValueError("Sensor {} not found in the simulation.".format(sensor_id))
-                entity_sensors[sensor_id] = self.sensors[sensor_id]
-
-            self.devices[entity_id] = self._device_factory.create_entity(entity_params, entity_sensors)
 
     def _create_controllers(self):
         """
@@ -141,17 +120,17 @@ class ParticipantFactory:
 
             self.controllers[controller_id] = self._controller_factory.create_controller(controller_params, controller_nodes)
 
-    def _create_devices_as_agents(self):
+    def _create_agents(self):
         """
-        Create the agents in the simulation as agents.
+        Create the agents in the simulation.
         """
-        for agent_id, agent_params in self.config_dict.device_params.items():
-            # Check if the sensors specified for the entity are present in the simulation.
+        for agent_id, agent_params in self.config_dict.agent_params.items():
+            # Check if the sensors specified for the agent are present in the simulation.
             sensor_list = agent_params.get('sensors', None)
             if sensor_list is None:
-                raise ValueError("No sensors specified for entity {}".format(agent_id))
+                raise ValueError("No sensors specified for agent {}".format(agent_id))
 
-            # Get the list of sensors for the entity.
+            # Get the list of sensors for the agent.
             sensor_params = {}
             for sensor_id in sensor_list:
                 if sensor_id not in self.config_dict.sensor_params:
@@ -159,5 +138,5 @@ class ParticipantFactory:
                 sensor_params[sensor_id] = self.config_dict.sensor_params[sensor_id]
 
             # Create the agent.
-            self.devices[agent_id] = self._device_factory.create_agent(agent_params, sensor_params)
+            self.agents[agent_id] = self._device_factory.create_agent(agent_params, sensor_params)
 

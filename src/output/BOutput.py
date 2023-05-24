@@ -33,7 +33,7 @@ class OutputBase(metaclass=ABCMeta):
         """
         return self.output_step
 
-    def write_output(self, sim_time: int, entities: dict, nodes: dict):
+    def write_output(self, sim_time: int, agents: dict, nodes: dict):
         """
         Write the output to the CSV file.
 
@@ -41,27 +41,27 @@ class OutputBase(metaclass=ABCMeta):
         ----------
         sim_time : int
             The current sim_time.
-        entities : dict
-            Dictionary of entities in the simulation.
+        agents : dict
+            Dictionary of agents in the simulation.
         nodes : dict
             Dictionary of nodes in the simulation.
         """
         # Check if it is sim_time to write the output and write the output.
         if sim_time > self.last_output_time:
-            self._write_data(entities, nodes)
+            self._write_data(agents, nodes)
 
         # Update the last update sim_time.
         self.last_output_time = sim_time
 
     @abstractmethod
-    def _write_data(self, entities: dict, nodes: dict):
+    def _write_data(self, agents: dict, nodes: dict):
         """
         Write the output to the requested format.
 
         Parameters
         ----------
-        entities : dict
-            Dictionary of entities in the simulation.
+        agents : dict
+            Dictionary of agents in the simulation.
         nodes : dict
             Dictionary of nodes in the simulation.
         """
