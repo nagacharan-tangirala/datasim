@@ -1,5 +1,5 @@
 from mesa import Model
-from src.device.ABase import AgentBase
+from src.device.AAgent import AgentBase
 
 
 class RSUAgent(AgentBase):
