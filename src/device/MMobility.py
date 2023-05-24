@@ -1,7 +1,7 @@
 from mesa import Agent, Model
 from mesa.time import BaseScheduler
 
-from src.device.SAgentMobilityFactory import AgentMobilityFactory
+from src.device.SMobilityFactory import AgentMobilityFactory
 
 
 class MobilityModel(Model):
@@ -27,8 +27,8 @@ class MobilityModel(Model):
         self.schedule = BaseScheduler(self)
 
         # Create mobility factory and the mobility model
-        model_factory = AgentMobilityFactory()
-        self.mobility = model_factory.create_mobility(self.positions)
+        mobility_factory = AgentMobilityFactory()
+        self.mobility = mobility_factory.create_mobility(self.positions)
 
         # Add the mobility model to the schedule
         self.schedule.add(self.mobility)
@@ -41,6 +41,6 @@ class MobilityModel(Model):
 
     def get_location(self) -> list[float]:
         """
-        Get the current location of the entity.
+        Get the current location of the agent.
         """
         return self.mobility.get_current_location()

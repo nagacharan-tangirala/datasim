@@ -17,25 +17,25 @@ class BaseStation(NodeBase):
         super().__init__(params)
         self.type = NodeType.BASE_STATION
 
-        self.entities_data = 0
-        self.in_range_entities = []
+        self.agents_data = 0
+        self.in_range_agents = []
 
     def get_statistics(self):
         pass
 
     def update_node(self, time: int):
         """
-        Update the node. This includes collecting data from all the entities which are in range.
+        Update the node. This includes collecting data from all the agents which are in range.
 
         Parameters
         ----------
         time : int
             The current time.
         """
-        # Get the data collected by the entities.
-        self.entities_data = 0
-        for entity in self.in_range_entities:
-            self.entities_data = self.entities_data + entity.get_collected_data_size(time)
+        # Get the data collected by the agents.
+        self.agents_data = 0
+        for agent in self.in_range_agents:
+            self.agents_data = self.agents_data + agent.get_collected_data_size(time)
 
     def get_collected_data_size(self) -> int:
         """
@@ -46,4 +46,4 @@ class BaseStation(NodeBase):
         int
             The collected data size.
         """
-        return self.entities_data
+        return self.agents_data

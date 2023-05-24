@@ -1,9 +1,9 @@
 from mesa import Model
 from mesa.time import BaseScheduler
-from src.device.AAgent import AgentBase
+from src.device.ABase import AgentBase
 
 
-class ABMModel(Model):
+class AgentModel(Model):
     def __init__(self, sim_params: dict, agents: dict[int, AgentBase]):
         """
         Initialize the ABM model.
@@ -28,21 +28,21 @@ class ABMModel(Model):
         self.agents: dict[int, AgentBase] = agents
         self.agent_activation_times: dict[int, list[int]] = {}
 
-        self._prepare_active_entities_dict()
+        self._prepare_active_agents_dict()
 
-    def _prepare_active_entities_dict(self):
+    def _prepare_active_agents_dict(self):
         """
-        Prepare a dictionary with time step as the key and the respective entities to activate in that time step.
+        Prepare a dictionary with time step as the key and the respective agents to activate in that time step.
         """
         for agent_id, agent in self.agents.items():
             start_time, end_time = agent.get_start_and_end_time()
-            # Add the entity to the dictionary with the start time as the key
+            # Add the agent to the dictionary with the start time as the key
             if start_time not in self.agent_activation_times:
                 self.agent_activation_times[start_time] = [agent_id]
             else:
                 self.agent_activation_times[start_time].append(agent_id)
 
-            # Add the entity to the dictionary with the end time as the key
+            # Add the agent to the dictionary with the end time as the key
             if end_time not in self.agent_activation_times:
                 self.agent_activation_times[end_time] = [agent_id]
             else:
@@ -57,12 +57,8 @@ class ABMModel(Model):
         time_step : int
             The time step of the simulation.
         """
-        # Only proceed if there are any updates to perform at the current time step.
-        if time_step not in self.agent_activation_times:
-            return
-
-        entities_to_update = self.agent_activation_times[time_step]
-        for agent_id in entities_to_update:
+        agents_to_update = self.agent_activation_times[time_step]
+        for agent_id in agents_to_update:
             agent = self.agents[agent_id]
             agent.toggle_status(self)
 
@@ -71,9 +67,10 @@ class ABMModel(Model):
         Step function for the model.
         """
         # Refresh the active agents
-        self._refresh_active_agents(self.current_time)
+        if self.current_time in self.agent_activation_times:
+            self._refresh_active_agents(self.current_time)
 
-        # Step the schedule
+        # Step through the schedule object
         self.schedule.step()
         self.current_time += self.time_step
 

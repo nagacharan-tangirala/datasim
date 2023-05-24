@@ -1,4 +1,4 @@
-from src.device.AAgentMobility import AgentMobility
+from src.device.AMobility import AgentMobility
 
 
 class StaticMobility(AgentMobility):
@@ -9,7 +9,7 @@ class StaticMobility(AgentMobility):
         Parameters
         ----------
         positions : dict
-            Dictionary of positions for the entity with the time as key.
+            Dictionary of positions for the agent with the time as key.
         """
         super().__init__(positions)
 

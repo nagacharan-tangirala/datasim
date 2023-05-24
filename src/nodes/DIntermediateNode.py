@@ -30,7 +30,7 @@ class IntermediateNode(NodeBase):
 
     def update_node(self, time: int):
         """
-        Update the node. This includes collecting data from all the entities which are in range.
+        Update the node. This includes collecting data from all the agents which are in range.
 
         Parameters
         ----------
