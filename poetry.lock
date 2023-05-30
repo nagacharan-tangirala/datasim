@@ -630,6 +630,36 @@ test = ["hypothesis (>=6.34.2)", "pytest (>=7.0.0)", "pytest-asyncio (>=0.17.0)"
 xml = ["lxml (>=4.6.3)"]
 
 [[package]]
+name = "parquet"
+version = "1.3.1"
+description = "Python support for Parquet file format"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "parquet-1.3.1-py3-none-any.whl", hash = "sha256:a492a08643b51af8b4c2a25d97e1667170a483fc68ca408979b080ae9d771f51"},
+    {file = "parquet-1.3.1.tar.gz", hash = "sha256:fb1c90768c1b9159d4d6a9b3112ea8107b0b46d7491c5ac452ba7350f333bf0a"},
+]
+
+[package.dependencies]
+thriftpy2 = "*"
+
+[package.extras]
+snappy = ["python-snappy"]
+
+[[package]]
+name = "ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
+    {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
+]
+
+[[package]]
 name = "pyproj"
 version = "3.5.0"
 description = "Python interface to PROJ (cartographic projections and coordinate transformations library)"
@@ -874,6 +904,25 @@ files = [
 ]
 
 [[package]]
+name = "thriftpy2"
+version = "0.4.16"
+description = "Pure python implementation of Apache Thrift."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "thriftpy2-0.4.16.tar.gz", hash = "sha256:2aa67ecda99a948e4146341d388260b48ee7da5dfb9a951c4151988e2ed2fb4c"},
+]
+
+[package.dependencies]
+ply = ">=3.4,<4.0"
+six = ">=1.15,<2.0"
+
+[package.extras]
+dev = ["cython (>=0.28.4)", "flake8 (>=2.5)", "pytest (>=2.8)", "pytest (>=6.1.1)", "sphinx (>=1.3)", "sphinx-rtd-theme (>=0.1.9)", "tornado (>=4.0,<6.0)"]
+tornado = ["tornado (>=4.0,<6.0)"]
+
+[[package]]
 name = "tornado"
 version = "6.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -947,4 +996,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "51f80da1d9edfead2a8495ce1b7cb427281d680aaf47b17e050ad8587d3ef2af"
+content-hash = "87a14369ab900531249066b1ea96e003ad1f22e67b237d4bc04acfabfc7fbb47"
