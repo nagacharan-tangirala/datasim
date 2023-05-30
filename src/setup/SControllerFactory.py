@@ -1,4 +1,4 @@
-from src.control.DCentralController import CentralController
+from src.device.DCentralTrafficController import CentralController
 
 
 class ControllerFactory:

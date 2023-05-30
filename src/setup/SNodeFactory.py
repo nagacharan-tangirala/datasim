@@ -1,5 +1,5 @@
-from src.nodes.DBaseStationNode import BaseStation
-from src.nodes.DIntermediateNode import IntermediateNode
+from src.device.DBaseStationNode import BaseStation
+from src.device.DIntermediateNode import IntermediateNode
 
 
 class NodeFactory:

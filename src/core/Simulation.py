@@ -1,6 +1,6 @@
 from src.setup.SParticipantFactory import ParticipantFactory
-from src.setup.SConfigReader import ConfigHDF5Reader
-from src.device.MAgent import AgentModel
+from src.setup.SConfigReaderH5 import ConfigHDF5Reader
+from src.device.MAgentModel import AgentModel
 
 
 class Simulation:

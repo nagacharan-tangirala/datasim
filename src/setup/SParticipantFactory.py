@@ -1,4 +1,4 @@
-from src.setup.SConfigReader import ConfigDict
+from src.setup.SConfigReaderH5 import ConfigDict
 
 from src.setup.SDeviceFactory import DeviceFactory
 from src.setup.SNodeFactory import NodeFactory
