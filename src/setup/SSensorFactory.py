@@ -1,5 +1,5 @@
-from src.sensor.ASensor import SensorMode
-from src.sensor.ARegularSensor import RegularSensor
+from src.device.BSensor import SensorMode
+from src.device.DRegularSensor import RegularSensor
 
 
 class SensorFactory:

@@ -1,5 +1,5 @@
-from src.device.AStaticMobility import StaticMobility
-from src.device.ATraceMobility import TraceMobility
+from src.models.DStaticMobility import StaticMobility
+from src.models.DTraceMobility import TraceMobility
 
 
 class AgentMobilityFactory:
