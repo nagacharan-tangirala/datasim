@@ -1,10 +1,10 @@
-from src.device.AMobility import AgentMobility
+from src.models.BMobility import AgentMobility
 
 
-class TraceMobility(AgentMobility):
+class StaticMobility(AgentMobility):
     def __init__(self, positions: dict):
         """
-        Initialize the trace mobility model.
+        Initialize the static mobility model.
 
         Parameters
         ----------
@@ -17,5 +17,5 @@ class TraceMobility(AgentMobility):
         """
         Step through the model.
         """
+        # Location is static, so just set the current location to the first position
         self.current_location = self.positions[self.index]
-        self.index = self.index + 1

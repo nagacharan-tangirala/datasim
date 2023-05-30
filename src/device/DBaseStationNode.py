@@ -1,4 +1,4 @@
-from src.nodes.BNode import NodeBase, NodeType
+from src.device.BNode import NodeBase, NodeType
 
 
 class BaseStation(NodeBase):

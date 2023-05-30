@@ -1,8 +1,8 @@
-from src.device.AAgent import AgentBase
+from src.device.BAgent import AgentBase
 
-from src.sensor.MSensor import SensorModel
-from src.device.MMobility import MobilityModel
-from src.device.MCoverage import CoverageModel
+from src.device.MSensorModel import SensorModel
+from src.models.MMobilityModel import MobilityModel
+from src.models.MCoverageModel import CoverageModel
 
 
 class VehicleAgent(AgentBase):

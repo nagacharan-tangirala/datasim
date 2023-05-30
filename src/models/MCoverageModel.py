@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.device.SCoverageFactory import AgentCoverageFactory
+from src.models.SCoverageFactory import AgentCoverageFactory
 
 
 class CoverageModel(Model):

@@ -1,7 +1,7 @@
-from mesa import Agent, Model
+from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.device.SMobilityFactory import AgentMobilityFactory
+from src.models.SMobilityFactory import AgentMobilityFactory
 
 
 class MobilityModel(Model):

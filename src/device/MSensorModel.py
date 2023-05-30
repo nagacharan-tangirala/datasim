@@ -1,8 +1,8 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.sensor.ASensor import SensorBase
-from src.sensor.SSensorFactory import SensorFactory
+from src.device.BSensor import SensorBase
+from src.setup.SSensorFactory import SensorFactory
 
 
 class SensorModel(Model):

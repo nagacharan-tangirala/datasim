@@ -1,6 +1,6 @@
 from mesa import Model
 from mesa.time import BaseScheduler
-from src.device.AAgent import AgentBase
+from src.device.BAgent import AgentBase
 
 
 class AgentModel(Model):

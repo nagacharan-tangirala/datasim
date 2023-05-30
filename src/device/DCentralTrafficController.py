@@ -1,4 +1,4 @@
-from src.control.BTrafficController import TrafficControllerBase, TrafficControllerType
+from src.device.BTrafficController import TrafficControllerBase, TrafficControllerType
 
 
 class CentralController(TrafficControllerBase):

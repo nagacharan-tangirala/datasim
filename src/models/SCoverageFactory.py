@@ -1,4 +1,4 @@
-from src.device.ACoverage import AgentCoverage
+from src.models.BCoverage import AgentCoverage
 
 
 class AgentCoverageFactory:

@@ -1,5 +1,5 @@
 from mesa import Model
-from src.sensor.ASensor import SensorBase
+from src.device.BSensor import SensorBase
 
 
 class RegularSensor(SensorBase):
