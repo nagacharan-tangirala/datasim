@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from mesa import Agent, Model
+
+from mesa import Agent
 
 
 class AgentMobility(Agent):

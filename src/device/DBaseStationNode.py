@@ -1,49 +1,40 @@
-from src.device.BNode import NodeBase, NodeType
+import pandas as pd
+
+from src.device.BNode import NodeBase
 
 
 class BaseStation(NodeBase):
     """
     Base station class designed to mimic the behavior of base stations.
     """
-    def __init__(self, params: dict):
+
+    def __init__(self, node_id, node_data: pd.Series):
         """
         Initialize the base station.
 
         Parameters
         ----------
-        params : dict
-            Dictionary containing all the parameters for the base station.
+        node_data : pd.Series
+            Series containing all the parameters for the base station.
         """
-        super().__init__(params)
-        self.type = NodeType.BASE_STATION
+        super().__init__(node_id, node_data)
 
-        self.agents_data = 0
-        self.in_range_agents = []
+        self.incoming_agents_data = {}
 
-    def get_statistics(self):
-        pass
-
-    def update_node(self, time: int):
+    def step(self):
         """
-        Update the node. This includes collecting data from all the agents which are in range.
-
-        Parameters
-        ----------
-        time : int
-            The current time.
+        Step function for the agent.
         """
-        # Get the data collected by the agents.
-        self.agents_data = 0
-        for agent in self.in_range_agents:
-            self.agents_data = self.agents_data + agent.get_collected_data_size(time)
+        # Compute the total data received from the agents.
+        total_data = 0
+        for agent_id, data in self.incoming_agents_data.items():
+            total_data = total_data + data
 
-    def get_collected_data_size(self) -> int:
-        """
-        Get the collected data size.
+        # Clear the incoming data.
+        self.incoming_agents_data.clear()
 
-        Returns
-        ----------
-        int
-            The collected data size.
+    def receive_data(self, agent_id: int, data: float):
         """
-        return self.agents_data
+        Receive data from the agents.
+        """
+        self.incoming_agents_data[agent_id] = data

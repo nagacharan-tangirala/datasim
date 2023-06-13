@@ -1,18 +1,25 @@
-from src.device.BNode import NodeBase, NodeType
+import pandas as pd
+
+from src.device.BNode import NodeBase
 
 
 class IntermediateNode(NodeBase):
-    def __init__(self, params: dict):
+    def step(self):
+        pass
+
+    def receive_data(self, data: float):
+        pass
+
+    def __init__(self, node_id: int, node_data: pd.Series):
         """
         Initialize the intermediate node.
 
         Parameters
         ----------
-        params : dict
-            Dictionary containing all the parameters for the intermediate node.
+        node_data : pd.Series
+            Series containing all the parameters for the intermediate node.
         """
-        super().__init__(params)
-        self.type = NodeType.INTERMEDIATE
+        super().__init__(node_id, node_data)
 
         self.in_range_nodes = []
         self.nodes_data = 0
