@@ -29,13 +29,23 @@ class ControllerModel(Model):
         """
         pass
 
+    def get_controller_channel(self) -> ControllerChannelBase:
+        """
+        Get the controller channel.
+        """
+        return self.controller_channel
+
     def _create_models(self, controller_model_data: dict) -> None:
         """
         Create all the models for the controllers.
         """
-        # Create the controller channel model
+        # Iterate through the models and create them
         model_factory = DeviceModelFactory()
-        self.controller_channel = model_factory.create_controller_channel(controller_model_data['channel'])
+        for model_id, model_data in controller_model_data.items():
+            if model_data['type'] == 'channel':
+                self.controller_channel = model_factory.create_controller_channel(model_data)
+            else:
+                raise ValueError(f"Unknown model type {model_data['type']}")
 
     def step(self) -> None:
         """

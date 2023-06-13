@@ -33,9 +33,13 @@ class NodeModel(Model):
         """
         Create all the models for the nodes.
         """
-        # Create the node channel model
+        # Iterate through the models and create them
         model_factory = DeviceModelFactory()
-        self.node_channel = model_factory.create_node_channel(node_model_data['channel'])
+        for model_id, model_data in node_model_data.items():
+            if model_data['type'] == 'channel':
+                self.node_channel = model_factory.create_node_channel(model_data)
+            else:
+                raise ValueError(f"Unknown model type {model_data['type']}")
 
     def step(self) -> None:
         """

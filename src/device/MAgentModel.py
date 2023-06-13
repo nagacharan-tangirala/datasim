@@ -48,9 +48,13 @@ class AgentModel(Model):
         """
         Create all the models for the agents.
         """
-        # Create the agent channel model
+        # Iterate through the model data and create the models
         model_factory = DeviceModelFactory()
-        self.agent_channel = model_factory.create_agent_channel(agent_model_data['channel'])
+        for model_id, model_data in agent_model_data.items():
+            if model_data['type'] == 'channel':
+                self.agent_channel = model_factory.create_agent_channel(model_data)
+            else:
+                raise ValueError(f"Unknown model type {model_data['type']}")
 
     def get_agent_channel(self) -> AgentChannelBase | None:
         """
@@ -76,9 +80,11 @@ class AgentModel(Model):
             if agent.is_active():
                 self.schedule.add(agent)
                 self.agent_channel.add_agent(agent)
+                agent.sim_model = self
             else:
                 self.schedule.remove(agent)
                 self.agent_channel.remove_agent(agent)
+                agent.sim_model = None
 
     def step(self, *args, **kwargs):
         """
