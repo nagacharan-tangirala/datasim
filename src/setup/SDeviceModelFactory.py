@@ -46,12 +46,12 @@ class DeviceModelFactory:
             raise NotImplementedError(f"Node channel model {node_model_data['name']} is not implemented.")
 
     @staticmethod
-    def create_coverage(agent_id, coverage_data: pd.DataFrame) -> AgentTraceCoverage:
+    def create_coverage(coverage_data: pd.DataFrame) -> AgentTraceCoverage:
         """
         Creates a coverage model.
         """
         if coverage_data is not None and len(coverage_data) > 0:
-            return AgentTraceCoverage(agent_id, coverage_data)
+            return AgentTraceCoverage(coverage_data)
         else:
             raise NotImplementedError("Other coverage models are not implemented.")
 

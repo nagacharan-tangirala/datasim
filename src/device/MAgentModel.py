@@ -3,10 +3,11 @@ from mesa.time import BaseScheduler
 
 from src.channel.BAgentChannel import AgentChannelBase
 from src.device.BAgent import AgentBase
+from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class AgentModel(Model):
-    def __init__(self, agents: dict[int, AgentBase]):
+    def __init__(self, agents: dict[int, AgentBase], agent_model_data: dict):
         """
         Initialize the model for the agents.
         """
@@ -18,9 +19,12 @@ class AgentModel(Model):
         self.agent_activation_times: dict[int, list[int]] = {}
 
         self.current_time: int = 0
-        self.agent_channel: AgentChannelBase | None = None
+
+        # All models are defined here
+        self.agent_channel: AgentChannelBase = None
 
         self._prepare_active_agents_dict()
+        self._create_models(agent_model_data)
 
     def _prepare_active_agents_dict(self) -> None:
         """
@@ -39,6 +43,14 @@ class AgentModel(Model):
                 self.agent_activation_times[end_time] = [agent_id]
             else:
                 self.agent_activation_times[end_time].append(agent_id)
+
+    def _create_models(self, agent_model_data: dict) -> None:
+        """
+        Create all the models for the agents.
+        """
+        # Create the agent channel model
+        model_factory = DeviceModelFactory()
+        self.agent_channel = model_factory.create_agent_channel(agent_model_data['channel'])
 
     def get_agent_channel(self) -> AgentChannelBase | None:
         """
@@ -60,7 +72,7 @@ class AgentModel(Model):
             agent = self.agents[agent_id]
             agent.toggle_status()
 
-            # If the agent is active, add it to the scheduler and channel. Otherwise, remove it from the scheduler and channel.
+            # If the agent is active, add it to the scheduler and channel. Otherwise, remove from them.
             if agent.is_active():
                 self.schedule.add(agent)
                 self.agent_channel.add_agent(agent)

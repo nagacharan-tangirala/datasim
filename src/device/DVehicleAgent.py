@@ -29,7 +29,7 @@ class VehicleAgent(AgentBase):
         """
         Set the coverage data for the agent.
         """
-        self.coverage = coverage
+        self.coverage = coverage.reset_index(drop=True)
 
     def _initiate_models(self) -> None:
         """

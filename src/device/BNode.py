@@ -5,17 +5,17 @@ from mesa import Agent
 
 
 class NodeBase(Agent):
-    def __init__(self, node_id: int, params: pd.Series, sim_model=None):
+    def __init__(self, node_id: int, node_data: pd.Series, sim_model=None):
         """
         Initialize the node class.
 
         Parameters
         ----------
-        params : dict
-            Dictionary containing all the parameters for the node.
+        node_data : pd.Series
+            Series containing all the parameters for the node.
         """
         super().__init__(node_id, sim_model)
-        self.location = [params['x'], params['y']]
+        self.location = [node_data['x'], node_data['y']]
 
     def get_id(self) -> int:
         """
@@ -26,7 +26,7 @@ class NodeBase(Agent):
         int
             The ID of the ndoe.
         """
-        return self.node_id
+        return self.unique_id
 
     def get_position(self) -> list[float]:
         """
