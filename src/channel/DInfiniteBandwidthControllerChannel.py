@@ -6,7 +6,7 @@ class InfiniteBandwidthControllerChannel(ControllerChannelBase):
         """
         Initialize the infinite bandwidth controller channel.
         """
-        super().__init__(0, None)
+        super().__init__()
 
     def _collect_from_nodes(self):
         """

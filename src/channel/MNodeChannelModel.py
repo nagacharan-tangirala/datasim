@@ -20,9 +20,8 @@ class NodeChannelModel(Model):
         """
         self.schedule.add(channel)
 
-    def step(self, *args, **kwargs):
+    def step(self):
         """
         Step through the node channel model.
         """
-        current_time = args[0]
         self.schedule.step()

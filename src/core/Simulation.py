@@ -110,7 +110,7 @@ class Simulation:
         """
         Step the simulation.
         """
-        self.agent_model.step(self.time_step)
+        self.agent_model.step(self.current_time)
         self.agent_channel_model.step()
 
         self.node_model.step()

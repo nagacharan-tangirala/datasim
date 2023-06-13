@@ -1,4 +1,5 @@
 from mesa import Model
+from mesa.time import BaseScheduler
 
 from src.device.BNode import NodeBase
 
@@ -9,6 +10,7 @@ class ControllerChannelModel(Model):
         Initialize the controller channel model.
         """
         super().__init__()
+        self.schedule: BaseScheduler = BaseScheduler(self)
 
         self.nodes = nodes
 
