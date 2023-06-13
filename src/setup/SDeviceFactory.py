@@ -1,8 +1,9 @@
 import pandas as pd
 
-from src.setup.SAgentFactory import AgentFactory
-from src.setup.SControllerFactory import ControllerFactory
-from src.setup.SNodeFactory import NodeFactory
+from src.device.DBaseStationNode import BaseStation
+from src.device.DCentralTrafficController import CentralController
+from src.device.DIntermediateNode import IntermediateNode
+from src.device.DVehicleAgent import VehicleAgent
 
 
 class DeviceFactory:
@@ -10,11 +11,6 @@ class DeviceFactory:
         """
         Initialize the device factory object.
         """
-        # Create the factories needed to create the devices.
-        self._node_factory = NodeFactory()
-        self._device_factory = AgentFactory()
-        self._controller_factory = ControllerFactory()
-
         # Create the dictionaries to store the devices in the simulation
         self.nodes = {}
         self.agents = {}
@@ -53,12 +49,33 @@ class DeviceFactory:
         """
         return self.agents
 
-    def create_nodes(self, node_data: pd.DataFrame):
+    def create_nodes(self, all_nodes_data: pd.DataFrame):
         """
         Create the nodes in the simulation.
         """
-        for node_id, node_params in node_data.iterrows():
-            self.nodes[node_id] = self._node_factory.create_node(node_id, node_params)
+        # Get the list of nodes in the simulation.
+        node_list = all_nodes_data['node_id'].unique()
+
+        # Create the nodes.
+        for node_id in node_list:
+            # Get the node data.
+            node_data: pd.Series = all_nodes_data[all_nodes_data['node_id'] == node_id].iloc[0]
+
+            # Create the node.
+            self.nodes[node_id] = self._create_node(node_id, node_data)
+
+    @staticmethod
+    def _create_node(node_id: int, node_data: pd.Series):
+        """
+        Create a node from the given parameters.
+        """
+        node_type = node_data['type']
+        if node_type == 'bs':
+            return BaseStation(node_id, node_data)
+        elif node_type == 'intermediate':
+            return IntermediateNode(node_id, node_data)
+        else:
+            raise ValueError("Node {} type not supported.".format(node_type))
 
     def create_controllers(self, controller_data: pd.DataFrame):
         """
@@ -73,7 +90,21 @@ class DeviceFactory:
             controller_position: list[float, float] = controller_data[controller_data['controller_id'] == controller_id][['x', 'y']].values.tolist()
 
             # Create the controller.
-            self.controllers[controller_id] = self._controller_factory.create_controller(controller_id, controller_position)
+            self.controllers[controller_id] = self._create_controller(controller_id, controller_position)
+
+    @staticmethod
+    def _create_controller(controller_id, position) -> CentralController:
+        """
+        Create a controller from the given parameters.
+
+        Parameters
+        ----------
+        controller_id : int
+            The ID of the controller.
+        position : list[float]
+            The position of the controller.
+        """
+        return CentralController(controller_id, position)
 
     def create_agents(self, agent_data: pd.DataFrame, coverage_data: pd.DataFrame):
         """
@@ -85,16 +116,28 @@ class DeviceFactory:
         # Create the agents.
         for agent_id in agent_list:
             # Get the agent positions.
-            agent_trace = agent_data[agent_data['agent_id'] == agent_id][['time', 'x', 'y']].values.tolist()
+            agent_trace = agent_data[agent_data['agent_id'] == agent_id][['time', 'x', 'y']].reset_index(drop=True)
 
             # Create the agent.
-            self.agents[agent_id] = self._device_factory.create_agent(agent_id)
+            self.agents[agent_id] = self._create_agent(agent_id)
 
             # Set the agent trace.
             self.agents[agent_id].set_mobility_data(agent_trace)
 
             # Get the agent coverage.
-            agent_coverage = coverage_data[coverage_data['agent_id'] == agent_id][['coverage', 'time_step']]
+            agent_coverage = coverage_data[coverage_data['vehicle_id'] == agent_id][['neighbours', 'time']]
 
             # Set the agent coverage.
             self.agents[agent_id].set_coverage_data(agent_coverage)
+
+    @staticmethod
+    def _create_agent(agent_id: int) -> VehicleAgent:
+        """
+        Create an agent from the given parameters.
+
+        Parameters
+        ----------
+        agent_id : int
+            The ID of the agent.
+        """
+        return VehicleAgent(agent_id)
