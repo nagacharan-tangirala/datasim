@@ -171,7 +171,7 @@ class SimulationSetup:
                     raise ValueError('Invalid device type in model config file: %s' % device_type)
                 if parsed_model_data['id'] in self.model_data[device_type]:
                     raise ValueError('Duplicate model id: %s' % parsed_model_data['id'])
-                self.model_data[device_type]['id'] = parsed_model_data
+                self.model_data[device_type][parsed_model_data['id']] = parsed_model_data
             else:
                 raise ValueError('Invalid tag in model config file: %s' % child.tag)
 

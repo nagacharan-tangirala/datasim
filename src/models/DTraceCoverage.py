@@ -20,4 +20,4 @@ class AgentTraceCoverage(AgentCoverage):
             self.coverage_data = []
 
         # Get the agents in the coverage
-        self.coverage_data = self.coverage_data[self.coverage_data["time"] == self.current_time].tolist()
+        self.agents_in_coverage = self.coverage_data[self.coverage_data["time"] == self.current_time]['neighbours'].tolist()
