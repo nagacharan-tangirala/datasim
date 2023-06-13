@@ -1,6 +1,11 @@
-from src.setup.SParticipantFactory import ParticipantFactory
-from src.setup.SConfigReaderH5 import ConfigHDF5Reader
+from src.channel.MAgentChannelModel import AgentChannelModel
+from src.channel.MControllerChannelModel import ControllerChannelModel
+from src.channel.MNodeChannelModel import NodeChannelModel
 from src.device.MAgentModel import AgentModel
+from src.device.MControllerModel import ControllerModel
+from src.device.MNodeModel import NodeModel
+from src.setup.SDeviceFactory import DeviceFactory
+from src.setup.SSimulationSetup import SimulationSetup
 
 
 class Simulation:
@@ -8,85 +13,110 @@ class Simulation:
         """
         Initialize the simulation setup object. This class is responsible for setting up the simulation.
         """
-        self.config_file = config_file
-        self.config_dict = None
+        self.config_file: str = config_file
 
-        # Create the dictionaries to store the participants in the simulation
-        self.nodes = {}
-        self.sensors = {}
+        # Create the dictionaries to store the agents in the simulation
+        self.agents: dict = {}
+        self.nodes: dict = {}
+        self.controllers: dict = {}
 
-        # Simulation parameters
-        self.start_time = 0
-        self.end_time = 0
-        self.step_size = 0
-        self.seed = 0
-        self.update_step = 0
-        self.output_dir = 0
-        self.output_step = 0
+        # Create objects to store device models
+        self.agent_model: AgentModel | None = None
+        self.node_model: NodeModel | None = None
+        self.controller_model: ControllerModel | None = None
 
-    def setup_simulation(self):
+        # Create objects to store channel models
+        self.node_channel_model: NodeChannelModel | None = None
+        self.agent_channel_model: AgentChannelModel | None = None
+        self.controller_channel_model: ControllerChannelModel | None = None
+
+    def setup_simulation(self) -> None:
         """
         Set up the simulation.
         """
-        self._perform_initial_steps()
-        self._create_participants()
-        self._create_simulation()
-
-    def _perform_initial_steps(self):
-        """
-        Set up the simulation according to the type of simulation.
-        """
         self._read_config()
-        self._get_simulation_parameters()
+        self._read_simulation_parameters()
+        self._create_devices()
+        self._create_device_models()
+        self._create_channel_models()
 
-    def _read_config(self):
+    def _read_config(self) -> None:
         """
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        config_reader = ConfigHDF5Reader(self.config_file)
+        self.sim_config = SimulationSetup(self.config_file)
+        self.sim_config.read_input_file()
 
-        config_reader.read_config()
-
-        # Get the parsed config params
-        self.config_dict = config_reader.get_config_dict()
-
-    def _get_simulation_parameters(self):
+    def _read_simulation_parameters(self) -> None:
         """
-        Get the simulation parameters.
+        Initialize the controller model.
         """
-        simulation_parameters = self.config_dict.simulation_params
+        # Get the simulation parameters
+        simulation_data = self.sim_config.simulation_data
 
-        self.start_time = int(simulation_parameters['start'] * 3600 * 1000)
-        self.end_time = int(simulation_parameters['end'] * 3600 * 1000)
-        self.step_size = simulation_parameters['step']
-        self.seed = simulation_parameters['seed']
-        self.update_step = simulation_parameters['update_step']
-        self.output_dir = simulation_parameters['output_dir']
-        self.output_step = simulation_parameters['output_step']
+        self.start_time: int = simulation_data['start'] * 3600 * 1000
+        self.end_time: int = simulation_data['end'] * 3600 * 1000
+        self.time_step: int = simulation_data['step']
+        self.output_dir: str = simulation_data['output_dir']
 
-    def _create_participants(self):
+        self.current_time: int = self.start_time
+
+    def _create_devices(self) -> None:
         """
-        Create the participants in the simulation. These are the non-mesa agents.
+        Create the devices in the simulation.
         """
-        # Create a participant factory object and create the participants
-        participant_factory = ParticipantFactory(self.config_dict)
-        participant_factory.create_participants_of_type('node')
-        participant_factory.create_participants_of_type('agent')
-        participant_factory.create_participants_of_type('controller')
+        # Create a device factory object and create the participants
+        device_factory = DeviceFactory()
+        device_factory.create_nodes(self.sim_config.node_data)
+        device_factory.create_agents(self.sim_config.agent_data, self.sim_config.coverage_data)
+        device_factory.create_controllers(self.sim_config.controller_data)
 
-        # Get the nodes and agents
-        self.nodes = participant_factory.get_nodes()
-        self.agents = participant_factory.get_agents()
+        # Get the devices from the factory
+        self.nodes = device_factory.get_nodes()
+        self.agents = device_factory.get_agents()
+        self.controllers = device_factory.get_controllers()
 
-    def _create_simulation(self):
+    def _create_device_models(self) -> None:
         """
-        Create the agent model.
+        Create the device models.
         """
-        self.model = AgentModel(self.config_dict.simulation_params, self.agents)
+        self.agent_model = AgentModel(self.agents)
+        self.node_model = NodeModel(self.nodes, self.sim_config.node_link_data)
+        self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data)
 
-    def run(self):
+    def _create_channel_models(self) -> None:
+        """
+        Create the channel models.
+        """
+        # Create the channel models
+        self.agent_channel_model = AgentChannelModel(self.nodes)
+        self.node_channel_model = NodeChannelModel(self.nodes)
+        self.controller_channel_model = ControllerChannelModel(self.nodes)
+
+        # Get the channels from the device models and add them to the channel models.
+        self.agent_channel_model.add_channel(self.agent_model.get_agent_channel())
+        self.node_channel_model.add_channel(self.node_model.get_node_channel())
+        self.controller_channel_model.add_channel(self.controller_model.get_controller_channel())
+
+    def run(self) -> None:
         """
         Run the simulation.
         """
-        self.model.run()
+        while self.current_time <= self.end_time:
+            self.step()
+
+    def step(self) -> None:
+        """
+        Step the simulation.
+        """
+        self.agent_model.step(self.time_step)
+        self.agent_channel_model.step()
+
+        self.node_model.step()
+        self.node_channel_model.step()
+        self.controller_channel_model.step()
+
+        self.controller_model.step()
+
+        self.current_time += self.time_step
