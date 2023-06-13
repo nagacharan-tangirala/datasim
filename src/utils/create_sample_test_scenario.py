@@ -5,7 +5,7 @@ x = [1000.0, 2000.0, 3000.0, 1000.0, 2000.0, 3000.0, 1000.0, 2000.0, 3000.0]
 y = [1000.0, 1000.0, 1000.0, 2000.0, 2000.0, 2000.0, 3000.0, 3000.0, 3000.0]
 time = [1000, 1000, 1000, 2000, 2000, 2000, 3000, 3000, 3000]
 
-df = pd.DataFrame({'time': time, 'vehicle_id': ids, 'x': x, 'y': y})
+df = pd.DataFrame({'time': time, 'agent_id': ids, 'x': x, 'y': y})
 
 # Save the dataframe to a parquet file
 df.to_parquet('/mnt/hdd/workspace/datasim/input/sample/sample.parquet')
