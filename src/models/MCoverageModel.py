@@ -7,12 +7,11 @@ from src.models.BCoverage import AgentCoverage
 
 
 class CoverageModel(Model):
-    def __init__(self, agent_id, coverage_data: pd.DataFrame):
+    def __init__(self, coverage_data: pd.DataFrame):
         """
         Initialize the coverage model to update the nodes and agents that are in each other's coverage.
         """
         super().__init__()
-        self.agent_id = agent_id
         self.coverage_data = coverage_data
 
         self.schedule: BaseScheduler = BaseScheduler(self)
@@ -24,7 +23,7 @@ class CoverageModel(Model):
         """
         # Create coverage factory and the coverage model
         model_factory = DeviceModelFactory()
-        self.coverage = model_factory.create_coverage(self.agent_id, self.coverage_data)
+        self.coverage = model_factory.create_coverage(self.coverage_data)
 
         # Add the coverage model to the schedule
         if self.coverage is not None:

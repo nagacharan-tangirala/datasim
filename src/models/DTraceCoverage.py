@@ -4,11 +4,11 @@ from src.models.BCoverage import AgentCoverage
 
 
 class AgentTraceCoverage(AgentCoverage):
-    def __init__(self, agent_id, coverage_data: pd.DataFrame):
+    def __init__(self, coverage_data: pd.DataFrame):
         """
         Initialize the trace coverage model.
         """
-        super().__init__(agent_id)
+        super().__init__()
         self.coverage_data = coverage_data
 
     def step(self):

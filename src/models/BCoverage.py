@@ -4,11 +4,11 @@ from mesa import Agent
 
 
 class AgentCoverage(Agent):
-    def __init__(self, agent_id):
+    def __init__(self):
         """
         Initialize the coverage model.
         """
-        super().__init__(agent_id, None)
+        super().__init__(0, None)
 
         self.current_time: int = 0
         self.agents_in_coverage = []
