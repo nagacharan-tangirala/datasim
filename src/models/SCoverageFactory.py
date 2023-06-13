@@ -1,3 +1,5 @@
+import pandas as pd
+
 from src.models.BCoverage import AgentCoverage
 
 
@@ -9,10 +11,8 @@ class AgentCoverageFactory:
         pass
 
     @staticmethod
-    def create_coverage(agent_id, coverage_file: str = None):
+    def create_coverage(agent_id, coverage_data: pd.DataFrame):
         """
         Creates a coverage model.
         """
-        if coverage_file is None:
-            return None
-        return AgentCoverage(agent_id, coverage_file)
+        return AgentCoverage(agent_id, coverage_data)
