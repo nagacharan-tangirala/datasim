@@ -26,6 +26,8 @@ class SimulationSetup:
         self.agent_link_data: pd.DataFrame = pd.DataFrame()
         self.controller_link_data: pd.DataFrame = pd.DataFrame()
 
+        self.model_data: dict = {}
+
     def read_input_file(self):
         """
         Read the config file.
@@ -35,7 +37,9 @@ class SimulationSetup:
             if child.tag == 'input_files':
                 self._read_input_files(child)
             elif child.tag == 'simulation':
-                self._read_simulation_params(child)
+                self._read_simulation_settings(child)
+            elif child.tag == 'models':
+                self._read_model_data(child)
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
@@ -65,7 +69,7 @@ class SimulationSetup:
         self.agent_data = pq.read_table(join(self.project_path, agent_file)).to_pandas()
 
         # Sort the agents data by agent id and time
-        self.agent_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
+        self.agent_data.sort_values(by=['agent_id', 'time'], inplace=True)
 
     def _read_agents_coverage(self, coverage_file: str):
         """
@@ -84,24 +88,12 @@ class SimulationSetup:
         # Get the nodes data as a pandas dataframe
         self.node_data = pd.read_csv(join(self.project_path, node_file), dtype={'node_id': int, 'x': float, 'y': float, 'type': str}, usecols=['node_id', 'x', 'y', 'type'])
 
-        # Set the node id as the index
-        self.node_data.set_index('node_id', inplace=True)
-
-        # Sort the nodes data by node id
-        self.node_data.sort_index(inplace=True)
-
     def _read_controllers(self, controller_file: str):
         """
         Read the controllers data from the CSV file.
         """
         # Get the controllers data as a pandas dataframe
         self.controller_data = pd.read_csv(join(self.project_path, controller_file), dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
-
-        # Set the node id as the index
-        self.controller_data.set_index('controller_id', inplace=True)
-
-        # Sort the controllers data by node id
-        self.controller_data.sort_index(inplace=True)
 
     def _read_controller_links(self, link_file: str):
         """
@@ -112,28 +104,28 @@ class SimulationSetup:
                                                 dtype={'link_id': int, 'node': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
                                                 usecols=['link_id', 'node', 'controller', 'bandwidth_in', 'bandwidth_out'])
 
-    def _parse_output_params(self, child, sim_params):
+    def _read_output_settings(self, child):
         """
-        Parse the output parameters from the config file.
+        Parse the output settings from the config file.
 
         Parameters
         ----------
         child : Et.Element
             The output element from the config file.
-        sim_params : Dict[str, Any]
-            The simulation parameters parsed from the config file.
 
         Returns
         -------
         Dict[str, Any]
-            The simulation output parameters with the output parameters added.
+            The output settings.
         """
-        sim_params['output_dir'] = self._create_output_dir(child.attrib['path'])
-        sim_params['output_step'] = int(child.attrib['step'])
-        sim_params['output_type'] = child.attrib['type']
-        return sim_params
+        output_settings = {}
 
-    def _read_simulation_params(self, simulation_data: Et.Element):
+        output_settings['output_dir'] = self._create_output_dir(child.attrib['path'])
+        output_settings['output_step'] = int(child.attrib['step'])
+        output_settings['output_type'] = child.attrib['type']
+        return output_settings
+
+    def _read_simulation_settings(self, simulation_data: Et.Element):
         """
         Read the parameters of the simulation and store them in the config dict.
 
@@ -142,25 +134,78 @@ class SimulationSetup:
         simulation_data : Et.Element
             The simulation data element from the config file.
         """
-        sim_params = {}
+        simulation_settings = {}
         for child in simulation_data:
             if child.tag == 'step':
-                sim_params['step'] = int(child.text)
+                simulation_settings['step'] = int(child.text)
             elif child.tag == 'start':
-                sim_params['start'] = float(child.text)
+                simulation_settings['start'] = float(child.text)
             elif child.tag == 'end':
-                sim_params['end'] = float(child.text)
+                simulation_settings['end'] = float(child.text)
             elif child.tag == 'seed':
-                sim_params['seed'] = int(child.text)
+                simulation_settings['seed'] = int(child.text)
             elif child.tag == 'update_step':
-                sim_params['update_step'] = int(child.text)
+                simulation_settings['update_step'] = int(child.text)
             elif child.tag == 'output':
-                sim_params = self._parse_output_params(child, sim_params)
+                simulation_settings.update(self._read_output_settings(child))
             else:
                 raise ValueError('Invalid tag in simulation config file: %s' % child.tag)
 
-        # Store the simulation params
-        self.simulation_data = sim_params
+        # Store the simulation settings
+        self.simulation_data = simulation_settings
+
+    def _read_model_data(self, model_element: Et.Element):
+        """
+        Read the model data from the config file.
+
+        Parameters
+        ----------
+        model_element : Et.Element
+            The model data element from the config file.
+        """
+        self.model_data = {'agent': {}, 'node': {}, 'controller': {}}
+        for child in model_element:
+            if child.tag == 'model':
+                parsed_model_data, device_type = self._read_model(child)
+                if device_type not in self.model_data:
+                    raise ValueError('Invalid device type in model config file: %s' % device_type)
+                if parsed_model_data['id'] in self.model_data[device_type]:
+                    raise ValueError('Duplicate model id: %s' % parsed_model_data['id'])
+                self.model_data[device_type]['id'] = parsed_model_data
+            else:
+                raise ValueError('Invalid tag in model config file: %s' % child.tag)
+
+    @staticmethod
+    def _read_model(model_element: Et.Element):
+        """
+        Read the model data from the config file.
+
+        Parameters
+        ----------
+        model_element Et.Element
+            The model data element from the config file.
+
+        Returns
+        -------
+        Dict[str, Any]
+            The model data.
+        """
+        model_data = {}
+
+        # Read attributes
+        model_data['id'] = model_element.attrib['id']
+        model_data['type'] = model_element.attrib['type']
+        model_data['name'] = model_element.attrib['name']
+        device_type = model_element.attrib['device']
+
+        # Read model parameters
+        for child in model_element:
+            if child.tag == 'parameter':
+                model_data[child.attrib['name']] = child.attrib['value']
+            else:
+                raise ValueError('Invalid tag in model config file: %s' % child.tag)
+
+        return model_data, device_type
 
     def _create_output_dir(self, output_dir: str):
         """
