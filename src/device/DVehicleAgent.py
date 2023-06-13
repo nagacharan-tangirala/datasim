@@ -1,19 +1,59 @@
-from src.device.BAgent import AgentBase
+import pandas as pd
 
-from src.device.MSensorModel import SensorModel
-from src.models.MMobilityModel import MobilityModel
+from src.device.BAgent import AgentBase
 from src.models.MCoverageModel import CoverageModel
+from src.models.MMobilityModel import MobilityModel
 
 
 class VehicleAgent(AgentBase):
-    def __init__(self, params: dict, sensor_params: dict):
+    def __init__(self, agent_id: int):
         """
         Initialize the vehicle agent.
         """
-        super().__init__(params, sensor_params)
-        self.coverage_file = params.get('coverage_file', None)
+        super().__init__(agent_id)
+        self.coverage: pd.DataFrame | None = None
 
-    def step(self):
+        self.neighbour_data: dict[int, float] = {}
+
+    def set_mobility_data(self, positions: pd.DataFrame) -> None:
+        """
+        Set the mobility data for the agent.
+        """
+        self.start_time = positions["time"].min()
+        self.end_time = positions["time"].max()
+
+        # Store x and y positions
+        self.positions = positions[["x", "y"]].values.tolist()
+
+    def set_coverage_data(self, coverage: pd.DataFrame):
+        """
+        Set the coverage data for the agent.
+        """
+        self.coverage = coverage
+
+    def _initiate_models(self) -> None:
+        """
+        Initiate the models related to this agent.
+        """
+        # Create mobility model
+        self.mobility_model = MobilityModel(self.positions)
+        self.mobility_model.activate()
+
+        # Create the coverage model
+        self.coverage_model = CoverageModel(self.coverage)
+        self.coverage_model.activate()
+
+    def _deactivate_models(self) -> None:
+        """
+        Deactivate the models related to this agent.
+        """
+        # Deactivate the mobility model
+        self.mobility_model.deactivate()
+
+        # Deactivate the coverage model
+        self.coverage_model.deactivate()
+
+    def step(self) -> None:
         """
         Step function for the agent.
         """
@@ -21,54 +61,43 @@ class VehicleAgent(AgentBase):
         if not self.active:
             return
 
-        # Step through the mobility model
+        # Update the current position
+        self.current_position = self.mobility_model.get_location()
+
+        # Step through the mobility model and coverage model.
         self.mobility_model.step()
-
-        # Collect the data from the sensors
-        self.sensor_model.step()
-        vehicle_data = self.sensor_model.get_collected_data_size()
-
-        # Step through the coverage model
         self.coverage_model.step(self.sim_model.current_time)
 
+        self._generate_data()
+        self._collect_neighbours_data()
+
+    def _collect_neighbours_data(self) -> None:
+        """
+        Collect data from the neighbors.
+        """
         # Get the neighbours
-        neighbors = self.coverage_model.get_agents_in_coverage()
+        neighbours = self.coverage_model.get_agents_in_coverage()
+
+        # Clear the neighbour data
+        self.neighbour_data.clear()
 
         # Collect the data from the agents within the coverage area
-        neighbor_data = 0
-        for neighbor in neighbors:
-            if neighbor == self.unique_id:
-                continue
-            neighbor_data += self.sim_model.agents[neighbor].get_cached_data()
+        for neighbour in neighbours:
+            if neighbour is not self.unique_id and self.sim_model.agents[neighbour].get_data_transmit_status():
+                self.neighbour_data[neighbour] = self.sim_model.agents[neighbour].get_cached_data()
 
-        # Update the data collected by the agent
-        self.total_data += vehicle_data + neighbor_data
-
-    def _initiate_models(self):
+    def get_neighbour_data(self) -> dict[int, float]:
         """
-        Initiate the models related to this agent.
+        Get the data from the neighbours.
         """
-        # Create sensor model
-        self.sensor_model = SensorModel(self.sensor_params, self.sim_model.time_step)
-        self.sensor_model.activate()
+        return self.neighbour_data
 
-        # Create mobility model
-        self.mobility_model = MobilityModel(self.positions)
-        self.mobility_model.activate()
-
-        # Create the coverage model
-        self.coverage_model = CoverageModel(self.unique_id, self.coverage_file)
-        self.coverage_model.activate()
-
-    def _deactivate_models(self):
+    def _generate_data(self) -> None:
         """
-        Deactivate the models related to this agent.
+        Generate data for the agent.
         """
-        # Deactivate the sensor model
-        self.sensor_model.deactivate()
+        #
+        self.agent_data_cache.appendleft(self.agent_data)
 
-        # Deactivate the mobility model
-        self.mobility_model.deactivate()
-
-        # Deactivate the coverage model
-        self.coverage_model.deactivate()
+        # Generate new data
+        self.agent_data = 2.0

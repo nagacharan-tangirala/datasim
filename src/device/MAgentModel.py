@@ -1,36 +1,28 @@
 from mesa import Model
 from mesa.time import BaseScheduler
+
+from src.channel.BAgentChannel import AgentChannelBase
 from src.device.BAgent import AgentBase
 
 
 class AgentModel(Model):
-    def __init__(self, sim_params: dict, agents: dict[int, AgentBase]):
+    def __init__(self, agents: dict[int, AgentBase]):
         """
-        Initialize the ABM model.
+        Initialize the model for the agents.
         """
-        super().__init__()
-
-        # Get the simulation parameters
-        self.start_time = sim_params['start'] * 3600 * 1000
-        self.end_time = sim_params['end'] * 3600 * 1000
-        self.time_step = sim_params['step']
-
-        self.seed = sim_params['seed']
-        self.update_step = sim_params['update_step']
-        self.output_dir = sim_params['output_dir']
-        self.output_step = sim_params['output_step']
-
-        self.current_time = self.start_time
-
         # Override the default scheduler
-        self.schedule = BaseScheduler(self)
+        super().__init__()
+        self.schedule: BaseScheduler = BaseScheduler(self)
 
         self.agents: dict[int, AgentBase] = agents
         self.agent_activation_times: dict[int, list[int]] = {}
 
+        self.current_time: int = 0
+        self.agent_channel: AgentChannelBase | None = None
+
         self._prepare_active_agents_dict()
 
-    def _prepare_active_agents_dict(self):
+    def _prepare_active_agents_dict(self) -> None:
         """
         Prepare a dictionary with time step as the key and the respective agents to activate in that time step.
         """
@@ -48,7 +40,13 @@ class AgentModel(Model):
             else:
                 self.agent_activation_times[end_time].append(agent_id)
 
-    def _refresh_active_agents(self, time_step: int):
+    def get_agent_channel(self) -> AgentChannelBase | None:
+        """
+        Get the channel for the agent model.
+        """
+        return self.agent_channel
+
+    def _refresh_active_agents(self, time_step: int) -> None:
         """
         If the start or end time of an agent is equal to the current time step, activate or deactivate the agent.
 
@@ -60,24 +58,24 @@ class AgentModel(Model):
         agents_to_update = self.agent_activation_times[time_step]
         for agent_id in agents_to_update:
             agent = self.agents[agent_id]
-            agent.toggle_status(self)
+            agent.toggle_status()
 
-    def step(self):
+            # If the agent is active, add it to the scheduler and channel. Otherwise, remove it from the scheduler and channel.
+            if agent.is_active():
+                self.schedule.add(agent)
+                self.agent_channel.add_agent(agent)
+            else:
+                self.schedule.remove(agent)
+                self.agent_channel.remove_agent(agent)
+
+    def step(self, *args, **kwargs):
         """
         Step function for the model.
         """
         # Refresh the active agents
-        if self.current_time in self.agent_activation_times:
-            self._refresh_active_agents(self.current_time)
+        current_time = int(args[0])
+        if current_time in self.agent_activation_times:
+            self._refresh_active_agents(current_time)
 
         # Step through the schedule object
         self.schedule.step()
-        self.current_time += self.time_step
-
-    def run(self):
-        """
-        Run the model until the end time.
-        """
-        while self.current_time <= self.end_time:
-            print(f"Current time: {self.current_time}")
-            self.step()
