@@ -1,78 +1,60 @@
-from abc import ABCMeta, abstractmethod
-from enum import Enum
+from abc import abstractmethod
+
+import pandas as pd
+from mesa import Agent
 
 
-class TrafficControllerStatus(Enum):
-    """Enum for traffic controller status."""
-
-    ACTIVE = 'ACTIVE'
-    INACTIVE = 'INACTIVE'
-
-
-class TrafficControllerType(Enum):
-    """Enum for traffic controller types."""
-
-    CENTRAL = 'CENTRAL'
-    BACKUP = 'BACKUP'
+class Link:
+    def __init__(self):
+        self.source = None
+        self.target = None
+        self.bandwidth_in = None
+        self.bandwidth_out = None
+        self.latency = None
 
 
-class TrafficControllerBase(metaclass=ABCMeta):
-    """Base class for all traffic controllerler classes."""
-
-    @abstractmethod
-    def __init__(self, params: dict, nodes: dict):
+class TrafficControllerBase(Agent):
+    def __init__(self, controller_id: int, position: list[float], model=None):
         """
         Initialize the traffic controller.
 
         Parameters
         ----------
-        params : dict
-            Dictionary containing all the parameters for the traffic controller.
-        nodes : dict
-            Dictionary containing all the nodes for the traffic controller.
+        controller_id : int
+            The ID of the traffic controller.
+        position : list[float]
+            The position of the traffic controller.
         """
-        self.controller_id = params.get('id', None)
-        self.position = params.get('position', None)
+        super().__init__(controller_id, model)
+        self.position = position
 
-        self.nodes = nodes
+        self.incoming_links: list = []
+        self.outgoing_links: list = []
 
-        self.status = None
-        self.type = None
+        self.incoming_data = None
+        self.outgoing_data = None
 
     def get_id(self) -> int:
         """
-        Get the ID of the traffic controllerler.
+        Get the ID of the traffic controller.
 
         Returns
         ----------
         int
-            The ID of the traffic controllerler.
+            The ID of the traffic controller.
         """
-        return self.controller_id
+        return self.unique_id
 
-    def get_type(self) -> str:
+    @abstractmethod
+    def initiate_models(self, link_data: pd.DataFrame):
         """
-        Get the type of the traffic controller.
-
-        Returns
-        ----------
-        str
-            The type of the traffic controller as a string.
+        Initiate the models related to this traffic controller.
         """
-        return self.type.value
-
-    def get_status(self) -> str:
-        """
-        Get the status of the traffic controller.
-
-        Returns
-        ----------
-        str
-            The status of the traffic controller as a string.
-        """
-        return self.status.value
+        pass
 
     @abstractmethod
     def get_location(self):
-        """Get the location of the traffic controller."""
+        """
+        Get the location of the traffic controller.
+        """
         pass

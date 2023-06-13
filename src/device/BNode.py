@@ -1,18 +1,11 @@
-from abc import ABCMeta, abstractmethod
-from enum import Enum
+from abc import abstractmethod
+
+import pandas as pd
+from mesa import Agent
 
 
-class NodeType(Enum):
-    """Enum for node types."""
-
-    BASE_STATION = 'base_station'
-    INTERMEDIATE = 'intermediate'
-
-
-class NodeBase(metaclass=ABCMeta):
-    """Base class for all node classes."""
-
-    def __init__(self, params: dict):
+class NodeBase(Agent):
+    def __init__(self, node_id: int, params: pd.Series, sim_model=None):
         """
         Initialize the node class.
 
@@ -21,10 +14,8 @@ class NodeBase(metaclass=ABCMeta):
         params : dict
             Dictionary containing all the parameters for the node.
         """
-        self.node_id = params.get('id', None)
-        self.location = params.get('location', None)
-
-        self.type: NodeType = NodeType.BASE_STATION
+        super().__init__(node_id, sim_model)
+        self.location = [params['x'], params['y']]
 
     def get_id(self) -> int:
         """
@@ -37,7 +28,7 @@ class NodeBase(metaclass=ABCMeta):
         """
         return self.node_id
 
-    def get_location(self) -> list[float]:
+    def get_position(self) -> list[float]:
         """
         Get the location of the node.
 
@@ -48,37 +39,16 @@ class NodeBase(metaclass=ABCMeta):
         """
         return self.location
 
-    def get_type(self) -> str:
-        """
-        Get the type of the node.
-
-        Returns
-        ----------
-        str
-            The type of the node as a string.
-        """
-        return self.type.value
-
     @abstractmethod
-    def update_node(self, time: int):
+    def step(self):
         """
-        Update the node.
-
-        Parameters
-        ----------
-        time : int
-            The current time.
+        Step function for the agent.
         """
         pass
 
     @abstractmethod
-    def get_collected_data_size(self) -> int:
+    def receive_data(self, agent_id: int, data: float):
         """
-        Get the collected data size.
-
-        Returns
-        ----------
-        int
-            The collected data size.
+        Receive data from the agents.
         """
         pass
