@@ -81,9 +81,9 @@ class Simulation:
         """
         Create the device models.
         """
-        self.agent_model = AgentModel(self.agents)
-        self.node_model = NodeModel(self.nodes, self.sim_config.node_link_data)
-        self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data)
+        self.agent_model = AgentModel(self.agents, self.sim_config.model_data['agent'])
+        self.node_model = NodeModel(self.nodes, self.sim_config.node_link_data, self.sim_config.model_data['node'])
+        self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data, self.sim_config.model_data['controller'])
 
     def _create_channel_models(self) -> None:
         """
