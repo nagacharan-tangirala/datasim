@@ -1,7 +1,7 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.models.SMobilityFactory import AgentMobilityFactory
+from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class MobilityModel(Model):
@@ -27,8 +27,8 @@ class MobilityModel(Model):
         self.schedule = BaseScheduler(self)
 
         # Create mobility factory and the mobility model
-        mobility_factory = AgentMobilityFactory()
-        self.mobility = mobility_factory.create_mobility(self.positions)
+        model_factory = DeviceModelFactory()
+        self.mobility = model_factory.create_mobility(self.positions)
 
         # Add the mobility model to the schedule
         self.schedule.add(self.mobility)

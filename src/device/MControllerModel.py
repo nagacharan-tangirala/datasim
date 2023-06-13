@@ -4,10 +4,11 @@ from mesa.time import BaseScheduler
 
 from src.channel.BControllerChannel import ControllerChannelBase
 from src.device.BTrafficController import TrafficControllerBase
+from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class ControllerModel(Model):
-    def __init__(self, controllers: dict[int, TrafficControllerBase], links: pd.DataFrame):
+    def __init__(self, controllers: dict[int, TrafficControllerBase], links: pd.DataFrame, controller_model_data: dict):
         """
         Initialize the controller model.
         """
@@ -16,13 +17,25 @@ class ControllerModel(Model):
         self.controllers = controllers
         self.connections = links
 
+        # All models are defined here
         self.controller_channel: ControllerChannelBase | None = None
+
         self.schedule: BaseScheduler = BaseScheduler(self)
+        self._create_models(controller_model_data)
 
     def _create_node_controller_links(self):
         """
         Create the links between the nodes and controllers.
         """
+        pass
+
+    def _create_models(self, controller_model_data: dict) -> None:
+        """
+        Create all the models for the controllers.
+        """
+        # Create the controller channel model
+        model_factory = DeviceModelFactory()
+        self.controller_channel = model_factory.create_controller_channel(controller_model_data['channel'])
 
     def step(self) -> None:
         """

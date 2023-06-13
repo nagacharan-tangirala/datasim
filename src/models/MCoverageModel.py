@@ -2,8 +2,8 @@ import pandas as pd
 from mesa import Model
 from mesa.time import BaseScheduler
 
+from src.setup.SDeviceModelFactory import DeviceModelFactory
 from src.models.BCoverage import AgentCoverage
-from src.models.SCoverageFactory import AgentCoverageFactory
 
 
 class CoverageModel(Model):
@@ -23,8 +23,8 @@ class CoverageModel(Model):
         Activate the model.
         """
         # Create coverage factory and the coverage model
-        coverage_factory = AgentCoverageFactory()
-        self.coverage = coverage_factory.create_coverage(self.agent_id, self.coverage_data)
+        model_factory = DeviceModelFactory()
+        self.coverage = model_factory.create_coverage(self.agent_id, self.coverage_data)
 
         # Add the coverage model to the schedule
         if self.coverage is not None:

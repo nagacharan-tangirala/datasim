@@ -2,11 +2,11 @@ from src.channel.BControllerChannel import ControllerChannelBase
 
 
 class InfiniteBandwidthControllerChannel(ControllerChannelBase):
-    def __init__(self, channel_id: int):
+    def __init__(self):
         """
         Initialize the infinite bandwidth controller channel.
         """
-        super().__init__(channel_id)
+        super().__init__(0, None)
 
     def _collect_from_nodes(self):
         """
