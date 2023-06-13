@@ -40,17 +40,17 @@ class OutputBase(metaclass=ABCMeta):
         Parameters
         ----------
         sim_time : int
-            The current sim_time.
+            The current time.
         agents : dict
             Dictionary of agents in the simulation.
         nodes : dict
             Dictionary of nodes in the simulation.
         """
-        # Check if it is sim_time to write the output and write the output.
+        # Check if it is time to write the output. If not, return.
         if sim_time > self.last_output_time:
             self._write_data(agents, nodes)
 
-        # Update the last update sim_time.
+        # Update the last update time.
         self.last_output_time = sim_time
 
     @abstractmethod
