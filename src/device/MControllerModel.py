@@ -43,12 +43,6 @@ class ControllerModel(Model):
         for controller in self.controllers.values():
             self.schedule.add(controller)
 
-    def get_controller_channel(self) -> ControllerChannelBase:
-        """
-        Get the controller channel.
-        """
-        return self.controller_channel
-
     def _create_models(self, controller_model_data: dict) -> None:
         """
         Create all the models for the controllers.
