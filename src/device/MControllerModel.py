@@ -1,4 +1,4 @@
-import pandas as pd
+from pandas import DataFrame
 from mesa import Model
 from mesa.time import BaseScheduler
 
@@ -8,7 +8,7 @@ from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class ControllerModel(Model):
-    def __init__(self, controllers: dict[int, BaseController], links: pd.DataFrame, controller_model_data: dict):
+    def __init__(self, controllers: dict[int, BaseController], links: DataFrame, controller_model_data: dict):
         """
         Initialize the controller model.
         """
@@ -24,15 +24,15 @@ class ControllerModel(Model):
         self._create_models(controller_model_data)
         self._add_controllers_to_scheduler()
 
-    def _create_node_controller_links(self):
+    def _create_cell_tower_controller_links(self):
         """
-        Create the links between the nodes and controllers.
+        Create the links between the cell towers and controllers.
         """
         pass
 
     def get_controller_channel(self) -> BaseControllerChannel | None:
         """
-        Get the channel for the agent model.
+        Get the controller channel.
         """
         return self.controller_channel
 

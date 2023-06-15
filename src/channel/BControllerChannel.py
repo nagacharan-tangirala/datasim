@@ -3,7 +3,7 @@ from abc import abstractmethod
 from mesa import Agent
 from pandas import DataFrame
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
 class BaseControllerChannel(Agent):
@@ -11,17 +11,17 @@ class BaseControllerChannel(Agent):
         super().__init__(0, None)
 
         self.controller_links = controller_links
-        self.node_to_controller = {}
-        self.nodes: dict = {}
+        self.cell_tower_to_controller = {}
+        self.cell_towers: dict = {}
 
         self.incoming_data: dict = {}
 
-    def assign_nodes(self, nodes: dict[int, NodeBase]) -> None:
+    def assign_cell_towers(self, cell_towers: dict[int, BaseCellTower]) -> None:
         """
-        Add a node to the channel.
+        Add a cell tower to the channel.
         """
-        # Add the nodes to the channel
-        self.nodes = nodes
+        # Add the cell towers to the channel
+        self.cell_towers = cell_towers
 
         # Read the controller links
         self._read_controller_links()
@@ -30,18 +30,18 @@ class BaseControllerChannel(Agent):
         """
         Read the controller links.
         """
-        # Based on the controller links, assign nodes to the controller
+        # Based on the controller links, assign cell towers to the controller
         for _, row in self.controller_links.iterrows():
-            # Get the node ID
-            node_id = row['node']
+            # Get the cell tower ID
+            cell_tower_id = row['cell_tower']
 
-            # Add the node to the controller
-            self.node_to_controller[node_id] = row['controller']
+            # Add the cell tower to the controller
+            self.cell_tower_to_controller[cell_tower_id] = row['controller']
 
     @abstractmethod
-    def _collect_from_nodes(self):
+    def _collect_from_cell_towers(self):
         """
-        Collect data from the nodes.
+        Collect data from the cell towers.
         """
         pass
 
@@ -56,8 +56,8 @@ class BaseControllerChannel(Agent):
         """
         Step through the controller channel.
         """
-        # Collect data from the nodes
-        self._collect_from_nodes()
+        # Collect data from the cell towers
+        self._collect_from_cell_towers()
 
         # Send data to the controller
         self._send_to_controller()

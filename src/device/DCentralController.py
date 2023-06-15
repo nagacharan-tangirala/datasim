@@ -1,4 +1,4 @@
-import pandas as pd
+from pandas import DataFrame
 
 from src.device.BController import BaseController
 
@@ -23,7 +23,7 @@ class CentralController(BaseController):
         """
         return self.position
 
-    def initiate_models(self, link_data: pd.DataFrame):
+    def initiate_models(self, link_data: DataFrame):
         """
         Initiate the models related to this traffic controller.
         """

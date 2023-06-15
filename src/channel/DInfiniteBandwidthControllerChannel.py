@@ -2,7 +2,7 @@ from src.channel.BControllerChannel import BaseControllerChannel
 
 
 class InfiniteBandwidthControllerChannel(BaseControllerChannel):
-    def __init__(self):
+    def __init__(self, controller_links):
         """
         Initialize the infinite bandwidth controller channel.
         """
