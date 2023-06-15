@@ -1,4 +1,4 @@
-import pandas as pd
+from pandas import DataFrame
 from mesa import Model
 from mesa.time import BaseScheduler
 
@@ -8,44 +8,44 @@ from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class CellTowerModel(Model):
-    def __init__(self, nodes: dict[int, BaseCellTower], node_link_data: pd.DataFrame, node_model_data: dict):
+    def __init__(self, cell_towers: dict[int, BaseCellTower], cell_tower_link_data: DataFrame, cell_tower_model_data: dict):
         """
-        Initialize the node model.
+        Initialize the cell tower model.
         """
         super().__init__()
 
-        self.nodes: dict[int, BaseCellTower] = nodes
-        self.node_link_data: pd.DataFrame = node_link_data
+        self.cell_towers: dict[int, BaseCellTower] = cell_towers
+        self.cell_tower_link_data: DataFrame = cell_tower_link_data
 
         # All models are defined here
-        self.node_channel: BaseCellTowerChannel | None = None
+        self.cell_tower_channel: BaseCellTowerChannel | None = None
 
         self.schedule: BaseScheduler = BaseScheduler(self)
-        self._create_models(node_model_data)
-        self._add_nodes_to_scheduler()
+        self._create_models(cell_tower_model_data)
+        self._add_cell_towers_to_scheduler()
 
-    def get_node_channel(self) -> BaseCellTowerChannel:
+    def get_cell_tower_channel(self) -> BaseCellTowerChannel:
         """
-        Get the node channel.
+        Get the cell tower channel.
         """
-        return self.node_channel
+        return self.cell_tower_channel
 
-    def _add_nodes_to_scheduler(self) -> None:
+    def _add_cell_towers_to_scheduler(self) -> None:
         """
-        Add the nodes to the scheduler.
+        Add the cell_towers to the scheduler.
         """
-        for node in self.nodes.values():
-            self.schedule.add(node)
+        for cell_tower in self.cell_towers.values():
+            self.schedule.add(cell_tower)
 
-    def _create_models(self, node_model_data: dict) -> None:
+    def _create_models(self, cell_tower_model_data: dict) -> None:
         """
-        Create all the models for the nodes.
+        Create all the models for the cell_towers.
         """
         # Iterate through the models and create them
         model_factory = DeviceModelFactory()
-        for model_id, model_data in node_model_data.items():
+        for model_id, model_data in cell_tower_model_data.items():
             if model_data['type'] == 'channel':
-                self.node_channel = model_factory.create_node_channel(model_data)
+                self.cell_tower_channel = model_factory.create_cell_tower_channel(model_data)
             else:
                 raise ValueError(f"Unknown model type {model_data['type']}")
 

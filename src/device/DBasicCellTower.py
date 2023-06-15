@@ -1,4 +1,4 @@
-import pandas as pd
+from pandas import Series
 
 from src.device.BCellTower import BaseCellTower
 
@@ -8,33 +8,33 @@ class BasicCellTower(BaseCellTower):
     Base station class designed to mimic the behavior of base stations.
     """
 
-    def __init__(self, node_id, node_data: pd.Series):
+    def __init__(self, cell_tower_id, cell_tower_data: Series):
         """
         Initialize the base station.
 
         Parameters
         ----------
-        node_data : pd.Series
+        cell_tower_data : Series
             Series containing all the parameters for the base station.
         """
-        super().__init__(node_id, node_data)
+        super().__init__(cell_tower_id, cell_tower_data)
 
-        self.incoming_agents_data = {}
+        self.incoming_ues_data = {}
 
     def step(self):
         """
-        Step function for the agent.
+        Step function for the ue.
         """
-        # Compute the total data received from the agents.
+        # Compute the total data received from the ues.
         total_data = 0
-        for agent_id, data in self.incoming_agents_data.items():
+        for ue_id, data in self.incoming_ues_data.items():
             total_data = total_data + data
 
-        self.incoming_agents_data.clear()
+        self.incoming_ues_data.clear()
         self.total_incoming_data = total_data
 
-    def receive_data(self, agent_id: int, data: float):
+    def receive_data(self, ue_id: int, data: float):
         """
-        Receive data from the agents.
+        Receive data from the ues.
         """
-        self.incoming_agents_data[agent_id] = data
+        self.incoming_ues_data[ue_id] = data
