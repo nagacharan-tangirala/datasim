@@ -13,7 +13,7 @@ class Link:
         self.latency = None
 
 
-class TrafficControllerBase(Agent):
+class BaseController(Agent):
     def __init__(self, controller_id: int, position: list[float], model=None):
         """
         Initialize the traffic controller.

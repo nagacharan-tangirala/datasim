@@ -1,10 +1,10 @@
 from mesa import Model
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
 class ControllerChannelModel(Model):
-    def __init__(self, nodes: dict[int, NodeBase]):
+    def __init__(self, nodes: dict[int, BaseCellTower]):
         """
         Initialize the controller channel model.
         """

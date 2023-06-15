@@ -1,9 +1,9 @@
 import pandas as pd
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
-class BaseStation(NodeBase):
+class BasicCellTower(BaseCellTower):
     """
     Base station class designed to mimic the behavior of base stations.
     """

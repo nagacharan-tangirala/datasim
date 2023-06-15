@@ -1,11 +1,11 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
-class NodeChannelModel(Model):
-    def __init__(self, nodes: dict[int, NodeBase]):
+class CellTowerChannelModel(Model):
+    def __init__(self, nodes: dict[int, BaseCellTower]):
         """
         Initialize the node channel model.
         """

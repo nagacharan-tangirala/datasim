@@ -1,7 +1,7 @@
-from src.channel.BNodeChannel import NodeChannelBase
+from src.channel.BCellTowerChannel import BaseCellTowerChannel
 
 
-class InfiniteBandwidthNodeChannel(NodeChannelBase):
+class InfiniteBandwidthCellTowerChannel(BaseCellTowerChannel):
     def __init__(self):
         """
         Initialize the infinite bandwidth node channel.

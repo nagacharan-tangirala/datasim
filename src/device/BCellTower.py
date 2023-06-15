@@ -4,7 +4,7 @@ import pandas as pd
 from mesa import Agent
 
 
-class NodeBase(Agent):
+class BaseCellTower(Agent):
     def __init__(self, node_id: int, node_data: pd.Series, sim_model=None):
         """
         Initialize the node class.

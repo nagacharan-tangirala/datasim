@@ -1,7 +1,7 @@
-from src.channel.BAgentChannel import AgentChannelBase
+from src.channel.BUEChannel import BaseUEChannel
 
 
-class InfiniteBandwidthAgentChannel(AgentChannelBase):
+class InfiniteBandwidthUEChannel(BaseUEChannel):
     def __init__(self):
         super().__init__()
 
