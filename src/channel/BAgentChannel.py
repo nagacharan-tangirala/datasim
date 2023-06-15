@@ -12,7 +12,7 @@ class AgentChannelBase(Agent):
         self.agents: dict[int, AgentBase] = {}
         self.nodes: dict[int, NodeBase] = {}
 
-        self.node_agents: dict[int, list[int]] = {}
+        self.node_coverage_agents: dict[int, list[int]] = {}
         self.data_from_agents: dict[int, float] = {}
 
         self.current_time: int = 0
@@ -41,6 +41,12 @@ class AgentChannelBase(Agent):
 
         # Send data to the respective nodes
         self._send_data_to_nodes()
+
+        # Receive data from the respective nodes
+        self._receive_data_from_nodes()
+
+        # Send data to the respective agents
+        self._send_data_to_agents()
 
     def _find_nearest_node(self, agent_id: int) -> int:
         """
@@ -75,9 +81,9 @@ class AgentChannelBase(Agent):
             nearest_node_id = self._find_nearest_node(agent_id)
 
             # Store the node ID
-            if nearest_node_id not in self.node_agents:
-                self.node_agents[nearest_node_id] = []
-            self.node_agents[nearest_node_id].append(agent_id)
+            if nearest_node_id not in self.node_coverage_agents:
+                self.node_coverage_agents[nearest_node_id] = []
+            self.node_coverage_agents[nearest_node_id].append(agent_id)
 
             # Get the data from the agent
             self.data_from_agents[agent_id] = agent.get_data()
@@ -106,6 +112,20 @@ class AgentChannelBase(Agent):
     def _send_data_to_neighbours(self):
         """
         Send data to neighboring agents.
+        """
+        pass
+
+    @abstractmethod
+    def _receive_data_from_nodes(self):
+        """
+        Receive data from the respective nodes.
+        """
+        pass
+
+    @abstractmethod
+    def _send_data_to_agents(self):
+        """
+        Send data to the respective agents.
         """
         pass
 

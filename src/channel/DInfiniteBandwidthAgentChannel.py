@@ -10,7 +10,7 @@ class InfiniteBandwidthAgentChannel(AgentChannelBase):
         Send data to the respective nodes.
         """
         # Send as much data as the bandwidth allows.
-        for node_id, agents in self.node_agents.items():
+        for node_id, agents in self.node_coverage_agents.items():
             for agent_id in agents:
                 # Get the data from the agent
                 data = self.data_from_agents[agent_id]
@@ -40,3 +40,9 @@ class InfiniteBandwidthAgentChannel(AgentChannelBase):
             for neighbour_id, neighbour_data in data.items():
                 # Get the data from the agent
                 data = self.data_from_agents[agent_id]
+
+    def _receive_data_from_nodes(self):
+        pass
+
+    def _send_data_to_agents(self):
+        pass

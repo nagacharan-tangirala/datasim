@@ -26,12 +26,12 @@ class DeviceModelFactory:
             raise NotImplementedError(f"Agent channel model {channel_model_data['name']} is not implemented.")
 
     @staticmethod
-    def create_controller_channel(channel_model_data: dict) -> InfiniteBandwidthControllerChannel:
+    def create_controller_channel(channel_model_data: dict, controller_links: pd.DataFrame) -> InfiniteBandwidthControllerChannel:
         """
         Create the controller models.
         """
         if channel_model_data['name'] == 'infinite_bandwidth':
-            return InfiniteBandwidthControllerChannel()
+            return InfiniteBandwidthControllerChannel(controller_links)
         else:
             raise NotImplementedError(f"Controller channel model {channel_model_data['name']} is not implemented.")
 

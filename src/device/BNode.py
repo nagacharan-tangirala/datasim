@@ -17,6 +17,8 @@ class NodeBase(Agent):
         super().__init__(node_id, sim_model)
         self.location = [node_data['x'], node_data['y']]
 
+        self.total_incoming_data = 0
+
     def get_id(self) -> int:
         """
         Get the ID of the node.
@@ -27,6 +29,12 @@ class NodeBase(Agent):
             The ID of the ndoe.
         """
         return self.unique_id
+
+    def get_incoming_data(self) -> float:
+        """
+        Get the total incoming data from the agents.
+        """
+        return self.total_incoming_data
 
     def get_position(self) -> list[float]:
         """

@@ -22,12 +22,20 @@ class NodeModel(Model):
 
         self.schedule: BaseScheduler = BaseScheduler(self)
         self._create_models(node_model_data)
+        self._add_nodes_to_scheduler()
 
     def get_node_channel(self) -> NodeChannelBase:
         """
         Get the node channel.
         """
         return self.node_channel
+
+    def _add_nodes_to_scheduler(self) -> None:
+        """
+        Add the nodes to the scheduler.
+        """
+        for node in self.nodes.values():
+            self.schedule.add(node)
 
     def _create_models(self, node_model_data: dict) -> None:
         """

@@ -18,4 +18,13 @@ class ControllerChannelModel(Model):
         """
         Add the channel to the model.
         """
+        # Add nodes to the channel
+        channel.assign_nodes(self.nodes)
+
         self.schedule.add(channel)
+
+    def step(self):
+        """
+        Step through the controller channel model.
+        """
+        self.schedule.step()

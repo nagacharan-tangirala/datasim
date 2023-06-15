@@ -4,10 +4,6 @@ from src.device.BNode import NodeBase
 
 
 class BaseStation(NodeBase):
-    """
-    Base station class designed to mimic the behavior of base stations.
-    """
-
     def __init__(self, node_id, node_data: pd.Series):
         """
         Initialize the base station.
@@ -30,8 +26,8 @@ class BaseStation(NodeBase):
         for agent_id, data in self.incoming_agents_data.items():
             total_data = total_data + data
 
-        # Clear the incoming data.
         self.incoming_agents_data.clear()
+        self.total_incoming_data = total_data
 
     def receive_data(self, agent_id: int, data: float):
         """

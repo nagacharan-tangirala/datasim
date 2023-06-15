@@ -22,12 +22,20 @@ class ControllerModel(Model):
 
         self.schedule: BaseScheduler = BaseScheduler(self)
         self._create_models(controller_model_data)
+        self._add_controllers_to_scheduler()
 
     def _create_node_controller_links(self):
         """
         Create the links between the nodes and controllers.
         """
         pass
+
+    def _add_controllers_to_scheduler(self) -> None:
+        """
+        Add the controllers to the scheduler.
+        """
+        for controller in self.controllers.values():
+            self.schedule.add(controller)
 
     def get_controller_channel(self) -> ControllerChannelBase:
         """
@@ -43,7 +51,7 @@ class ControllerModel(Model):
         model_factory = DeviceModelFactory()
         for model_id, model_data in controller_model_data.items():
             if model_data['type'] == 'channel':
-                self.controller_channel = model_factory.create_controller_channel(model_data)
+                self.controller_channel = model_factory.create_controller_channel(model_data, self.connections)
             else:
                 raise ValueError(f"Unknown model type {model_data['type']}")
 
