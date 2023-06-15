@@ -1,21 +1,21 @@
-import pandas as pd
+from pandas import DataFrame
 from mesa import Model
 from mesa.time import BaseScheduler
 
 from src.setup.SDeviceModelFactory import DeviceModelFactory
-from src.models.BCoverage import AgentCoverage
+from src.models.BUECoverage import UECoverage
 
 
 class CoverageModel(Model):
-    def __init__(self, coverage_data: pd.DataFrame):
+    def __init__(self, coverage_data: DataFrame):
         """
-        Initialize the coverage model to update the nodes and agents that are in each other's coverage.
+        Initialize the coverage model to update the cell towers and ues that are in each other's coverage.
         """
         super().__init__()
         self.coverage_data = coverage_data
 
         self.schedule: BaseScheduler = BaseScheduler(self)
-        self.coverage: AgentCoverage | None = None
+        self.coverage: UECoverage | None = None
 
     def activate(self) -> None:
         """
@@ -39,7 +39,7 @@ class CoverageModel(Model):
 
     def step(self, *args, **kwargs):
         """
-        Update the coverage of the nodes and agents.
+        Update the coverage of the cell towers and ues.
         """
         # Check if the coverage model is active
         if len(self.schedule.agents) == 0:
@@ -52,10 +52,10 @@ class CoverageModel(Model):
         # Step through the coverage model
         self.schedule.step()
 
-    def get_agents_in_coverage(self) -> list[int]:
+    def get_ues_in_coverage(self) -> list[int]:
         """
-        Get the neighbors of the agent.
+        Get the neighbors of the ue.
         """
         if self.coverage is None:
             return []
-        return self.coverage.get_agents_in_coverage()
+        return self.coverage.get_ues_in_coverage()

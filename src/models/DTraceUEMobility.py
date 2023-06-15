@@ -1,7 +1,7 @@
-from src.models.BMobility import AgentMobility
+from src.models.BUEMobility import UEMobility
 
 
-class TraceMobility(AgentMobility):
+class TraceMobility(UEMobility):
     def __init__(self, positions: dict):
         """
         Initialize the trace mobility model.
@@ -9,7 +9,7 @@ class TraceMobility(AgentMobility):
         Parameters
         ----------
         positions : dict
-            Dictionary of positions for the agent with the time as key.
+            Dictionary of positions for the ue with the time as key.
         """
         super().__init__(positions)
 

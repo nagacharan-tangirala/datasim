@@ -41,6 +41,6 @@ class MobilityModel(Model):
 
     def get_location(self) -> list[float]:
         """
-        Get the current location of the agent.
+        Get the current location of the ue.
         """
         return self.mobility.get_current_location()

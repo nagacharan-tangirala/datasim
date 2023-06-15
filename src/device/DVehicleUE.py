@@ -1,23 +1,23 @@
-import pandas as pd
+from pandas import DataFrame
 
 from src.device.BUE import BaseUE
-from src.models.MCoverageModel import CoverageModel
-from src.models.MMobilityModel import MobilityModel
+from src.models.MUECoverageModel import CoverageModel
+from src.models.MUEMobilityModel import MobilityModel
 
 
 class VehicleUE(BaseUE):
-    def __init__(self, agent_id: int):
+    def __init__(self, ue_id: int):
         """
-        Initialize the vehicle agent.
+        Initialize the vehicle ue.
         """
-        super().__init__(agent_id)
-        self.coverage: pd.DataFrame | None = None
+        super().__init__(ue_id)
+        self.coverage: DataFrame | None = None
 
         self.neighbour_data: dict[int, float] = {}
 
-    def set_mobility_data(self, positions: pd.DataFrame) -> None:
+    def set_mobility_data(self, positions: DataFrame) -> None:
         """
-        Set the mobility data for the agent.
+        Set the mobility data for the ue.
         """
         self.start_time = positions["time"].min()
         self.end_time = positions["time"].max()
@@ -25,15 +25,15 @@ class VehicleUE(BaseUE):
         # Store x and y positions
         self.positions = positions[["x", "y"]].values.tolist()
 
-    def set_coverage_data(self, coverage: pd.DataFrame):
+    def set_coverage_data(self, coverage: DataFrame):
         """
-        Set the coverage data for the agent.
+        Set the coverage data for the ue.
         """
         self.coverage = coverage.reset_index(drop=True)
 
     def _initiate_models(self) -> None:
         """
-        Initiate the models related to this agent.
+        Initiate the models related to this ue.
         """
         # Create mobility model
         self.mobility_model = MobilityModel(self.positions)
@@ -45,7 +45,7 @@ class VehicleUE(BaseUE):
 
     def _deactivate_models(self) -> None:
         """
-        Deactivate the models related to this agent.
+        Deactivate the models related to this ue.
         """
         # Deactivate the mobility model
         self.mobility_model.deactivate()
@@ -55,9 +55,9 @@ class VehicleUE(BaseUE):
 
     def step(self) -> None:
         """
-        Step function for the agent.
+        Step function for the ue.
         """
-        # Check if the agent is active
+        # Check if the ue is active
         if not self.active:
             return
 
@@ -76,12 +76,12 @@ class VehicleUE(BaseUE):
         Collect data from the neighbors.
         """
         # Get the neighbours
-        neighbours = self.coverage_model.get_agents_in_coverage()
+        neighbours = self.coverage_model.get_ues_in_coverage()
 
         # Clear the neighbour data
         self.neighbour_data.clear()
 
-        # Collect the data from the agents within the coverage area
+        # Collect the data from the ues within the coverage area
         for neighbour in neighbours:
             if neighbour is not self.unique_id and self.sim_model.ues[neighbour].get_data_transmit_status():
                 self.neighbour_data[neighbour] = self.sim_model.ues[neighbour].get_cached_data()
@@ -94,10 +94,10 @@ class VehicleUE(BaseUE):
 
     def _generate_data(self) -> None:
         """
-        Generate data for the agent.
+        Generate data for the ue.
         """
         #
-        self.agent_data_cache.appendleft(self.agent_data)
+        self.ue_data_cache.appendleft(self.ue_data)
 
         # Generate new data
-        self.agent_data = 2.0
+        self.ue_data = 2.0

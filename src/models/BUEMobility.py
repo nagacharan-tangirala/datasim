@@ -3,9 +3,7 @@ from abc import abstractmethod
 from mesa import Agent
 
 
-class AgentMobility(Agent):
-    """Base class for all mobility model classes."""
-
+class UEMobility(Agent):
     def __init__(self, positions):
         """
         Initialize the mobility model.
@@ -17,12 +15,12 @@ class AgentMobility(Agent):
 
     def get_current_location(self) -> list[float]:
         """
-        Get the current location of the agent.
+        Get the current location of the ue.
 
         Returns
         ----------
         list
-            The current location of the agent.
+            The current location of the ue.
         """
         return self.current_location
 

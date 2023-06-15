@@ -8,7 +8,7 @@ from src.device.BCellTower import BaseCellTower
 class UEChannelModel(Model):
     def __init__(self, nodes: dict[int, BaseCellTower]):
         """
-        Initialize the agent channel model.
+        Initialize the ue channel model.
         """
         super().__init__()
 
@@ -17,9 +17,8 @@ class UEChannelModel(Model):
 
     def step(self, *args, **kwargs) -> None:
         """
-        Step through the agent channel model.
+        Step through the ue channel model.
         """
-        # Set the current time for the agents
         self.schedule.step()
 
     def add_channel(self, channel: BaseUEChannel) -> None:

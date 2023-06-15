@@ -1,7 +1,7 @@
-from src.models.BMobility import AgentMobility
+from src.models.BUEMobility import UEMobility
 
 
-class StaticMobility(AgentMobility):
+class StaticUEMobility(UEMobility):
     def __init__(self, positions: dict):
         """
         Initialize the static mobility model.
@@ -9,7 +9,7 @@ class StaticMobility(AgentMobility):
         Parameters
         ----------
         positions : dict
-            Dictionary of positions for the agent with the time as key.
+            Dictionary of positions for the ue with the time as key.
         """
         super().__init__(positions)
 

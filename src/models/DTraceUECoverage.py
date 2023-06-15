@@ -1,10 +1,10 @@
-import pandas as pd
+from pandas import DataFrame
 
-from src.models.BCoverage import AgentCoverage
+from src.models.BUECoverage import UECoverage
 
 
-class AgentTraceCoverage(AgentCoverage):
-    def __init__(self, coverage_data: pd.DataFrame):
+class TraceUECoverage(UECoverage):
+    def __init__(self, coverage_data: DataFrame):
         """
         Initialize the trace coverage model.
         """
@@ -19,5 +19,5 @@ class AgentTraceCoverage(AgentCoverage):
         if self.coverage_data is None or len(self.coverage_data) == 0:
             self.coverage_data = []
 
-        # Get the agents in the coverage
-        self.agents_in_coverage = self.coverage_data[self.coverage_data["time"] == self.current_time]['neighbours'].tolist()
+        # Get the ues in the coverage
+        self.ues_in_coverage = self.coverage_data[self.coverage_data["time"] == self.current_time]['neighbours'].tolist()

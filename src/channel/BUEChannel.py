@@ -9,11 +9,11 @@ from src.device.BCellTower import BaseCellTower
 class BaseUEChannel(Agent):
     def __init__(self):
         super().__init__(0, None)
-        self.agents: dict[int, BaseUE] = {}
-        self.nodes: dict[int, BaseCellTower] = {}
+        self.ues: dict[int, BaseUE] = {}
+        self.cell_towers: dict[int, BaseCellTower] = {}
 
-        self.node_coverage_agents: dict[int, list[int]] = {}
-        self.data_from_agents: dict[int, float] = {}
+        self.cell_tower_coverage_ues: dict[int, list[int]] = {}
+        self.data_from_ues: dict[int, float] = {}
 
         self.current_time: int = 0
 
@@ -25,75 +25,75 @@ class BaseUEChannel(Agent):
 
     def step(self, *args, **kwargs) -> None:
         """
-        Step through the agent channel.
+        Step through the ue channel.
         """
-        # Assert that nodes are assigned to the channel
-        assert len(self.nodes) > 0, "No nodes assigned to the channel."
+        # Assert that cell towers are assigned to the channel
+        assert len(self.cell_towers) > 0, "No cell_towers assigned to the channel."
 
-        if len(self.agents) is 0:
+        if len(self.ues) is 0:
             return
 
-        # Send data to neighboring agents
+        # Send data to neighboring ues
         self._send_data_to_neighbours()
 
-        # Collect data from each agent
-        self._collect_data_from_agents()
+        # Collect data from each ue
+        self._collect_data_from_ues()
 
-        # Send data to the respective nodes
-        self._send_data_to_nodes()
+        # Send data to the respective cell towers
+        self._send_data_to_cell_towers()
 
-        # Receive data from the respective nodes
-        self._receive_data_from_nodes()
+        # Receive data from the respective cell towers
+        self._receive_data_from_cell_towers()
 
-        # Send data to the respective agents
-        self._send_data_to_agents()
+        # Send data to the respective ues
+        self._send_data_to_ues()
 
-    def _find_nearest_node(self, agent_id: int) -> int:
+    def _find_nearest_cell_tower(self, ue_id: int) -> int:
         """
-        Find the nearest node to each agent.
+        Find the nearest cell_tower to each ue.
         """
-        # Get the agent's position
-        agent_position = self.agents[agent_id].get_position()
+        # Get the ue's position
+        ue_position = self.ues[ue_id].get_position()
 
-        # Find the nearest node
-        nearest_node_id = None
-        nearest_node_distance = None
-        for node_id, node in self.nodes.items():
-            # Get the node's position
-            node_position = node.get_position()
+        # Find the nearest cell_tower
+        nearest_cell_tower_id = None
+        nearest_cell_tower_distance = None
+        for cell_tower_id, cell_tower in self.cell_towers.items():
+            # Get the cell_tower's position
+            cell_tower_position = cell_tower.get_position()
 
-            # Calculate distance between the agent and the node
-            distance = self._get_distance(agent_position, node_position)
+            # Calculate distance between the ue and the cell tower
+            distance = self._get_distance(ue_position, cell_tower_position)
 
-            # Update the nearest node
-            if nearest_node_id is None or distance < nearest_node_distance:
-                nearest_node_id = node_id
-                nearest_node_distance = distance
+            # Update the nearest cell_tower
+            if nearest_cell_tower_id is None or distance < nearest_cell_tower_distance:
+                nearest_cell_tower_id = cell_tower_id
+                nearest_cell_tower_distance = distance
 
-        return nearest_node_id
+        return nearest_cell_tower_id
 
-    def _collect_data_from_agents(self):
+    def _collect_data_from_ues(self):
         """
-        Collect data from each agent.
+        Collect data from each ue.
         """
-        for agent_id, agent in self.agents.items():
-            # Get the nearest node to the agent
-            nearest_node_id = self._find_nearest_node(agent_id)
+        for ue_id, ue in self.ues.items():
+            # Get the nearest cell_tower to the ue
+            nearest_cell_tower_id = self._find_nearest_cell_tower(ue_id)
 
-            # Store the node ID
-            if nearest_node_id not in self.node_coverage_agents:
-                self.node_coverage_agents[nearest_node_id] = []
-            self.node_coverage_agents[nearest_node_id].append(agent_id)
+            # Store the cell_tower ID
+            if nearest_cell_tower_id not in self.cell_tower_coverage_ues:
+                self.cell_tower_coverage_ues[nearest_cell_tower_id] = []
+            self.cell_tower_coverage_ues[nearest_cell_tower_id].append(ue_id)
 
-            # Get the data from the agent
-            self.data_from_agents[agent_id] = agent.get_data()
+            # Get the data from the ue
+            self.data_from_ues[ue_id] = ue.get_data()
 
     @staticmethod
     def _get_distance(position1: list[float], position2: list[float]):
         """
         Get the distance between two positions.
         """
-        # Calculate distance between the agent and the node
+        # Calculate distance between the ue and the cell tower
         distance = 0
         for i in range(len(position1)):
             distance += (position1[i] - position2[i]) ** 2
@@ -102,47 +102,47 @@ class BaseUEChannel(Agent):
         return distance
 
     @abstractmethod
-    def _send_data_to_nodes(self):
+    def _send_data_to_cell_towers(self):
         """
-        Send data to the respective nodes.
+        Send data to the respective cell towers.
         """
         pass
 
     @abstractmethod
     def _send_data_to_neighbours(self):
         """
-        Send data to neighboring agents.
+        Send data to neighboring ues.
         """
         pass
 
     @abstractmethod
-    def _receive_data_from_nodes(self):
+    def _receive_data_from_cell_towers(self):
         """
-        Receive data from the respective nodes.
+        Receive data from the respective cell towers.
         """
         pass
 
     @abstractmethod
-    def _send_data_to_agents(self):
+    def _send_data_to_ues(self):
         """
-        Send data to the respective agents.
+        Send data to the respective ues.
         """
         pass
 
-    def assign_nodes(self, nodes: dict[int, BaseCellTower]) -> None:
+    def assign_cell_towers(self, cell_towers: dict[int, BaseCellTower]) -> None:
         """
-        Add a node to the channel.
+        Add a cell tower to the channel.
         """
-        self.nodes = nodes
+        self.cell_towers = cell_towers
 
-    def add_agent(self, agent: BaseUE) -> None:
+    def add_ue(self, ue: BaseUE) -> None:
         """
-        Add an agent to the channel.
+        Add an ue to the channel.
         """
-        self.agents[agent.get_id()] = agent
+        self.ues[ue.get_id()] = ue
 
-    def remove_agent(self, agent: BaseUE) -> None:
+    def remove_ue(self, ue: BaseUE) -> None:
         """
-        Remove an agent from the channel.
+        Remove an ue from the channel.
         """
-        self.agents.pop(agent.get_id())
+        self.ues.pop(ue.get_id())
