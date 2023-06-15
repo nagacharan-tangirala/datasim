@@ -2,7 +2,7 @@ import xml.etree.ElementTree as Et
 from os import makedirs
 from os.path import dirname, exists, join
 
-import pandas as pd
+from pandas import DataFrame, read_csv
 import pyarrow.parquet as pq
 
 
@@ -15,16 +15,16 @@ class SimulationSetup:
         self.project_path: str = dirname(config_file)
 
         # Create the objects to read and store input data
-        self.agent_data: pd.DataFrame = pd.DataFrame()
-        self.coverage_data: pd.DataFrame = pd.DataFrame()
-        self.node_data: pd.DataFrame = pd.DataFrame()
-        self.controller_data: pd.DataFrame = pd.DataFrame()
+        self.ue_data: DataFrame = DataFrame()
+        self.coverage_data: DataFrame = DataFrame()
+        self.cell_tower_data: DataFrame = DataFrame()
+        self.controller_data: DataFrame = DataFrame()
 
         self.simulation_data: dict = {}
 
-        self.node_link_data: pd.DataFrame = pd.DataFrame()
-        self.agent_link_data: pd.DataFrame = pd.DataFrame()
-        self.controller_link_data: pd.DataFrame = pd.DataFrame()
+        self.cell_tower_link_data: DataFrame = DataFrame()
+        self.ue_link_data: DataFrame = DataFrame()
+        self.controller_link_data: DataFrame = DataFrame()
 
         self.model_data: dict = {}
 
@@ -51,9 +51,9 @@ class SimulationSetup:
             if child.tag == 'trace':
                 self._read_trace(child.text)
             elif child.tag == 'coverage':
-                self._read_agents_coverage(child.text)
-            elif child.tag == 'nodes':
-                self._read_nodes(child.text)
+                self._read_ues_coverage(child.text)
+            elif child.tag == 'cell_towers':
+                self._read_cell_towers(child.text)
             elif child.tag == 'controllers':
                 self._read_controllers(child.text)
             elif child.tag == 'controller_links':
@@ -61,48 +61,48 @@ class SimulationSetup:
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
-    def _read_trace(self, agent_file):
+    def _read_trace(self, ue_file):
         """
-        Read the agents trace data from the parquet file.
+        Read the ues trace data from the parquet file.
         """
-        # Get the agents data as a pandas dataframe
-        self.agent_data = pq.read_table(join(self.project_path, agent_file)).to_pandas()
+        # Get the ues data as a pandas dataframe
+        self.ue_data = pq.read_table(join(self.project_path, ue_file)).to_pandas()
 
-        # Sort the agents data by agent id and time
-        self.agent_data.sort_values(by=['agent_id', 'time'], inplace=True)
+        # Sort the ues data by ue id and time
+        self.ue_data.sort_values(by=['ue_id', 'time'], inplace=True)
 
-    def _read_agents_coverage(self, coverage_file: str):
+    def _read_ues_coverage(self, coverage_file: str):
         """
         Read the coverage data from the parquet file.
         """
         # Get the coverage data as a pandas dataframe
         self.coverage_data = pq.read_table(join(self.project_path, coverage_file)).to_pandas()
 
-        # Sort the coverage data by agent id and time
+        # Sort the coverage data by ue id and time
         self.coverage_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
 
-    def _read_nodes(self, node_file: str):
+    def _read_cell_towers(self, cell_tower_file: str):
         """
-        Read the nodes data from the CSV file.
+        Read the cell towers data from the CSV file.
         """
-        # Get the nodes data as a pandas dataframe
-        self.node_data = pd.read_csv(join(self.project_path, node_file), dtype={'node_id': int, 'x': float, 'y': float, 'type': str}, usecols=['node_id', 'x', 'y', 'type'])
+        # Get the cell towers data as a pandas dataframe
+        self.cell_tower_data = read_csv(join(self.project_path, cell_tower_file), dtype={'cell_tower_id': int, 'x': float, 'y': float, 'type': str}, usecols=['cell_tower_id', 'x', 'y', 'type'])
 
     def _read_controllers(self, controller_file: str):
         """
         Read the controllers data from the CSV file.
         """
         # Get the controllers data as a pandas dataframe
-        self.controller_data = pd.read_csv(join(self.project_path, controller_file), dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
+        self.controller_data = read_csv(join(self.project_path, controller_file), dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
 
     def _read_controller_links(self, link_file: str):
         """
         Read the links data from the links CSV file.
         """
         # Read the links csv file as a pandas dataframe
-        self.controller_link_data = pd.read_csv(join(self.project_path, link_file),
-                                                dtype={'link_id': int, 'node': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
-                                                usecols=['link_id', 'node', 'controller', 'bandwidth_in', 'bandwidth_out'])
+        self.controller_link_data = read_csv(join(self.project_path, link_file),
+                                                dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
+                                                usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
 
     def _read_output_settings(self, child):
         """
@@ -163,7 +163,7 @@ class SimulationSetup:
         model_element : Et.Element
             The model data element from the config file.
         """
-        self.model_data = {'agent': {}, 'node': {}, 'controller': {}}
+        self.model_data = {'ue': {}, 'cell_tower': {}, 'controller': {}}
         for child in model_element:
             if child.tag == 'model':
                 parsed_model_data, device_type = self._read_model(child)

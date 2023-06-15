@@ -1,6 +1,6 @@
-import pandas as pd
+from pandas import DataFrame, Series
 
-from src.device.DBasicCellTower import BaseStation
+from src.device.DBasicCellTower import BasicCellTower
 from src.device.DCentralController import CentralController
 from src.device.DIntermediateCellTower import IntermediateCellTower
 from src.device.DVehicleUE import VehicleUE
@@ -12,20 +12,20 @@ class DeviceFactory:
         Initialize the device factory object.
         """
         # Create the dictionaries to store the devices in the simulation
-        self.nodes = {}
-        self.agents = {}
+        self.cell_towers = {}
+        self.ues = {}
         self.controllers = {}
 
     def get_cell_towers(self) -> dict:
         """
-        Get the nodes in the simulation.
+        Get the cell towers in the simulation.
 
         Returns
         ----------
         dict
-            Dictionary containing the nodes.
+            Dictionary containing the cell_tower.
         """
-        return self.nodes
+        return self.cell_towers
 
     def get_controllers(self) -> dict:
         """
@@ -40,44 +40,43 @@ class DeviceFactory:
 
     def get_ues(self) -> dict:
         """
-        Get the agents in the simulation.
+        Get the ues in the simulation.
 
         Returns
         ----------
         dict
-            Dictionary containing the agents.
+            Dictionary containing the ues.
         """
-        return self.agents
+        return self.ues
 
-    def create_cell_towers(self, all_nodes_data: pd.DataFrame):
+    def create_cell_towers(self, all_cell_tower_data: DataFrame):
         """
-        Create the nodes in the simulation.
+        Create the cell towers in the simulation.
         """
-        # Get the list of nodes in the simulation.
-        node_list = all_nodes_data['node_id'].unique()
+        # Get the list of cell towers in the simulation.
+        cell_tower_list = all_cell_tower_data['cell_tower_id'].unique()
 
-        # Create the nodes.
-        for node_id in node_list:
-            # Get the node data.
-            node_data: pd.Series = all_nodes_data[all_nodes_data['node_id'] == node_id].iloc[0]
+        for cell_tower_id in cell_tower_list:
+            # Get the cell tower data.
+            cell_tower_data: Series = all_cell_tower_data[all_cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
 
-            # Create the node.
-            self.nodes[node_id] = self._create_node(node_id, node_data)
+            # Create the cell tower.
+            self.cell_tower[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data)
 
     @staticmethod
-    def _create_node(node_id: int, node_data: pd.Series):
+    def _create_cell_tower(cell_tower_id: int, cell_tower_data: Series):
         """
-        Create a node from the given parameters.
+        Create a cell tower from the given parameters.
         """
-        node_type = node_data['type']
-        if node_type == 'bs':
-            return BaseStation(node_id, node_data)
-        elif node_type == 'intermediate':
-            return IntermediateCellTower(node_id, node_data)
+        cell_tower_type = cell_tower_data['type']
+        if cell_tower_type == 'bs':
+            return BasicCellTower(cell_tower_id, cell_tower_data)
+        elif cell_tower_type == 'intermediate':
+            return IntermediateCellTower(cell_tower_id, cell_tower_data)
         else:
-            raise ValueError("Node {} type not supported.".format(node_type))
+            raise ValueError("cell_tower {} type not supported.".format(cell_tower_type))
 
-    def create_controllers(self, controller_data: pd.DataFrame):
+    def create_controllers(self, controller_data: DataFrame):
         """
         Create the controllers in the simulation.
         """
@@ -106,38 +105,38 @@ class DeviceFactory:
         """
         return CentralController(controller_id, position)
 
-    def create_ues(self, agent_data: pd.DataFrame, coverage_data: pd.DataFrame):
+    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame):
         """
-        Create the agents in the simulation.
+        Create the ues in the simulation.
         """
-        # Get the list of agents in the simulation.
-        agent_list = agent_data['agent_id'].unique()
+        # Get the list of ues in the simulation.
+        ue_list = ue_data['ue_id'].unique()
 
-        # Create the agents.
-        for agent_id in agent_list:
-            # Get the agent positions.
-            agent_trace = agent_data[agent_data['agent_id'] == agent_id][['time', 'x', 'y']].reset_index(drop=True)
+        # Create the ues.
+        for ue_id in ue_list:
+            # Get the ue positions.
+            ue_trace = ue_data[ue_data['ue_id'] == ue_id][['time', 'x', 'y']].reset_index(drop=True)
 
-            # Create the agent.
-            self.agents[agent_id] = self._create_agent(agent_id)
+            # Create the ue.
+            self.ues[ue_id] = self._create_ue(ue_id)
 
-            # Set the agent trace.
-            self.agents[agent_id].set_mobility_data(agent_trace)
+            # Set the ue trace.
+            self.ues[ue_id].set_mobility_data(ue_trace)
 
-            # Get the agent coverage.
-            agent_coverage = coverage_data[coverage_data['vehicle_id'] == agent_id][['neighbours', 'time']]
+            # Get the ue coverage.
+            ue_coverage = coverage_data[coverage_data['vehicle_id'] == ue_id][['neighbours', 'time']]
 
-            # Set the agent coverage.
-            self.agents[agent_id].set_coverage_data(agent_coverage)
+            # Set the ue coverage.
+            self.ues[ue_id].set_coverage_data(ue_coverage)
 
     @staticmethod
-    def _create_agent(agent_id: int) -> VehicleUE:
+    def _create_ue(ue_id: int) -> VehicleUE:
         """
-        Create an agent from the given parameters.
+        Create an ue from the given parameters.
 
         Parameters
         ----------
-        agent_id : int
-            The ID of the agent.
+        ue_id : int
+            The ID of the ue.
         """
-        return VehicleUE(agent_id)
+        return VehicleUE(ue_id)
