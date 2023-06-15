@@ -2,29 +2,29 @@ import pandas as pd
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.channel.BNodeChannel import NodeChannelBase
-from src.device.BNode import NodeBase
+from src.channel.BCellTowerChannel import BaseCellTowerChannel
+from src.device.BCellTower import BaseCellTower
 from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
-class NodeModel(Model):
-    def __init__(self, nodes: dict[int, NodeBase], node_link_data: pd.DataFrame, node_model_data: dict):
+class CellTowerModel(Model):
+    def __init__(self, nodes: dict[int, BaseCellTower], node_link_data: pd.DataFrame, node_model_data: dict):
         """
         Initialize the node model.
         """
         super().__init__()
 
-        self.nodes: dict[int, NodeBase] = nodes
+        self.nodes: dict[int, BaseCellTower] = nodes
         self.node_link_data: pd.DataFrame = node_link_data
 
         # All models are defined here
-        self.node_channel: NodeChannelBase | None = None
+        self.node_channel: BaseCellTowerChannel | None = None
 
         self.schedule: BaseScheduler = BaseScheduler(self)
         self._create_models(node_model_data)
         self._add_nodes_to_scheduler()
 
-    def get_node_channel(self) -> NodeChannelBase:
+    def get_node_channel(self) -> BaseCellTowerChannel:
         """
         Get the node channel.
         """

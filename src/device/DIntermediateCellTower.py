@@ -1,9 +1,9 @@
 import pandas as pd
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
-class IntermediateNode(NodeBase):
+class IntermediateCellTower(BaseCellTower):
     def step(self):
         pass
 

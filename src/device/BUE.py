@@ -5,7 +5,7 @@ import pandas as pd
 from mesa import Agent
 
 
-class AgentBase(Agent):
+class BaseUE(Agent):
     def __init__(self, agent_id: int, sim_model=None):
         """
         Initialize the agent.

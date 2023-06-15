@@ -1,11 +1,11 @@
 import pandas as pd
 
-from src.device.BAgent import AgentBase
+from src.device.BUE import BaseUE
 from src.models.MCoverageModel import CoverageModel
 from src.models.MMobilityModel import MobilityModel
 
 
-class VehicleAgent(AgentBase):
+class VehicleUE(BaseUE):
     def __init__(self, agent_id: int):
         """
         Initialize the vehicle agent.
@@ -83,8 +83,8 @@ class VehicleAgent(AgentBase):
 
         # Collect the data from the agents within the coverage area
         for neighbour in neighbours:
-            if neighbour is not self.unique_id and self.sim_model.agents[neighbour].get_data_transmit_status():
-                self.neighbour_data[neighbour] = self.sim_model.agents[neighbour].get_cached_data()
+            if neighbour is not self.unique_id and self.sim_model.ues[neighbour].get_data_transmit_status():
+                self.neighbour_data[neighbour] = self.sim_model.ues[neighbour].get_cached_data()
 
     def get_neighbour_data(self) -> dict[int, float]:
         """

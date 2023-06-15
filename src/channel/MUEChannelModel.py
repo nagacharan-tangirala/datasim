@@ -1,12 +1,12 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.channel.BAgentChannel import AgentChannelBase
-from src.device.BNode import NodeBase
+from src.channel.BUEChannel import BaseUEChannel
+from src.device.BCellTower import BaseCellTower
 
 
-class AgentChannelModel(Model):
-    def __init__(self, nodes: dict[int, NodeBase]):
+class UEChannelModel(Model):
+    def __init__(self, nodes: dict[int, BaseCellTower]):
         """
         Initialize the agent channel model.
         """
@@ -22,7 +22,7 @@ class AgentChannelModel(Model):
         # Set the current time for the agents
         self.schedule.step()
 
-    def add_channel(self, channel: AgentChannelBase) -> None:
+    def add_channel(self, channel: BaseUEChannel) -> None:
         """
         Add the channel to the model.
         """

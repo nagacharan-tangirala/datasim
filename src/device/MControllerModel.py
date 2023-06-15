@@ -2,13 +2,13 @@ import pandas as pd
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.channel.BControllerChannel import ControllerChannelBase
-from src.device.BTrafficController import TrafficControllerBase
+from src.channel.BControllerChannel import BaseControllerChannel
+from src.device.BController import BaseController
 from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class ControllerModel(Model):
-    def __init__(self, controllers: dict[int, TrafficControllerBase], links: pd.DataFrame, controller_model_data: dict):
+    def __init__(self, controllers: dict[int, BaseController], links: pd.DataFrame, controller_model_data: dict):
         """
         Initialize the controller model.
         """
@@ -18,7 +18,7 @@ class ControllerModel(Model):
         self.connections = links
 
         # All models are defined here
-        self.controller_channel: ControllerChannelBase | None = None
+        self.controller_channel: BaseControllerChannel | None = None
 
         self.schedule: BaseScheduler = BaseScheduler(self)
         self._create_models(controller_model_data)
@@ -29,6 +29,12 @@ class ControllerModel(Model):
         Create the links between the nodes and controllers.
         """
         pass
+
+    def get_controller_channel(self) -> BaseControllerChannel | None:
+        """
+        Get the channel for the agent model.
+        """
+        return self.controller_channel
 
     def _add_controllers_to_scheduler(self) -> None:
         """

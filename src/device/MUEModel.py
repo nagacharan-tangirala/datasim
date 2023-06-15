@@ -1,13 +1,13 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.channel.BAgentChannel import AgentChannelBase
-from src.device.BAgent import AgentBase
+from src.channel.BUEChannel import BaseUEChannel
+from src.device.BUE import BaseUE
 from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
-class AgentModel(Model):
-    def __init__(self, agents: dict[int, AgentBase], agent_model_data: dict):
+class UEModel(Model):
+    def __init__(self, agents: dict[int, BaseUE], agent_model_data: dict):
         """
         Initialize the model for the agents.
         """
@@ -15,13 +15,13 @@ class AgentModel(Model):
         super().__init__()
         self.schedule: BaseScheduler = BaseScheduler(self)
 
-        self.agents: dict[int, AgentBase] = agents
+        self.agents: dict[int, BaseUE] = agents
         self.agent_activation_times: dict[int, list[int]] = {}
 
         self.current_time: int = 0
 
         # All models are defined here
-        self.agent_channel: AgentChannelBase = None
+        self.agent_channel: BaseUEChannel = None
 
         self._prepare_active_agents_dict()
         self._create_models(agent_model_data)
@@ -56,7 +56,7 @@ class AgentModel(Model):
             else:
                 raise ValueError(f"Unknown model type {model_data['type']}")
 
-    def get_agent_channel(self) -> AgentChannelBase | None:
+    def get_agent_channel(self) -> BaseUEChannel | None:
         """
         Get the channel for the agent model.
         """

@@ -1,9 +1,9 @@
 import pandas as pd
 
-from src.device.BTrafficController import TrafficControllerBase
+from src.device.BController import BaseController
 
 
-class CentralController(TrafficControllerBase):
+class CentralController(BaseController):
     def __init__(self, controller_id, position):
         """
         Initialize the central controller.

@@ -1,9 +1,9 @@
-from src.channel.MAgentChannelModel import AgentChannelModel
+from src.channel.MUEChannelModel import UEChannelModel
 from src.channel.MControllerChannelModel import ControllerChannelModel
-from src.channel.MNodeChannelModel import NodeChannelModel
-from src.device.MAgentModel import AgentModel
+from src.channel.MCellTowerChannelModel import CellTowerChannelModel
+from src.device.MUEModel import UEModel
 from src.device.MControllerModel import ControllerModel
-from src.device.MNodeModel import NodeModel
+from src.device.MCellTowerModel import CellTowerModel
 from src.setup.SDeviceFactory import DeviceFactory
 from src.setup.SSimulationSetup import SimulationSetup
 
@@ -16,18 +16,18 @@ class Simulation:
         self.config_file: str = config_file
 
         # Create the dictionaries to store the agents in the simulation
-        self.agents: dict = {}
-        self.nodes: dict = {}
+        self.ues: dict = {}
+        self.cell_towers: dict = {}
         self.controllers: dict = {}
 
         # Create objects to store device models
-        self.agent_model: AgentModel | None = None
-        self.node_model: NodeModel | None = None
+        self.ue_model: UEModel | None = None
+        self.cell_tower_model: CellTowerModel | None = None
         self.controller_model: ControllerModel | None = None
 
         # Create objects to store channel models
-        self.node_channel_model: NodeChannelModel | None = None
-        self.agent_channel_model: AgentChannelModel | None = None
+        self.cell_tower_channel_model: CellTowerChannelModel | None = None
+        self.ue_channel_model: UEChannelModel | None = None
         self.controller_channel_model: ControllerChannelModel | None = None
 
     def setup_simulation(self) -> None:
@@ -68,21 +68,21 @@ class Simulation:
         """
         # Create a device factory object and create the participants
         device_factory = DeviceFactory()
-        device_factory.create_nodes(self.sim_config.node_data)
-        device_factory.create_agents(self.sim_config.agent_data, self.sim_config.coverage_data)
+        device_factory.create_cell_towers(self.sim_config.node_data)
+        device_factory.create_ues(self.sim_config.agent_data, self.sim_config.coverage_data)
         device_factory.create_controllers(self.sim_config.controller_data)
 
         # Get the devices from the factory
-        self.nodes = device_factory.get_nodes()
-        self.agents = device_factory.get_agents()
+        self.cell_towers = device_factory.get_cell_towers()
+        self.ues = device_factory.get_ues()
         self.controllers = device_factory.get_controllers()
 
     def _create_device_models(self) -> None:
         """
         Create the device models.
         """
-        self.agent_model = AgentModel(self.agents, self.sim_config.model_data['agent'])
-        self.node_model = NodeModel(self.nodes, self.sim_config.node_link_data, self.sim_config.model_data['node'])
+        self.ue_model = UEModel(self.ues, self.sim_config.model_data['agent'])
+        self.cell_tower_model = CellTowerModel(self.cell_towers, self.sim_config.node_link_data, self.sim_config.model_data['node'])
         self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data, self.sim_config.model_data['controller'])
 
     def _create_channel_models(self) -> None:
@@ -90,13 +90,13 @@ class Simulation:
         Create the channel models.
         """
         # Create the channel models
-        self.agent_channel_model = AgentChannelModel(self.nodes)
-        self.node_channel_model = NodeChannelModel(self.nodes)
-        self.controller_channel_model = ControllerChannelModel(self.nodes)
+        self.ue_channel_model = UEChannelModel(self.cell_towers)
+        self.cell_tower_channel_model = CellTowerChannelModel(self.cell_towers)
+        self.controller_channel_model = ControllerChannelModel(self.cell_towers)
 
         # Get the channels from the device models and add them to the channel models.
-        self.agent_channel_model.add_channel(self.agent_model.get_agent_channel())
-        self.node_channel_model.add_channel(self.node_model.get_node_channel())
+        self.ue_channel_model.add_channel(self.ue_model.get_agent_channel())
+        self.cell_tower_channel_model.add_channel(self.cell_tower_model.get_node_channel())
         self.controller_channel_model.add_channel(self.controller_model.get_controller_channel())
 
     def run(self) -> None:
@@ -110,11 +110,11 @@ class Simulation:
         """
         Step the simulation.
         """
-        self.agent_model.step(self.current_time)
-        self.agent_channel_model.step()
+        self.ue_model.step(self.current_time)
+        self.ue_channel_model.step()
 
-        self.node_model.step()
-        self.node_channel_model.step()
+        self.cell_tower_model.step()
+        self.cell_tower_channel_model.step()
         self.controller_channel_model.step()
 
         self.controller_model.step()

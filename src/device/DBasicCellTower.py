@@ -1,9 +1,13 @@
 import pandas as pd
 
-from src.device.BNode import NodeBase
+from src.device.BCellTower import BaseCellTower
 
 
-class BaseStation(NodeBase):
+class BasicCellTower(BaseCellTower):
+    """
+    Base station class designed to mimic the behavior of base stations.
+    """
+
     def __init__(self, node_id, node_data: pd.Series):
         """
         Initialize the base station.

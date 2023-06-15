@@ -2,15 +2,15 @@ from abc import abstractmethod
 
 from mesa import Agent
 
-from src.device.BAgent import AgentBase
-from src.device.BNode import NodeBase
+from src.device.BUE import BaseUE
+from src.device.BCellTower import BaseCellTower
 
 
-class AgentChannelBase(Agent):
+class BaseUEChannel(Agent):
     def __init__(self):
         super().__init__(0, None)
-        self.agents: dict[int, AgentBase] = {}
-        self.nodes: dict[int, NodeBase] = {}
+        self.agents: dict[int, BaseUE] = {}
+        self.nodes: dict[int, BaseCellTower] = {}
 
         self.node_coverage_agents: dict[int, list[int]] = {}
         self.data_from_agents: dict[int, float] = {}
@@ -129,19 +129,19 @@ class AgentChannelBase(Agent):
         """
         pass
 
-    def assign_nodes(self, nodes: dict[int, NodeBase]) -> None:
+    def assign_nodes(self, nodes: dict[int, BaseCellTower]) -> None:
         """
         Add a node to the channel.
         """
         self.nodes = nodes
 
-    def add_agent(self, agent: AgentBase) -> None:
+    def add_agent(self, agent: BaseUE) -> None:
         """
         Add an agent to the channel.
         """
         self.agents[agent.get_id()] = agent
 
-    def remove_agent(self, agent: AgentBase) -> None:
+    def remove_agent(self, agent: BaseUE) -> None:
         """
         Remove an agent from the channel.
         """

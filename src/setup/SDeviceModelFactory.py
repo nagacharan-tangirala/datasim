@@ -1,8 +1,8 @@
 import pandas as pd
 
-from src.channel.DInfiniteBandwidthAgentChannel import InfiniteBandwidthAgentChannel
+from src.channel.DInfiniteBandwidthUEChannel import InfiniteBandwidthUEChannel
 from src.channel.DInfiniteBandwidthControllerChannel import InfiniteBandwidthControllerChannel
-from src.channel.DInfiniteBandwidthNodeChannel import InfiniteBandwidthNodeChannel
+from src.channel.DInfiniteBandwidthCellTowerChannel import InfiniteBandwidthCellTowerChannel
 from src.models.DStaticMobility import StaticMobility
 from src.models.DTraceCoverage import AgentTraceCoverage
 from src.models.DTraceMobility import TraceMobility
@@ -16,12 +16,12 @@ class DeviceModelFactory:
         pass
 
     @staticmethod
-    def create_agent_channel(channel_model_data: dict) -> InfiniteBandwidthAgentChannel:
+    def create_agent_channel(channel_model_data: dict) -> InfiniteBandwidthUEChannel:
         """
         Create the agent models.
         """
         if channel_model_data['name'] == 'infinite_bandwidth':
-            return InfiniteBandwidthAgentChannel()
+            return InfiniteBandwidthUEChannel()
         else:
             raise NotImplementedError(f"Agent channel model {channel_model_data['name']} is not implemented.")
 
@@ -36,12 +36,12 @@ class DeviceModelFactory:
             raise NotImplementedError(f"Controller channel model {channel_model_data['name']} is not implemented.")
 
     @staticmethod
-    def create_node_channel(node_model_data: dict) -> InfiniteBandwidthNodeChannel:
+    def create_node_channel(node_model_data: dict) -> InfiniteBandwidthCellTowerChannel:
         """
         Create the node models.
         """
         if node_model_data['name'] == 'infinite_bandwidth':
-            return InfiniteBandwidthNodeChannel()
+            return InfiniteBandwidthCellTowerChannel()
         else:
             raise NotImplementedError(f"Node channel model {node_model_data['name']} is not implemented.")
 

@@ -1,10 +1,8 @@
-import pandas as pd
-
-from src.channel.BControllerChannel import ControllerChannelBase
+from src.channel.BControllerChannel import BaseControllerChannel
 
 
-class InfiniteBandwidthControllerChannel(ControllerChannelBase):
-    def __init__(self, controller_links: pd.DataFrame):
+class InfiniteBandwidthControllerChannel(BaseControllerChannel):
+    def __init__(self):
         """
         Initialize the infinite bandwidth controller channel.
         """

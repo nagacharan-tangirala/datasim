@@ -1,9 +1,9 @@
 import pandas as pd
 
-from src.device.DBaseStationNode import BaseStation
-from src.device.DCentralTrafficController import CentralController
-from src.device.DIntermediateNode import IntermediateNode
-from src.device.DVehicleAgent import VehicleAgent
+from src.device.DBasicCellTower import BaseStation
+from src.device.DCentralController import CentralController
+from src.device.DIntermediateCellTower import IntermediateCellTower
+from src.device.DVehicleUE import VehicleUE
 
 
 class DeviceFactory:
@@ -16,7 +16,7 @@ class DeviceFactory:
         self.agents = {}
         self.controllers = {}
 
-    def get_nodes(self) -> dict:
+    def get_cell_towers(self) -> dict:
         """
         Get the nodes in the simulation.
 
@@ -38,7 +38,7 @@ class DeviceFactory:
         """
         return self.controllers
 
-    def get_agents(self) -> dict:
+    def get_ues(self) -> dict:
         """
         Get the agents in the simulation.
 
@@ -49,7 +49,7 @@ class DeviceFactory:
         """
         return self.agents
 
-    def create_nodes(self, all_nodes_data: pd.DataFrame):
+    def create_cell_towers(self, all_nodes_data: pd.DataFrame):
         """
         Create the nodes in the simulation.
         """
@@ -73,7 +73,7 @@ class DeviceFactory:
         if node_type == 'bs':
             return BaseStation(node_id, node_data)
         elif node_type == 'intermediate':
-            return IntermediateNode(node_id, node_data)
+            return IntermediateCellTower(node_id, node_data)
         else:
             raise ValueError("Node {} type not supported.".format(node_type))
 
@@ -106,7 +106,7 @@ class DeviceFactory:
         """
         return CentralController(controller_id, position)
 
-    def create_agents(self, agent_data: pd.DataFrame, coverage_data: pd.DataFrame):
+    def create_ues(self, agent_data: pd.DataFrame, coverage_data: pd.DataFrame):
         """
         Create the agents in the simulation.
         """
@@ -131,7 +131,7 @@ class DeviceFactory:
             self.agents[agent_id].set_coverage_data(agent_coverage)
 
     @staticmethod
-    def _create_agent(agent_id: int) -> VehicleAgent:
+    def _create_agent(agent_id: int) -> VehicleUE:
         """
         Create an agent from the given parameters.
 
@@ -140,4 +140,4 @@ class DeviceFactory:
         agent_id : int
             The ID of the agent.
         """
-        return VehicleAgent(agent_id)
+        return VehicleUE(agent_id)

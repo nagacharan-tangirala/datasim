@@ -6,7 +6,7 @@ from pandas import DataFrame
 from src.device.BNode import NodeBase
 
 
-class ControllerChannelBase(Agent):
+class BaseControllerChannel(Agent):
     def __init__(self, controller_links: DataFrame):
         super().__init__(0, None)
 
