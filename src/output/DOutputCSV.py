@@ -18,9 +18,9 @@ class OutputCSV(OutputBase):
         if exists(self.nodes_file):
             self.nodes_file = join(self.output_dir, "nodes_output_{}.csv".format(time_now))
 
-        self.entities_file = join(self.output_dir, "entities_output.csv")
-        if exists(self.entities_file):
-            self.entities_file = join(self.output_dir, "entities_output_{}.csv".format(time_now))
+        self.agents_file = join(self.output_dir, "agents_output.csv")
+        if exists(self.agents_file):
+            self.agents_file = join(self.output_dir, "agents_output_{}.csv".format(time_now))
 
         self._write_headers_to_csv()
 
@@ -31,22 +31,22 @@ class OutputCSV(OutputBase):
         with open(self.nodes_file, 'w') as f:
             f.write("time,node_id,data_collected\n")
 
-        with open(self.entities_file, 'w') as f:
-            f.write("time,entity_id,data_collected\n")
+        with open(self.agents_file, 'w') as f:
+            f.write("time,agent_id,data_collected\n")
 
-    def _write_data(self, entities: dict, nodes: dict):
+    def _write_data(self, agents: dict, nodes: dict):
         """
         Write the output to the CSV file.
 
         Parameters
         ----------
-        entities : dict
-            Dictionary of entities in the simulation.
+        agents : dict
+            Dictionary of agents in the simulation.
         nodes : dict
             Dictionary of nodes in the simulation.
         """
         self._write_nodes_output(nodes)
-        self._write_entities_output(entities)
+        self._write_agents_output(agents)
 
     def _write_nodes_output(self, nodes: dict):
         """
@@ -62,16 +62,16 @@ class OutputCSV(OutputBase):
                 for node_id, data_collected in node_data_ts.items():
                     f.write("{},{},{}\n".format(ts, node_id, data_collected))
 
-    def _write_entities_output(self, entities: dict):
+    def _write_agents_output(self, agents: dict):
         """
         Write the output to the CSV file.
 
         Parameters
         ----------
-        entities : dict
-            Dictionary of entities in the simulation.
+        agents : dict
+            Dictionary of agents in the simulation.
         """
-        with open(self.entities_file, 'a') as f:
-            for ts, entity_data_ts in entities.items():
-                for entity_id, data_collected in entity_data_ts.items():
-                    f.write("{},{},{}\n".format(ts, entity_id, data_collected))
+        with open(self.agents_file, 'a') as f:
+            for ts, agent_data_ts in agents.items():
+                for agent_id, data_collected in agent_data_ts.items():
+                    f.write("{},{},{}\n".format(ts, agent_id, data_collected))

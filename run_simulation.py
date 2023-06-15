@@ -15,6 +15,8 @@ def create_simulation(config_file: str) -> Simulation:
     """
     if not exists(config_file):
         raise FileNotFoundError('Config file not found: %s' % config_file)
+
+    # Create the simulation object.
     simulation = Simulation(config_file)
 
     # Set up the simulation.

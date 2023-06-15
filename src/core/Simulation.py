@@ -1,311 +1,122 @@
-from abc import ABCMeta
-
-from typing import Dict
-
-from src.setup.SParticipantFactory import ParticipantFactory
-from src.setup.SConfigHDF5Reader import ConfigHDF5Reader
-
-from src.device.BEntity import EntityBase
-
-from src.output.SOutputFactory import OutputFactory
-from src.core.SSimModelFactory import SimModelFactory
+from src.channel.MUEChannelModel import UEChannelModel
+from src.channel.MControllerChannelModel import ControllerChannelModel
+from src.channel.MCellTowerChannelModel import CellTowerChannelModel
+from src.device.MUEModel import UEModel
+from src.device.MControllerModel import ControllerModel
+from src.device.MCellTowerModel import CellTowerModel
+from src.setup.SDeviceFactory import DeviceFactory
+from src.setup.SSimulationSetup import SimulationSetup
 
 
-class Simulation(metaclass=ABCMeta):
+class Simulation:
     def __init__(self, config_file: str):
         """
         Initialize the simulation setup object. This class is responsible for setting up the simulation.
         """
-        self.config_file = config_file
-        self.participant_factory = None
-        self.model_factory = None
-        self.config_dict = None
+        self.config_file: str = config_file
 
-        # Create the dictionaries to store the participants in the simulation
-        self.nodes = {}
-        self.entities: Dict[int, EntityBase] = {}
+        # Create the dictionaries to store the agents in the simulation
+        self.ues: dict = {}
+        self.cell_towers: dict = {}
+        self.controllers: dict = {}
 
-        # Keep track of the active entities
-        self.active_entities = []
+        # Create objects to store device models
+        self.ue_model: UEModel | None = None
+        self.cell_tower_model: CellTowerModel | None = None
+        self.controller_model: ControllerModel | None = None
 
-        # Create a dictionary to store the activation times of the entities
-        self.update_time_entities_map = {}
+        # Create objects to store channel models
+        self.cell_tower_channel_model: CellTowerChannelModel | None = None
+        self.ue_channel_model: UEChannelModel | None = None
+        self.controller_channel_model: ControllerChannelModel | None = None
 
-        # Simulation parameters
-        self.start_time = 0
-        self.end_time = 0
-        self.step_size = 0
-        self.seed = 0
-        self.update_step = 0
-        self.output_dir = 0
-        self.output_step = 0
-
-        # Define the models required for the simulation
-        self.coverage_model = None
-
-        # Output dictionaries
-        self.entities_output = {}
-        self.nodes_output = {}
-
-    def setup_simulation(self):
+    def setup_simulation(self) -> None:
         """
-        Set up the simulation. This includes following steps -
-
-            1. Read the config file to parse parameters for the participants in the simulation.
-            2. Create the participants in the simulation.
-            3. Get the main participants required for the simulation. The sub-components are updated by the main participants.
-
+        Set up the simulation.
         """
-        # 1.
         self._read_config()
+        self._read_simulation_parameters()
+        self._create_devices()
+        self._create_device_models()
+        self._create_channel_models()
 
-        # 2.
-        self._create_participants()
-
-        # 3.
-        self._get_participants()
-
-        # 4.
-        self._get_simulation_parameters()
-
-        # 5.
-        self._do_initial_setup()
-
-    def _read_config(self):
+    def _read_config(self) -> None:
         """
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        config_reader = None
-        # if self.config_file.endswith(".xml"):
-        #     config_reader = ConfigXMLReader(self.config_file)
-        # elif self.config_file.endswith(".hdf5"):
-        config_reader = ConfigHDF5Reader(self.config_file)
+        self.sim_config = SimulationSetup(self.config_file)
+        self.sim_config.read_input_file()
 
-        config_reader.read_config()
-
-        # Get the parsed config params
-        self.config_dict = config_reader.get_config_dict()
-
-    def _create_participants(self):
+    def _read_simulation_parameters(self) -> None:
         """
-        Create the participants in the simulation.
+        Initialize the controller model.
         """
-        # Create the participant factory object to use for creating the participants. Pass the config dict to the factory.
-        self.participant_factory = ParticipantFactory(self.config_dict)
+        # Get the simulation parameters
+        simulation_data = self.sim_config.simulation_data
 
-        # Create the participants in the simulation.
-        self.participant_factory.create_participants()
+        self.start_time: int = simulation_data['start'] * 3600 * 1000
+        self.end_time: int = simulation_data['end'] * 3600 * 1000
+        self.time_step: int = simulation_data['step']
+        self.output_dir: str = simulation_data['output_dir']
 
-    def _get_participants(self):
+        self.current_time: int = self.start_time
+
+    def _create_devices(self) -> None:
         """
-        Get the participants to be updated through the simulation.
+        Create the devices in the simulation.
         """
-        # Get the nodes and entities
-        self.nodes = self.participant_factory.get_nodes()
-        self.entities = self.participant_factory.get_entities()
+        # Create a device factory object and create the participants
+        device_factory = DeviceFactory()
+        device_factory.create_cell_towers(self.sim_config.node_data)
+        device_factory.create_ues(self.sim_config.agent_data, self.sim_config.coverage_data)
+        device_factory.create_controllers(self.sim_config.controller_data)
 
-    def _get_simulation_parameters(self):
+        # Get the devices from the factory
+        self.cell_towers = device_factory.get_cell_towers()
+        self.ues = device_factory.get_ues()
+        self.controllers = device_factory.get_controllers()
+
+    def _create_device_models(self) -> None:
         """
-        Get the simulation parameters.
+        Create the device models.
         """
-        simulation_parameters = self.config_dict.simulation_params
+        self.ue_model = UEModel(self.ues, self.sim_config.model_data['agent'])
+        self.cell_tower_model = CellTowerModel(self.cell_towers, self.sim_config.node_link_data, self.sim_config.model_data['node'])
+        self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data, self.sim_config.model_data['controller'])
 
-        self.start_time = int(simulation_parameters['start'] * 3600 * 1000)
-        self.end_time = int(simulation_parameters['end'] * 3600 * 1000)
-        self.step_size = simulation_parameters['step']
-        self.seed = simulation_parameters['seed']
-        self.update_step = simulation_parameters['update_step']
-        self.output_dir = simulation_parameters['output_dir']
-        self.output_step = simulation_parameters['output_step']
-
-    def _do_initial_setup(self):
+    def _create_channel_models(self) -> None:
         """
-        Do the initial setup for the simulation. This includes following steps -
-
-            1. Set the seed for the random number generator.
-            2. Prepare a dictionary with time step as the key and the respective entities to activate in that time step.
-            3. Prepare the output dictionaries to store the output of the simulation.
+        Create the channel models.
         """
-        # 1.
-        self._set_seed()
+        # Create the channel models
+        self.ue_channel_model = UEChannelModel(self.cell_towers)
+        self.cell_tower_channel_model = CellTowerChannelModel(self.cell_towers)
+        self.controller_channel_model = ControllerChannelModel(self.cell_towers)
 
-        # 2.
-        self._prepare_active_entities_dict()
+        # Get the channels from the device models and add them to the channel models.
+        self.ue_channel_model.add_channel(self.ue_model.get_agent_channel())
+        self.cell_tower_channel_model.add_channel(self.cell_tower_model.get_node_channel())
+        self.controller_channel_model.add_channel(self.controller_model.get_controller_channel())
 
-        # 3.
-        self._prepare_output()
-
-        # 4.
-        self._create_models()
-
-    def _set_seed(self):
+    def run(self) -> None:
         """
-        Set the seed for the random number generator.
+        Run the simulation.
         """
-        pass
+        while self.current_time <= self.end_time:
+            self.step()
 
-    def _prepare_active_entities_dict(self):
+    def step(self) -> None:
         """
-        Prepare a dictionary with time step as the key and the respective entities to activate in that time step.
+        Step the simulation.
         """
-        for entity in self.entities.values():
-            start_time, end_time = entity.get_start_and_end_time()
-            # Add the entity to the dictionary with the start time as the key
-            if start_time not in self.update_time_entities_map:
-                self.update_time_entities_map[start_time] = [entity]
-            else:
-                self.update_time_entities_map[start_time].append(entity)
+        self.ue_model.step(self.current_time)
+        self.ue_channel_model.step()
 
-            # Add the entity to the dictionary with the end time as the key
-            if end_time not in self.update_time_entities_map:
-                self.update_time_entities_map[end_time] = [entity]
-            else:
-                self.update_time_entities_map[end_time].append(entity)
+        self.cell_tower_model.step()
+        self.cell_tower_channel_model.step()
+        self.controller_channel_model.step()
 
-    def _prepare_output(self):
-        """
-        Prepare the output dictionaries to store the output of the simulation.
-        """
-        # Create the output helper object
-        self.output_helper = OutputFactory().get_output_helper(self.config_dict.simulation_params)
+        self.controller_model.step()
 
-        # Prepare the output dictionaries
-        # for time_step in range(self.start_time, self.end_time, self.step_size):
-        #    self.entities_output[time_step] = {}
-        #    self.nodes_output[time_step] = {}
-
-    def _create_models(self):
-        """
-        Create the models required for the simulation.
-        """
-        # Create the model factory
-        model_factory = SimModelFactory()
-
-        # Create the coverage model
-        self.coverage_model = model_factory.create_coverage_model(self.config_dict.model_params['coverage'])
-
-    def run(self):
-        """
-        Run the simulation based on the parameters read from the config file.
-        """
-        for time_step in range(self.start_time, self.end_time, self.step_size):
-            # Run a single step of the simulation
-            self._run_step(time_step)
-
-            # Run the update step if it is time to do so
-            if time_step > 0 and time_step % self.update_step == 0:
-                self._run_update_step(time_step)
-
-            # Run the output step if it is time to do so
-            if time_step > 0 and time_step % self.output_step == 0:
-                self._run_output_step(time_step)
-
-    def _run_step(self, time_step: int):
-        """
-        Run a single step of the simulation. All the regular steps are run in this method.
-        - Update the active entities list for the current time step
-        - Process the entities and nodes in the simulation
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        # Refresh active entities
-        self._refresh_active_entities(time_step)
-
-        # Update node and entity associations based on coverage
-        self._update_coverage(time_step)
-
-        # Update the entities and nodes
-        self._update_entities_and_nodes(time_step)
-
-    def _refresh_active_entities(self, time_step: int):
-        """
-        Refresh the active entities in the simulation at the given time step.
-        If the time for activation/deactivation of an entity has come, then activate/deactivate the entity.
-        Only retain the active entities in the list of active entities and remove the inactive entities.
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        # Only proceed if there are any updates to perform at the current time step.
-        if time_step not in self.update_time_entities_map:
-            return
-
-        entities_to_update = self.update_time_entities_map[time_step]
-        for entity in entities_to_update:
-            entity.toggle_entity_status()
-            if entity.is_entity_active():
-                self.active_entities.append(entity)
-            else:
-                self.active_entities.remove(entity)
-
-    def _update_coverage(self, time_step: int):
-        """
-        Update the neighbouring entities for each entity at the current time step.
-        """
-        if self.coverage_model is not None and len(self.active_entities) > 0:
-            self.coverage_model.update_coverage(self.active_entities, self.nodes, time_step)
-
-    def _update_entities_and_nodes(self, time_step: int):
-        """
-        Update the entities and nodes in the simulation at the given time step.
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        # Add the time step to the output dictionary
-        self.entities_output[time_step] = {}
-        self.nodes_output[time_step] = {}
-
-        # Update the entities and compute the total sensor data size collected by the entities
-        for entity in self.active_entities:
-            # Update this entity
-            entity.update_entity(time_step)
-
-            # Get the sensor data volume collected by this entity and store it in the output dictionary
-            self.entities_output[time_step][entity.get_id()] = entity.get_collected_data_size()
-
-        # Update the nodes and compute the total sensor data size collected by the nodes
-        for node in self.nodes.values():
-            # Update this node
-            node.update_node(time_step)
-
-            # Get the sensor data volume collected by this node and store it in the output dictionary
-            self.nodes_output[time_step][node.get_id()] = node.get_collected_data_size()
-
-    def _run_update_step(self, time_step: int):
-        """
-        Run the update step of the simulation. All the update steps are run in this method. This method is called less frequently to reduce the computational load.
-        1. Update the network topology. This includes associating the nodes with the entities.
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        pass
-        # print('Update step: ' + str(time_step) + ' skipped for now')
-
-    def _run_output_step(self, time_step: int):
-        """
-        Run the output step, all the outputs are written to the output directory. This method is called less frequently to reduce I/O bottleneck.
-
-        Parameters
-        ----------
-        time_step : int
-            The time step of the simulation.
-        """
-        # Write the output to the output directory
-        self.output_helper.write_output(time_step, self.entities_output, self.nodes_output)
-        print('Output step: ' + str(time_step))
-
-        # Clear the output dictionaries
-        self.entities_output = {}
-        self.nodes_output = {}
+        self.current_time += self.time_step
