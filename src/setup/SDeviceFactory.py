@@ -61,7 +61,7 @@ class DeviceFactory:
             cell_tower_data: Series = all_cell_tower_data[all_cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
 
             # Create the cell tower.
-            self.cell_tower[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data)
+            self.cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data)
 
     @staticmethod
     def _create_cell_tower(cell_tower_id: int, cell_tower_data: Series):

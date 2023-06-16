@@ -8,13 +8,13 @@ class InfiniteBandwidthControllerChannel(BaseControllerChannel):
         """
         super().__init__(controller_links)
 
-    def _collect_from_nodes(self):
+    def _collect_from_cell_towers(self):
         """
-        Collect data from the nodes.
+        Collect data from the cell towers.
         """
-        # Collect data from the nodes
-        for node_id, node in self.nodes.items():
-            self.incoming_data[node_id] = node.get_incoming_data()
+        # Collect data from the cell towers
+        for cell_tower_id, cell_tower in self.cell_towers.items():
+            self.incoming_data[cell_tower_id] = cell_tower.get_incoming_data()
 
     def _send_to_controller(self):
         """

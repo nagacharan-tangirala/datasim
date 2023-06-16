@@ -1,9 +1,9 @@
-from src.channel.MUEChannelModel import UEChannelModel
-from src.channel.MControllerChannelModel import ControllerChannelModel
 from src.channel.MCellTowerChannelModel import CellTowerChannelModel
-from src.device.MUEModel import UEModel
-from src.device.MControllerModel import ControllerModel
+from src.channel.MControllerChannelModel import ControllerChannelModel
+from src.channel.MUEChannelModel import UEChannelModel
 from src.device.MCellTowerModel import CellTowerModel
+from src.device.MControllerModel import ControllerModel
+from src.device.MUEModel import UEModel
 from src.setup.SDeviceFactory import DeviceFactory
 from src.setup.SSimulationSetup import SimulationSetup
 
@@ -15,7 +15,7 @@ class Simulation:
         """
         self.config_file: str = config_file
 
-        # Create the dictionaries to store the agents in the simulation
+        # Create the dictionaries to store the devices in the simulation
         self.ues: dict = {}
         self.cell_towers: dict = {}
         self.controllers: dict = {}
@@ -68,8 +68,8 @@ class Simulation:
         """
         # Create a device factory object and create the participants
         device_factory = DeviceFactory()
-        device_factory.create_cell_towers(self.sim_config.node_data)
-        device_factory.create_ues(self.sim_config.agent_data, self.sim_config.coverage_data)
+        device_factory.create_cell_towers(self.sim_config.cell_tower_data)
+        device_factory.create_ues(self.sim_config.ue_data, self.sim_config.coverage_data)
         device_factory.create_controllers(self.sim_config.controller_data)
 
         # Get the devices from the factory
@@ -81,8 +81,8 @@ class Simulation:
         """
         Create the device models.
         """
-        self.ue_model = UEModel(self.ues, self.sim_config.model_data['agent'])
-        self.cell_tower_model = CellTowerModel(self.cell_towers, self.sim_config.node_link_data, self.sim_config.model_data['node'])
+        self.ue_model = UEModel(self.ues, self.sim_config.model_data['ue'])
+        self.cell_tower_model = CellTowerModel(self.cell_towers, self.sim_config.cell_tower_link_data, self.sim_config.model_data['cell_tower'])
         self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data, self.sim_config.model_data['controller'])
 
     def _create_channel_models(self) -> None:
@@ -95,8 +95,8 @@ class Simulation:
         self.controller_channel_model = ControllerChannelModel(self.cell_towers)
 
         # Get the channels from the device models and add them to the channel models.
-        self.ue_channel_model.add_channel(self.ue_model.get_agent_channel())
-        self.cell_tower_channel_model.add_channel(self.cell_tower_model.get_node_channel())
+        self.ue_channel_model.add_channel(self.ue_model.get_ue_channel())
+        self.cell_tower_channel_model.add_channel(self.cell_tower_model.get_cell_tower_channel())
         self.controller_channel_model.add_channel(self.controller_model.get_controller_channel())
 
     def run(self) -> None:
