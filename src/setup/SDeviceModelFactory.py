@@ -57,7 +57,7 @@ class DeviceModelFactory:
             raise NotImplementedError("Other coverage models are not implemented.")
 
     @staticmethod
-    def create_mobility(positions: dict) -> StaticUEMobility | TraceMobility:
+    def create_mobility(positions: DataFrame) -> StaticUEMobility | TraceMobility:
         """
         Create a mobility model from the given parameters.
 

@@ -10,7 +10,7 @@ class UEMobility(Agent):
         """
         super().__init__(0, None)
         self.positions = positions
-        self.index = 0
+        self.current_time: int = 0
         self.current_location: list[float] = []
 
     def get_current_location(self) -> list[float]:
@@ -36,3 +36,14 @@ class UEMobility(Agent):
         Activate the mobility model.
         """
         self.model.schedule.add(self)
+
+    def set_current_time(self, current_time: int) -> None:
+        """
+        Set the current time for the coverage model.
+
+        Parameters
+        ----------
+        current_time : int
+            The current time.
+        """
+        self.current_time = current_time

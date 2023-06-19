@@ -81,7 +81,7 @@ class VehicleUE(BaseUE):
         self.current_position = self.mobility_model.get_location()
 
         # Step through the mobility model and coverage model.
-        self.mobility_model.step()
+        self.mobility_model.step(self.sim_model.current_time)
         self.coverage_model.step(self.sim_model.current_time)
         self.tower_finder_model.step(self.sim_model.current_time)
 

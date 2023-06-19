@@ -1,19 +1,20 @@
 from mesa import Model
 from mesa.time import BaseScheduler
+from pandas import DataFrame
 
 from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class MobilityModel(Model):
-    def __init__(self, positions: dict):
+    def __init__(self, positions: DataFrame):
         """
         Initialize the mobility model.
         """
         super().__init__()
-        self.positions = positions
+        self.positions: DataFrame = positions
         self.mobility = None
 
-    def step(self):
+    def step(self, *args, **kwargs):
         """
         Step function for the model.
         """
