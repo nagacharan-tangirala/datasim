@@ -25,6 +25,7 @@ class BaseUE(Agent):
         self.start_time: int = 0
         self.end_time: int = 0
 
+        self.nearest_tower: int = -1
         self.ue_data: DataUnitBase | None = None
         self.data_sent: bool = False
         self.ue_data_cache = deque(maxlen=2)

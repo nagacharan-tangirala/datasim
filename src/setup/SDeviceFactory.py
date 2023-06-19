@@ -107,7 +107,7 @@ class DeviceFactory:
         """
         return CentralController(controller_id, position)
 
-    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame, ue_type_data: list[dict]):
+    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame, ue_type_data: list[dict], nearest_towers_data: DataFrame):
         """
         Create the ues in the simulation.
         """
@@ -138,6 +138,12 @@ class DeviceFactory:
 
             # Set the ue coverage.
             self.ues[ue_id].set_coverage_data(ue_coverage)
+
+            # Get the ue nearest towers.
+            ue_nearest_towers = nearest_towers_data[nearest_towers_data['vehicle_id'] == ue_id][['nearest_towers', 'time']]
+
+            # Set the ue nearest towers.
+            self.ues[ue_id].set_nearest_towers_data(ue_nearest_towers)
 
     @staticmethod
     def _create_ue(ue_id: int, ue_settings: dict) -> VehicleUE:

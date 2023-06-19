@@ -2,6 +2,7 @@ from pandas import DataFrame
 
 from src.device.BUE import BaseUE
 from src.device.DOnetoOneData import OnetoOneData
+from src.models.MTowerFinderModel import TowerFinderModel
 from src.models.MUECoverageModel import CoverageModel
 from src.models.MUEMobilityModel import MobilityModel
 
@@ -13,6 +14,7 @@ class VehicleUE(BaseUE):
         """
         super().__init__(ue_id, ue_settings)
         self.coverage: DataFrame | None = None
+        self.nearest_towers_df: DataFrame | None = None
 
         self.neighbour_data: dict[int, float] = {}
 
@@ -32,6 +34,12 @@ class VehicleUE(BaseUE):
         """
         self.coverage = coverage.reset_index(drop=True)
 
+    def set_nearest_towers_data(self, nearest_towers_df: DataFrame) -> None:
+        """
+        Set the nearest towers for the ue.
+        """
+        self.nearest_towers_df = nearest_towers_df
+
     def _initiate_models(self) -> None:
         """
         Initiate the models related to this ue.
@@ -44,6 +52,10 @@ class VehicleUE(BaseUE):
         self.coverage_model = CoverageModel(self.coverage)
         self.coverage_model.activate()
 
+        # Create the tower finder model
+        self.tower_finder_model = TowerFinderModel(self.nearest_towers_df)
+        self.tower_finder_model.activate()
+
     def _deactivate_models(self) -> None:
         """
         Deactivate the models related to this ue.
@@ -53,6 +65,9 @@ class VehicleUE(BaseUE):
 
         # Deactivate the coverage model
         self.coverage_model.deactivate()
+
+        # Deactivate the tower finder model
+        self.tower_finder_model.deactivate()
 
     def step(self) -> None:
         """
@@ -68,6 +83,7 @@ class VehicleUE(BaseUE):
         # Step through the mobility model and coverage model.
         self.mobility_model.step()
         self.coverage_model.step(self.sim_model.current_time)
+        self.tower_finder_model.step(self.sim_model.current_time)
 
         self._generate_data()
         self._collect_neighbours_data()
@@ -101,6 +117,8 @@ class VehicleUE(BaseUE):
         if self.ue_data is not None:
             self.ue_data_cache.appendleft(self.ue_data)
 
+        # Get the nearest tower
+        self.nearest_tower = self.tower_finder_model.get_nearest_tower()
+
         # Generate new data
-        # TODO - find the nearest node ID.
-        self.ue_data = OnetoOneData(self.sim_model.current_time, self.ue_data_rate, self.unique_id, node_id)
+        self.ue_data = OnetoOneData(self.sim_model.current_time, self.ue_data_rate, self.unique_id, self.nearest_tower)

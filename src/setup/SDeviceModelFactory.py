@@ -4,6 +4,7 @@ from src.channel.DInfiniteBandwidthCellTowerChannel import InfiniteBandwidthCell
 from src.channel.DInfiniteBandwidthControllerChannel import InfiniteBandwidthControllerChannel
 from src.channel.DInfiniteBandwidthUEChannel import InfiniteBandwidthUEChannel
 from src.models.DStaticUEMobility import StaticUEMobility
+from src.models.DTraceTowerFinder import TraceTowerFinder
 from src.models.DTraceUECoverage import TraceUECoverage
 from src.models.DTraceUEMobility import TraceMobility
 
@@ -71,3 +72,15 @@ class DeviceModelFactory:
             return TraceMobility(positions)
         else:
             raise NotImplementedError("Other mobility models are not implemented.")
+
+    @staticmethod
+    def create_tower_finder(nearest_towers_df: DataFrame) -> TraceTowerFinder:
+        """
+        Creates a tower finder model.
+
+        Parameters
+        ----------
+        nearest_towers_df : DataFrame
+            DataFrame containing the nearest towers.
+        """
+        return TraceTowerFinder(nearest_towers_df)
