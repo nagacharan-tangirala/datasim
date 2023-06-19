@@ -2,6 +2,7 @@ from random import choices
 
 from pandas import DataFrame, Series
 
+from src.core.CustomExceptions import NotSupportedCellTowerError
 from src.device.DBasicCellTower import BasicCellTower
 from src.device.DCentralController import CentralController
 from src.device.DIntermediateCellTower import IntermediateCellTower
@@ -76,7 +77,7 @@ class DeviceFactory:
         elif cell_tower_type == 'intermediate':
             return IntermediateCellTower(cell_tower_id, cell_tower_data)
         else:
-            raise ValueError("cell_tower {} type not supported.".format(cell_tower_type))
+            raise NotSupportedCellTowerError(cell_tower_type)
 
     def create_controllers(self, controller_data: DataFrame):
         """

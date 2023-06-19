@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from mesa import Agent
 
-from src.errors.AllCustomExceptions import NearestTowerNotAssignedError
+from src.core.CustomExceptions import NearestTowerNotAssignedError
 
 
 class TowerFinderBase(Agent):

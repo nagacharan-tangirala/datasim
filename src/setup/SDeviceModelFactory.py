@@ -83,4 +83,7 @@ class DeviceModelFactory:
         nearest_towers_df : DataFrame
             DataFrame containing the nearest towers.
         """
-        return TraceTowerFinder(nearest_towers_df)
+        if len(nearest_towers_df) > 0:
+            return TraceTowerFinder(nearest_towers_df)
+        else:
+            raise NotImplementedError("Other tower finder models are not implemented.")
