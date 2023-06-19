@@ -19,6 +19,7 @@ class SimulationSetup:
         self.coverage_data: DataFrame = DataFrame()
         self.cell_tower_data: DataFrame = DataFrame()
         self.controller_data: DataFrame = DataFrame()
+        self.nearest_towers_data: DataFrame = DataFrame()
 
         self.simulation_data: dict = {}
         self.ue_type_data: list[dict] = []
@@ -57,6 +58,8 @@ class SimulationSetup:
                 self._read_ues_coverage(child.text)
             elif child.tag == 'cell_towers':
                 self._read_cell_towers(child.text)
+            elif child.tag == 'nearest_towers':
+                self._read_nearest_towers(child.text)
             elif child.tag == 'controllers':
                 self._read_controllers(child.text)
             elif child.tag == 'controller_links':
@@ -106,6 +109,15 @@ class SimulationSetup:
         self.controller_link_data = read_csv(join(self.project_path, link_file),
                                              dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
                                              usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
+
+    def _read_nearest_towers(self, nearest_towers_file: str):
+        """
+        Read the nearest towers data from the CSV file.
+        """
+        # Get the nearest towers data as a pandas dataframe
+        self.nearest_towers_data = read_csv(join(self.project_path, nearest_towers_file),
+                                            dtype={'time': int, 'vehicle_id': int, 'cell_towers': list[int]},
+                                            usecols=['time_step', 'vehicle_id', 'cell_towers'])
 
     def _read_output_settings(self, child):
         """
