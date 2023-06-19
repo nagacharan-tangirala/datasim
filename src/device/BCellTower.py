@@ -1,7 +1,10 @@
 from abc import abstractmethod
 
-from pandas import Series
 from mesa import Agent
+from pandas import Series
+
+from src.device.DManytoOneData import ManytoOneData
+from src.device.DOnetoOneData import OnetoOneData
 
 
 class BaseCellTower(Agent):
@@ -17,7 +20,8 @@ class BaseCellTower(Agent):
         super().__init__(cell_tower_id, sim_model)
         self.location = [cell_tower_data['x'], cell_tower_data['y']]
 
-        self.total_incoming_data = 0
+        self.ues_data: ManytoOneData | None = None
+        self.controller_data: OnetoOneData | None = None
 
     def get_id(self) -> int:
         """
@@ -30,11 +34,17 @@ class BaseCellTower(Agent):
         """
         return self.unique_id
 
-    def get_incoming_data(self) -> float:
+    def get_data_from_ues(self) -> ManytoOneData:
         """
-        Get the total incoming data from the agents.
+        Get the data received from the ues.
         """
-        return self.total_incoming_data
+        return self.ues_data
+
+    def get_data_from_controller(self) -> OnetoOneData:
+        """
+        Get the data received from the controller.
+        """
+        return self.controller_data
 
     def get_position(self) -> list[float]:
         """
@@ -55,7 +65,7 @@ class BaseCellTower(Agent):
         pass
 
     @abstractmethod
-    def receive_data(self, ue_id: int, data: float):
+    def receive_data(self, ue_id: int, data: ManytoOneData):
         """
         Receive data from the ues.
         """

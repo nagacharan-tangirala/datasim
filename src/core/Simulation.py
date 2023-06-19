@@ -69,7 +69,7 @@ class Simulation:
         # Create a device factory object and create the participants
         device_factory = DeviceFactory()
         device_factory.create_cell_towers(self.sim_config.cell_tower_data)
-        device_factory.create_ues(self.sim_config.ue_data, self.sim_config.coverage_data)
+        device_factory.create_ues(self.sim_config.ue_data, self.sim_config.coverage_data, self.sim_config.ue_type_data)
         device_factory.create_controllers(self.sim_config.controller_data)
 
         # Get the devices from the factory

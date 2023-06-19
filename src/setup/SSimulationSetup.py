@@ -2,8 +2,8 @@ import xml.etree.ElementTree as Et
 from os import makedirs
 from os.path import dirname, exists, join
 
-from pandas import DataFrame, read_csv
 import pyarrow.parquet as pq
+from pandas import DataFrame, read_csv
 
 
 class SimulationSetup:
@@ -21,6 +21,7 @@ class SimulationSetup:
         self.controller_data: DataFrame = DataFrame()
 
         self.simulation_data: dict = {}
+        self.ue_type_data: list[dict] = []
 
         self.cell_tower_link_data: DataFrame = DataFrame()
         self.ue_link_data: DataFrame = DataFrame()
@@ -40,6 +41,8 @@ class SimulationSetup:
                 self._read_simulation_settings(child)
             elif child.tag == 'models':
                 self._read_model_data(child)
+            elif child.tag == 'ues':
+                self._read_ue_data(child)
             else:
                 raise ValueError('Invalid tag in config file: %s' % child.tag)
 
@@ -101,8 +104,8 @@ class SimulationSetup:
         """
         # Read the links csv file as a pandas dataframe
         self.controller_link_data = read_csv(join(self.project_path, link_file),
-                                                dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
-                                                usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
+                                             dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
+                                             usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
 
     def _read_output_settings(self, child):
         """
@@ -206,6 +209,36 @@ class SimulationSetup:
                 raise ValueError('Invalid tag in model config file: %s' % child.tag)
 
         return model_data, device_type
+
+    def _read_ue_data(self, ues_element: Et.Element):
+        """
+        Read the types of UEs from the config file.
+        """
+        self.ue_type_data = []
+        for child in ues_element:
+            ue_type_info = {}
+            if child.tag == 'ue':
+                ue_type_info['id'] = child.attrib['id']
+                ue_type_info['type'] = child.attrib['type']
+
+                if ue_type_info['type'] not in ['vehicle']:
+                    raise ValueError('Invalid type parameter in ue config file: %s' % ue_type_info['type'])
+
+                for param_child in child:
+                    if param_child.tag == 'parameter':
+                        ue_type_info[param_child.attrib['name']] = param_child.attrib['value']
+                    else:
+                        raise ValueError('Invalid tag in ue config file: %s' % param_child.tag)
+                self.ue_type_data.append(ue_type_info)
+
+        # Validate the UE types
+        for ue_type in self.ue_type_data:
+            if 'id' not in ue_type:
+                raise ValueError('Missing id parameter in ue config file')
+
+        ue_weights = [float(ue_type['weight']) for ue_type in self.ue_type_data]
+        if sum(ue_weights) < 1.0:
+            raise ValueError("The sum of the weights of the ue types must be 1.")
 
     def _create_output_dir(self, output_dir: str):
         """

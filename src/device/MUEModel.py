@@ -21,7 +21,8 @@ class UEModel(Model):
         self.current_time: int = 0
 
         # All models are defined here
-        self.ue_channel: BaseUEChannel = None
+        self.ue_channel: BaseUEChannel | None = None
+        self.data_model: dict[int, float] = {}
 
         self._prepare_active_ues_dict()
         self._create_models(ue_model_data)

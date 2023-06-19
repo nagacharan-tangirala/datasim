@@ -1,16 +1,17 @@
 from pandas import DataFrame
 
 from src.device.BUE import BaseUE
+from src.device.DOnetoOneData import OnetoOneData
 from src.models.MUECoverageModel import CoverageModel
 from src.models.MUEMobilityModel import MobilityModel
 
 
 class VehicleUE(BaseUE):
-    def __init__(self, ue_id: int):
+    def __init__(self, ue_id: int, ue_settings: dict):
         """
         Initialize the vehicle ue.
         """
-        super().__init__(ue_id)
+        super().__init__(ue_id, ue_settings)
         self.coverage: DataFrame | None = None
 
         self.neighbour_data: dict[int, float] = {}
@@ -96,8 +97,10 @@ class VehicleUE(BaseUE):
         """
         Generate data for the ue.
         """
-        #
-        self.ue_data_cache.appendleft(self.ue_data)
+        # Update the data cache
+        if self.ue_data is not None:
+            self.ue_data_cache.appendleft(self.ue_data)
 
         # Generate new data
-        self.ue_data = 2.0
+        # TODO - find the nearest node ID.
+        self.ue_data = OnetoOneData(self.sim_model.current_time, self.ue_data_rate, self.unique_id, node_id)

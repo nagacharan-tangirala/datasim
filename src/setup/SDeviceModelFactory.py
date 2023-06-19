@@ -1,8 +1,8 @@
 from pandas import DataFrame
 
-from src.channel.DInfiniteBandwidthUEChannel import InfiniteBandwidthUEChannel
-from src.channel.DInfiniteBandwidthControllerChannel import InfiniteBandwidthControllerChannel
 from src.channel.DInfiniteBandwidthCellTowerChannel import InfiniteBandwidthCellTowerChannel
+from src.channel.DInfiniteBandwidthControllerChannel import InfiniteBandwidthControllerChannel
+from src.channel.DInfiniteBandwidthUEChannel import InfiniteBandwidthUEChannel
 from src.models.DStaticUEMobility import StaticUEMobility
 from src.models.DTraceUECoverage import TraceUECoverage
 from src.models.DTraceUEMobility import TraceMobility

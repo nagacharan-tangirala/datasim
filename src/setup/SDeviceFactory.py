@@ -1,3 +1,5 @@
+from random import choices
+
 from pandas import DataFrame, Series
 
 from src.device.DBasicCellTower import BasicCellTower
@@ -105,20 +107,28 @@ class DeviceFactory:
         """
         return CentralController(controller_id, position)
 
-    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame):
+    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame, ue_type_data: list[dict]):
         """
         Create the ues in the simulation.
         """
         # Get the list of ues in the simulation.
         ue_list = ue_data['ue_id'].unique()
 
+        # Get the weights of the ue types.
+        ue_weights = [float(ue_type['weight']) for ue_type in ue_type_data]
+
+        # Check if the weights sum to 1.
+
         # Create the ues.
         for ue_id in ue_list:
             # Get the ue positions.
             ue_trace = ue_data[ue_data['ue_id'] == ue_id][['time', 'x', 'y']].reset_index(drop=True)
 
+            # Randomly select the type of the ue.
+            ue_settings = choices(ue_type_data, weights=ue_weights, k=1)[0]
+
             # Create the ue.
-            self.ues[ue_id] = self._create_ue(ue_id)
+            self.ues[ue_id] = self._create_ue(ue_id, ue_settings)
 
             # Set the ue trace.
             self.ues[ue_id].set_mobility_data(ue_trace)
@@ -130,7 +140,7 @@ class DeviceFactory:
             self.ues[ue_id].set_coverage_data(ue_coverage)
 
     @staticmethod
-    def _create_ue(ue_id: int) -> VehicleUE:
+    def _create_ue(ue_id: int, ue_settings: dict) -> VehicleUE:
         """
         Create an ue from the given parameters.
 
@@ -139,4 +149,4 @@ class DeviceFactory:
         ue_id : int
             The ID of the ue.
         """
-        return VehicleUE(ue_id)
+        return VehicleUE(ue_id, ue_settings)
