@@ -1,12 +1,10 @@
 import xml.etree.ElementTree as Et
 from os import makedirs
 from os.path import dirname, exists, join
-from typing import Any, Dict, Tuple
-
-import pyarrow.parquet as pq
-from pandas import DataFrame, read_csv
+from typing import Any, Dict
 
 from src.core.CustomExceptions import *
+from src.setup.SInputDataStreamer import InputDataStreamer
 
 
 class SimulationSetup:
@@ -22,20 +20,13 @@ class SimulationSetup:
         self.config_file: str = config_file
         self.project_path: str = dirname(config_file)
 
-        self.ue_trace_data: DataFrame = DataFrame()
-        self.cell_tower_data: DataFrame = DataFrame()
-        self.controller_data: DataFrame = DataFrame()
+        self.ue_trace_data: InputDataStreamer | None = None
+        self.cell_tower_data: InputDataStreamer | None = None
+        self.controller_data: InputDataStreamer | None = None
 
-        self.ue_trace_file: str = ''
-        self.ue_links_file: str = ''
-        self.cell_tower_file: str = ''
-        self.tower_links_file: str = ''
-        self.controller_file: str = ''
-        self.controller_links_file: str = ''
-
-        self.ue_links_data: DataFrame = DataFrame()
-        self.cell_tower_links_data: DataFrame = DataFrame()
-        self.controller_links_data: DataFrame = DataFrame()
+        self.ue_links_data: InputDataStreamer | None = None
+        self.cell_tower_links_data: InputDataStreamer | None = None
+        self.controller_links_data: InputDataStreamer | None = None
 
         self.ue_models_data: dict = {}
         self.cell_tower_models_data: dict = {}
@@ -100,13 +91,12 @@ class SimulationSetup:
             The ue trace element.
         """
         # Get the path to the ue trace file
-        self.ue_trace_file = join(self.project_path, ue_trace_element.text)
+        ue_trace_file = join(self.project_path, ue_trace_element.text)
+        column_names = ['vehicle_id', 'time', 'x', 'y']
+        column_dtypes = {'vehicle_id': int, 'time': int, 'x': float, 'y': float}
+        stream_flag = True if ue_trace_element.attrib['stream'].lower() == 'true' else False
 
-        # Check if this has to be streamed
-        if ue_trace_element.attrib['stream'].lower() != 'true':
-            # Read and sort the data.
-            self.ue_trace_data = pq.read_table(self.ue_trace_file).to_pandas()
-            self.ue_trace_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
+        self.ue_trace_data = InputDataStreamer(ue_trace_file, column_names, column_dtypes, stream_flag)
 
     def read_ue_links(self, ue_links_element: Et.Element) -> None:
         """
@@ -118,81 +108,76 @@ class SimulationSetup:
             The ue links element.
         """
         # Get the path to the coverage file
-        self.ue_links_file = join(self.project_path, ue_links_element.text)
+        ue_links_file = join(self.project_path, ue_links_element.text)
+        column_names = ['vehicle_id', 'time', 'neighbours', 'neighbour_distances']
+        column_dtypes = {'vehicle_id': int, 'time': int, 'neighbours': str, 'neighbour_distances': str}
+        stream_flag = True if ue_links_element.attrib['stream'].lower() == 'true' else False
 
-        if ue_links_element.attrib['stream'].lower() != 'true':
-            # Read and sort the data.
-            self.ue_links_data = pq.read_table(self.ue_links_file).to_pandas()
-            self.ue_links_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
+        self.ue_links_data = InputDataStreamer(ue_links_file, column_names, column_dtypes, stream_flag)
 
-    def _read_cell_towers(self, cell_tower_file: Et.Element) -> None:
+    def _read_cell_towers(self, cell_towers_element: Et.Element) -> None:
         """
         Read the cell towers data from the CSV file.
 
         Parameters
         ----------
-        cell_tower_file : Et.Element
+        cell_towers_element : Et.Element
             The cell towers element.
         """
-        # Get the path to the cell towers file
-        self.cell_tower_file = join(self.project_path, cell_tower_file.text)
+        cell_towers_file = join(self.project_path, cell_towers_element.text)
+        column_names = ['cell_tower_id', 'x', 'y', 'type']
+        column_dtypes = {'cell_tower_id': int, 'x': float, 'y': float, 'type': str}
+        stream_flag = True if cell_towers_element.attrib['stream'].lower() == 'true' else False
 
-        if cell_tower_file.attrib['stream'].lower() != 'true':
-            # Get the cell towers data as a pandas dataframe
-            self.cell_tower_data = read_csv(self.cell_tower_file, dtype={'cell_tower_id': int, 'x': float, 'y': float, 'type': str}, usecols=['cell_tower_id', 'x', 'y', 'type'])
+        self.cell_tower_data = InputDataStreamer(cell_towers_file, column_names, column_dtypes, stream_flag)
 
-    def _read_controllers(self, controller_file: Et.Element) -> None:
+    def _read_controllers(self, controller_element: Et.Element) -> None:
         """
         Read the controllers data from the CSV file.
 
         Parameters
         ----------
-        controller_file : Et.Element
+        controller_element : Et.Element
             The controllers element.
         """
-        # Get the path to the controllers file
-        self.controller_file = join(self.project_path, controller_file.text)
+        controller_file = join(self.project_path, controller_element.text)
+        column_names = ['controller_id', 'x', 'y']
+        column_dtypes = {'controller_id': int, 'x': float, 'y': float}
+        stream_flag = True if controller_element.attrib['stream'].lower() == 'true' else False
 
-        if controller_file.attrib['stream'].lower() != 'true':
-            # Get the controllers data as a pandas dataframe
-            self.controller_data = read_csv(self.controller_file, dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
+        self.controller_data = InputDataStreamer(controller_file, column_names, column_dtypes, stream_flag)
 
-    def _read_controller_links(self, link_file: Et.Element) -> None:
+    def _read_controller_links(self, controller_links_element: Et.Element) -> None:
         """
         Read the links data from the links CSV file.
 
         Parameters
         ----------
-        link_file : Et.Element
+        controller_links_element : Et.Element
             The links element.
         """
-        # Get the path to the links file
-        self.controller_links_file = join(self.project_path, link_file.text)
+        controller_links_file = join(self.project_path, controller_links_element.text)
+        column_names = ['link_id', 'source_type', 'source_id', 'target_type', 'target_id']
+        column_dtypes = {'link_id': int, 'source_type': str, 'source_id': int, 'target_type': str, 'target_id': int}
+        stream_flag = True if controller_links_element.attrib['stream'].lower() == 'true' else False
 
-        if link_file.attrib['stream'].lower() != 'true':
-            # Get the links data as a pandas dataframe
-            self.controller_links_data = read_csv(self.controller_links_file,
-                                                  dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
-                                                  usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
+        self.controller_links_data = InputDataStreamer(controller_links_file, column_names, column_dtypes, stream_flag)
 
-    def _read_tower_links(self, tower_links_file: Et.Element) -> None:
+    def _read_tower_links(self, tower_links_element: Et.Element) -> None:
         """
         Read the tower links data from the CSV file.
 
         Parameters
         ----------
-        tower_links_file : Et.Element
+        tower_links_element : Et.Element
             The tower links element.
         """
-        # Get the path to the tower links file
-        self.tower_links_file = join(self.project_path, tower_links_file.text)
+        tower_links_file = join(self.project_path, tower_links_element.text)
+        column_names = ['link_id', 'source_type', 'source_id', 'target_type', 'target_id']
+        column_dtypes = {'link_id': int, 'source_type': str, 'source_id': int, 'target_type': str, 'target_id': int}
+        stream_flag = True if tower_links_element.attrib['stream'].lower() == 'true' else False
 
-        if tower_links_file.attrib['stream'].lower() != 'true':
-            # Get the tower links data as a pandas dataframe
-            self.tower_links_data = pq.read_table(self.tower_links_file).to_pandas()
-
-            # Sort the tower links data by vehicle id and time
-            self.tower_links_data.sort_values(by=['agent_id', 'time'], inplace=True)
+        self.tower_links_data = InputDataStreamer(tower_links_file, column_names, column_dtypes, stream_flag)
 
     def _read_output_settings(self, child):
         """
@@ -244,54 +229,26 @@ class SimulationSetup:
         # Store the simulation settings
         self.simulation_data = simulation_settings
 
-    def _read_all_channel_models(self, model_element: Et.Element) -> None:
+    def _read_all_channel_models(self, channels_element: Et.Element) -> None:
         """
         Read the model data from the config file.
 
         Parameters
         ----------
-        model_element : Et.Element
+        channels_element : Et.Element
             The channel data element from the config file.
         """
         allowed_device_types = ['ue', 'cell_tower', 'controller']
-        for child in model_element:
-            if child.tag != 'channel':
-                raise InvalidXMLTagError(child.tag)
+        for channel in channels_element:
+            if channel.tag != 'channel':
+                raise InvalidXMLTagError(channel.tag)
 
-            parsed_model_data, device_type = self._read_channel_model(child)
+            device_type = channel.attrib['device']
+            parsed_model_data = self._read_all_models(channel)
 
             if device_type not in allowed_device_types:
                 raise InvalidXMLAttributeError('device', device_type, allowed_device_types)
             self.channel_model_data[device_type] = parsed_model_data
-
-    @staticmethod
-    def _read_channel_model(channel_element: Et.Element) -> Tuple[Dict[str, Any], str]:
-        """
-        Read the channel model data from the config file.
-
-        Parameters
-        ----------
-        model_element Et.Element
-            The channel model data element from the config file.
-
-        Returns
-        -------
-        Dict[str, Any]
-            The model data.
-        """
-        channel_data = {}
-
-        # Read attributes
-        channel_data['name'] = channel_element.attrib['name']
-        device_type = channel_element.attrib['device']
-
-        # Read model parameters
-        for child in channel_element:
-            if child.tag != 'parameter':
-                raise InvalidXMLTagError(child.tag)
-            channel_data[child.attrib['name']] = child.attrib['value']
-
-        return channel_data, device_type
 
     def _read_ue_models(self, ues_element: Et.Element) -> None:
         """
@@ -363,7 +320,7 @@ class SimulationSetup:
 
             self.controller_models_data[controller_info['id']] = controller_info
 
-    def _read_all_models(self, all_models_element: Et.Element) -> Dict[int, Dict[str, Any]]:
+    def _read_all_models(self, all_models_element: Et.Element) -> Dict[str, Dict[str, Any]]:
         """
         Read the types of models from the config file.
 
