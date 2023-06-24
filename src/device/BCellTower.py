@@ -1,14 +1,11 @@
 from abc import abstractmethod
 
 from mesa import Agent
-from pandas import Series
-
-from src.device.DManytoOneData import ManytoOneData
-from src.device.DOnetoOneData import OnetoOneData
+from pandas import DataFrame, Series
 
 
 class BaseCellTower(Agent):
-    def __init__(self, cell_tower_id: int, cell_tower_data: Series, sim_model=None):
+    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_model_data: dict, controller_links_data: DataFrame, sim_model=None):
         """
         Initialize the cell tower class.
 
@@ -20,8 +17,8 @@ class BaseCellTower(Agent):
         super().__init__(cell_tower_id, sim_model)
         self.location = [cell_tower_data['x'], cell_tower_data['y']]
 
-        self.ues_data: ManytoOneData | None = None
-        self.controller_data: OnetoOneData | None = None
+        self.cell_tower_model_data = cell_tower_model_data
+        self.tower_to_controller_links_df = controller_links_data
 
     def get_id(self) -> int:
         """
@@ -33,18 +30,6 @@ class BaseCellTower(Agent):
             The ID of the cell tower.
         """
         return self.unique_id
-
-    def get_data_from_ues(self) -> ManytoOneData:
-        """
-        Get the data received from the ues.
-        """
-        return self.ues_data
-
-    def get_data_from_controller(self) -> OnetoOneData:
-        """
-        Get the data received from the controller.
-        """
-        return self.controller_data
 
     def get_position(self) -> list[float]:
         """
@@ -61,12 +46,5 @@ class BaseCellTower(Agent):
     def step(self):
         """
         Step function for the cell tower
-        """
-        pass
-
-    @abstractmethod
-    def receive_data(self, ue_id: int, data: ManytoOneData):
-        """
-        Receive data from the ues.
         """
         pass
