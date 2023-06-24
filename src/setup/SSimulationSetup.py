@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 import pyarrow.parquet as pq
 from pandas import DataFrame, read_csv
 
-from src.core.CustomExceptions import InvalidXMLAttributeError, InvalidXMLTagError
+from src.core.CustomExceptions import *
 
 
 class SimulationSetup:
@@ -25,17 +25,23 @@ class SimulationSetup:
         self.ue_trace_data: DataFrame = DataFrame()
         self.cell_tower_data: DataFrame = DataFrame()
         self.controller_data: DataFrame = DataFrame()
-        self.tower_links_data: DataFrame = DataFrame()
 
-        self.channel_model_data: dict = {}
+        self.ue_trace_file: str = ''
+        self.ue_links_file: str = ''
+        self.cell_tower_file: str = ''
+        self.tower_links_file: str = ''
+        self.controller_file: str = ''
+        self.controller_links_file: str = ''
+
+        self.ue_links_data: DataFrame = DataFrame()
+        self.cell_tower_links_data: DataFrame = DataFrame()
+        self.controller_links_data: DataFrame = DataFrame()
+
         self.ue_models_data: dict = {}
         self.cell_tower_models_data: dict = {}
         self.controller_models_data: dict = {}
 
-        self.cell_tower_link_data: DataFrame = DataFrame()
-        self.ue_links_data: DataFrame = DataFrame()
-        self.controller_link_data: DataFrame = DataFrame()
-
+        self.channel_model_data: dict = {}
         self.simulation_data: dict = {}
 
     def read_input_file(self) -> None:
@@ -70,102 +76,123 @@ class SimulationSetup:
         """
         for child in input_files:
             if child.tag == 'ue_trace':
-                self._read_ue_trace(child.text)
+                self._read_ue_trace(child)
             elif child.tag == 'ue_links':
-                self.read_ue_links(child.text)
+                self.read_ue_links(child)
             elif child.tag == 'cell_towers':
-                self._read_cell_towers(child.text)
+                self._read_cell_towers(child)
             elif child.tag == 'tower_links':
-                self._read_tower_links(child.text)
+                self._read_tower_links(child)
             elif child.tag == 'controllers':
-                self._read_controllers(child.text)
+                self._read_controllers(child)
             elif child.tag == 'controller_links':
-                self._read_controller_links(child.text)
+                self._read_controller_links(child)
             else:
                 raise InvalidXMLTagError(child.tag)
 
-    def _read_ue_trace(self, ue_file) -> None:
+    def _read_ue_trace(self, ue_trace_element: Et.Element) -> None:
         """
         Read the ues trace data from the parquet file.
 
         Parameters
         ----------
-        ue_file : str
-            The path to the ues trace file.
+        ue_trace_element : Et.Element
+            The ue trace element.
         """
-        # Get the ues data as a pandas dataframe
-        self.ue_trace_data = pq.read_table(join(self.project_path, ue_file)).to_pandas()
+        # Get the path to the ue trace file
+        self.ue_trace_file = join(self.project_path, ue_trace_element.text)
 
-        # Sort the ues data by ue id and time
-        self.ue_trace_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
+        # Check if this has to be streamed
+        if ue_trace_element.attrib['stream'].lower() != 'true':
+            # Read and sort the data.
+            self.ue_trace_data = pq.read_table(self.ue_trace_file).to_pandas()
+            self.ue_trace_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
 
-    def read_ue_links(self, ue_links_file: str) -> None:
+    def read_ue_links(self, ue_links_element: Et.Element) -> None:
         """
         Read the coverage data from the parquet file.
 
         Parameters
         ----------
-        ue_links_file : str
-            The path to the coverage file.
+        ue_links_element : Et.Element
+            The ue links element.
         """
-        # Get the coverage data as a pandas dataframe
-        self.ue_links_data = pq.read_table(join(self.project_path, ue_links_file)).to_pandas()
+        # Get the path to the coverage file
+        self.ue_links_file = join(self.project_path, ue_links_element.text)
 
-        # Sort the coverage data by ue id and time
-        self.ue_links_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
+        if ue_links_element.attrib['stream'].lower() != 'true':
+            # Read and sort the data.
+            self.ue_links_data = pq.read_table(self.ue_links_file).to_pandas()
+            self.ue_links_data.sort_values(by=['vehicle_id', 'time'], inplace=True)
 
-    def _read_cell_towers(self, cell_tower_file: str) -> None:
+    def _read_cell_towers(self, cell_tower_file: Et.Element) -> None:
         """
         Read the cell towers data from the CSV file.
 
         Parameters
         ----------
-        cell_tower_file : str
-            The path to the cell towers file.
+        cell_tower_file : Et.Element
+            The cell towers element.
         """
-        # Get the cell towers data as a pandas dataframe
-        self.cell_tower_data = read_csv(join(self.project_path, cell_tower_file), dtype={'cell_tower_id': int, 'x': float, 'y': float, 'type': str}, usecols=['cell_tower_id', 'x', 'y', 'type'])
+        # Get the path to the cell towers file
+        self.cell_tower_file = join(self.project_path, cell_tower_file.text)
 
-    def _read_controllers(self, controller_file: str) -> None:
+        if cell_tower_file.attrib['stream'].lower() != 'true':
+            # Get the cell towers data as a pandas dataframe
+            self.cell_tower_data = read_csv(self.cell_tower_file, dtype={'cell_tower_id': int, 'x': float, 'y': float, 'type': str}, usecols=['cell_tower_id', 'x', 'y', 'type'])
+
+    def _read_controllers(self, controller_file: Et.Element) -> None:
         """
         Read the controllers data from the CSV file.
 
         Parameters
         ----------
-        controller_file : str
-            The path to the controllers file.
+        controller_file : Et.Element
+            The controllers element.
         """
-        # Get the controllers data as a pandas dataframe
-        self.controller_data = read_csv(join(self.project_path, controller_file), dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
+        # Get the path to the controllers file
+        self.controller_file = join(self.project_path, controller_file.text)
 
-    def _read_controller_links(self, link_file: str) -> None:
+        if controller_file.attrib['stream'].lower() != 'true':
+            # Get the controllers data as a pandas dataframe
+            self.controller_data = read_csv(self.controller_file, dtype={'controller_id': int, 'x': float, 'y': float}, usecols=['controller_id', 'x', 'y'])
+
+    def _read_controller_links(self, link_file: Et.Element) -> None:
         """
         Read the links data from the links CSV file.
 
         Parameters
         ----------
-        link_file : str
-            The path to the links file.
+        link_file : Et.Element
+            The links element.
         """
-        # Read the links csv file as a pandas dataframe
-        self.controller_link_data = read_csv(join(self.project_path, link_file),
-                                             dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
-                                             usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
+        # Get the path to the links file
+        self.controller_links_file = join(self.project_path, link_file.text)
 
-    def _read_tower_links(self, tower_links_file: str) -> None:
+        if link_file.attrib['stream'].lower() != 'true':
+            # Get the links data as a pandas dataframe
+            self.controller_links_data = read_csv(self.controller_links_file,
+                                                  dtype={'link_id': int, 'cell_tower': int, 'controller': int, 'bandwidth_in': float, 'bandwidth_out': float},
+                                                  usecols=['link_id', 'cell_tower', 'controller', 'bandwidth_in', 'bandwidth_out'])
+
+    def _read_tower_links(self, tower_links_file: Et.Element) -> None:
         """
         Read the tower links data from the CSV file.
 
         Parameters
         ----------
-        tower_links_file : str
-            The path to the tower links file.
+        tower_links_file : Et.Element
+            The tower links element.
         """
-        # Get the tower links data as a pandas dataframe
-        self.tower_links_data = pq.read_table(join(self.project_path, tower_links_file)).to_pandas()
+        # Get the path to the tower links file
+        self.tower_links_file = join(self.project_path, tower_links_file.text)
 
-        # Sort the tower links data by vehicle id and time
-        self.tower_links_data.sort_values(by=['agent_id', 'time'], inplace=True)
+        if tower_links_file.attrib['stream'].lower() != 'true':
+            # Get the tower links data as a pandas dataframe
+            self.tower_links_data = pq.read_table(self.tower_links_file).to_pandas()
+
+            # Sort the tower links data by vehicle id and time
+            self.tower_links_data.sort_values(by=['agent_id', 'time'], inplace=True)
 
     def _read_output_settings(self, child):
         """
@@ -351,7 +378,10 @@ class SimulationSetup:
                 raise InvalidXMLTagError(model_child.tag)
 
             model_data = self._read_model_data(model_child)
-            all_models_data[model_data['id']] = model_data
+            if model_data['type'] in all_models_data:
+                raise DuplicateDeviceModelError(model_data['type'])
+
+            all_models_data[model_data['type']] = model_data
 
         return all_models_data
 
@@ -366,7 +396,6 @@ class SimulationSetup:
             The model data element from the config file.
         """
         model_data = {}
-        model_data['id'] = int(model_element.attrib['id'])
         model_data['type'] = model_element.attrib['type']
         model_data['name'] = model_element.attrib['name']
 
