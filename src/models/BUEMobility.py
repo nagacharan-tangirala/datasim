@@ -1,15 +1,17 @@
 from abc import abstractmethod
 
 from mesa import Agent
+from pandas import DataFrame
 
 
 class UEMobility(Agent):
-    def __init__(self, positions):
+    def __init__(self):
         """
         Initialize the mobility model.
         """
         super().__init__(0, None)
-        self.positions = positions
+
+        self.positions = None
         self.current_time: int = 0
         self.current_location: list[float] = []
 
@@ -28,6 +30,30 @@ class UEMobility(Agent):
     def step(self):
         """
         Step through the model, should be implemented by the child class.
+        """
+        pass
+
+    @abstractmethod
+    def get_type(self) -> str:
+        """
+        Get the type of the model.
+
+        Returns
+        ----------
+        str
+            The type of the model.
+        """
+        pass
+
+    @abstractmethod
+    def update_positions(self, positions: DataFrame) -> None:
+        """
+        Update the positions of the ue.
+
+        Parameters
+        ----------
+        positions : DataFrame
+            The positions of the ue.
         """
         pass
 
