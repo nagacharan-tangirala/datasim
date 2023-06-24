@@ -52,34 +52,34 @@ class DeviceFactory:
         """
         return self.ues
 
-    def create_cell_towers(self, all_cell_tower_data: DataFrame):
+    def create_cell_towers(self, cell_tower_data: DataFrame, cell_tower_models_data: dict, cell_tower_links_data: DataFrame) -> None:
         """
         Create the cell towers in the simulation.
         """
         # Get the list of cell towers in the simulation.
-        cell_tower_list = all_cell_tower_data['cell_tower_id'].unique()
+        cell_tower_list = cell_tower_data['cell_tower_id'].unique()
 
         for cell_tower_id in cell_tower_list:
             # Get the cell tower data.
-            cell_tower_data: Series = all_cell_tower_data[all_cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
+            cell_tower_data: Series = cell_tower_data[cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
 
             # Create the cell tower.
-            self.cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data)
+            self.cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data, cell_tower_models_data, cell_tower_links_data)
 
     @staticmethod
-    def _create_cell_tower(cell_tower_id: int, cell_tower_data: Series):
+    def _create_cell_tower(cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict, cell_tower_links_data: DataFrame):
         """
         Create a cell tower from the given parameters.
         """
         cell_tower_type = cell_tower_data['type']
         if cell_tower_type == 'bs':
-            return BasicCellTower(cell_tower_id, cell_tower_data)
+            return BasicCellTower(cell_tower_id, cell_tower_data, cell_tower_models_data, cell_tower_links_data)
         elif cell_tower_type == 'intermediate':
-            return IntermediateCellTower(cell_tower_id, cell_tower_data)
+            return IntermediateCellTower(cell_tower_id, cell_tower_data, cell_tower_models_data, cell_tower_links_data)
         else:
             raise NotSupportedCellTowerError(cell_tower_type)
 
-    def create_controllers(self, controller_data: DataFrame):
+    def create_controllers(self, controller_data: DataFrame, controller_models_data: dict, controller_links_data: DataFrame) -> None:
         """
         Create the controllers in the simulation.
         """
@@ -92,10 +92,10 @@ class DeviceFactory:
             controller_position: list[float, float] = controller_data[controller_data['controller_id'] == controller_id][['x', 'y']].values.tolist()
 
             # Create the controller.
-            self.controllers[controller_id] = self._create_controller(controller_id, controller_position)
+            self.controllers[controller_id] = self._create_controller(controller_id, controller_position, controller_models_data, controller_links_data)
 
     @staticmethod
-    def _create_controller(controller_id, position) -> CentralController:
+    def _create_controller(controller_id, position, controller_models_data, controller_links_data) -> CentralController:
         """
         Create a controller from the given parameters.
 
@@ -106,48 +106,30 @@ class DeviceFactory:
         position : list[float]
             The position of the controller.
         """
-        return CentralController(controller_id, position)
+        return CentralController(controller_id, position, controller_models_data, controller_links_data)
 
-    def create_ues(self, ue_data: DataFrame, coverage_data: DataFrame, ue_type_data: list[dict], nearest_towers_data: DataFrame):
+    def create_ues(self, ue_trace_data: DataFrame, ue_models: dict, ue_links_df: DataFrame) -> None:
         """
         Create the ues in the simulation.
         """
         # Get the list of ues in the simulation.
-        ue_list = ue_data['ue_id'].unique()
+        ue_list = ue_trace_data['vehicle_id'].unique()
 
         # Get the weights of the ue types.
-        ue_weights = [float(ue_type['weight']) for ue_type in ue_type_data]
-
-        # Check if the weights sum to 1.
+        ue_weights = [float(ue_data['weight']) for ue_data in ue_models.values()]
+        ue_types = list(ue_models.keys())
 
         # Create the ues.
         for ue_id in ue_list:
-            # Get the ue positions.
-            ue_trace = ue_data[ue_data['ue_id'] == ue_id][['time', 'x', 'y']].reset_index(drop=True)
-
-            # Randomly select the type of the ue.
-            ue_settings = choices(ue_type_data, weights=ue_weights, k=1)[0]
+            # Randomly select the type of the ue and get the respective model set.
+            ue_type_choice = choices(ue_types, weights=ue_weights, k=1)[0]
+            selected_ue_model_set = ue_models[ue_type_choice].copy()
 
             # Create the ue.
-            self.ues[ue_id] = self._create_ue(ue_id, ue_settings)
-
-            # Set the ue trace.
-            self.ues[ue_id].set_mobility_data(ue_trace)
-
-            # Get the ue coverage.
-            ue_coverage = coverage_data[coverage_data['vehicle_id'] == ue_id][['neighbours', 'time']]
-
-            # Set the ue coverage.
-            self.ues[ue_id].set_coverage_data(ue_coverage)
-
-            # Get the ue nearest towers.
-            ue_nearest_towers = nearest_towers_data[nearest_towers_data['vehicle_id'] == ue_id][['nearest_towers', 'time']]
-
-            # Set the ue nearest towers.
-            self.ues[ue_id].set_nearest_towers_data(ue_nearest_towers)
+            self.ues[ue_id] = self._create_ue(ue_id, selected_ue_model_set, ue_links_df)
 
     @staticmethod
-    def _create_ue(ue_id: int, ue_settings: dict) -> VehicleUE:
+    def _create_ue(ue_id: int, ue_models: dict, ue_links_df: DataFrame) -> VehicleUE:
         """
         Create an ue from the given parameters.
 
@@ -156,4 +138,4 @@ class DeviceFactory:
         ue_id : int
             The ID of the ue.
         """
-        return VehicleUE(ue_id, ue_settings)
+        return VehicleUE(ue_id, ue_models, ue_links_df)
