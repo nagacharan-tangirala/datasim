@@ -68,36 +68,31 @@ class Simulation:
         """
         # Create a device factory object and create the participants
         device_factory = DeviceFactory()
-        device_factory.create_cell_towers(self.sim_config.cell_tower_data)
-        device_factory.create_ues(self.sim_config.ue_data, self.sim_config.coverage_data, self.sim_config.ue_type_data, self.sim_config.nearest_towers_data)
-        device_factory.create_controllers(self.sim_config.controller_data)
+        device_factory.create_ues(self.sim_config.ue_trace_data, self.sim_config.ue_models_data, self.sim_config.ue_links_data)
+        device_factory.create_cell_towers(self.sim_config.cell_tower_data, self.sim_config.cell_tower_models_data, self.sim_config.cell_tower_links_data)
+        device_factory.create_controllers(self.sim_config.controller_data, self.sim_config.controller_models_data, self.sim_config.controller_links_data)
 
         # Get the devices from the factory
-        self.cell_towers = device_factory.get_cell_towers()
         self.ues = device_factory.get_ues()
+        self.cell_towers = device_factory.get_cell_towers()
         self.controllers = device_factory.get_controllers()
 
     def _create_device_models(self) -> None:
         """
         Create the device models.
         """
-        self.ue_model = UEModel(self.ues, self.sim_config.model_data['ue'])
-        self.cell_tower_model = CellTowerModel(self.cell_towers, self.sim_config.cell_tower_link_data, self.sim_config.model_data['cell_tower'])
-        self.controller_model = ControllerModel(self.controllers, self.sim_config.controller_link_data, self.sim_config.model_data['controller'])
+        self.ue_model = UEModel(self.ues)
+        self.cell_tower_model = CellTowerModel(self.cell_towers)
+        self.controller_model = ControllerModel(self.controllers)
 
     def _create_channel_models(self) -> None:
         """
         Create the channel models.
         """
         # Create the channel models
-        self.ue_channel_model = UEChannelModel(self.cell_towers)
-        self.cell_tower_channel_model = CellTowerChannelModel(self.cell_towers)
-        self.controller_channel_model = ControllerChannelModel(self.cell_towers)
-
-        # Get the channels from the device models and add them to the channel models.
-        self.ue_channel_model.add_channel(self.ue_model.get_ue_channel())
-        self.cell_tower_channel_model.add_channel(self.cell_tower_model.get_cell_tower_channel())
-        self.controller_channel_model.add_channel(self.controller_model.get_controller_channel())
+        self.ue_channel_model = UEChannelModel(self.sim_config.ue_links_data)
+        self.cell_tower_channel_model = CellTowerChannelModel(self.sim_config_cell_tower_links_data)
+        self.controller_channel_model = ControllerChannelModel(self.sim_config.controller_links_data)
 
     def run(self) -> None:
         """
@@ -111,7 +106,7 @@ class Simulation:
         Step the simulation.
         """
         self.ue_model.step(self.current_time)
-        self.ue_channel_model.step()
+        self.ue_channel_model.step(self.current_time)
 
         self.cell_tower_model.step()
         self.cell_tower_channel_model.step()
