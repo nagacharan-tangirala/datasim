@@ -1,73 +1,42 @@
-from pandas import DataFrame
-
 from src.device.BUE import BaseUE
-from src.device.DOnetoOneData import OnetoOneData
-from src.models.MTowerFinderModel import TowerFinderModel
-from src.models.MUECoverageModel import CoverageModel
-from src.models.MUEMobilityModel import MobilityModel
+from src.models.MUEDataUnitModel import UEDataUnitModel
+from src.models.MUEMobilityModel import UEMobilityModel
 
 
 class VehicleUE(BaseUE):
-    def __init__(self, ue_id: int, ue_settings: dict):
+    def __init__(self, ue_id: int, ue_models: dict):
         """
         Initialize the vehicle ue.
         """
-        super().__init__(ue_id, ue_settings)
-        self.coverage: DataFrame | None = None
-        self.nearest_towers_df: DataFrame | None = None
+        super().__init__(ue_id)
+
+        # Create the models.
+        self._create_models()
+        self.mobility_model_data: dict = ue_models['mobility']
+        self.data_unit_model_data: dict = ue_models['data_unit']
 
         self.neighbour_data: dict[int, float] = {}
 
-    def set_mobility_data(self, positions: DataFrame) -> None:
+    def _create_models(self) -> None:
         """
-        Set the mobility data for the ue.
+        Create the models for this ue.
         """
-        self.start_time = positions["time"].min()
-        self.end_time = positions["time"].max()
+        self.mobility_model = UEMobilityModel(self.mobility_model_data)
+        self.data_unit_model = UEDataUnitModel(self.get_id(), self.data_unit_model_data)
 
-        # Store x and y positions
-        self.positions = positions[["x", "y"]].values.tolist()
-
-    def set_coverage_data(self, coverage: DataFrame):
-        """
-        Set the coverage data for the ue.
-        """
-        self.coverage = coverage.reset_index(drop=True)
-
-    def set_nearest_towers_data(self, nearest_towers_df: DataFrame) -> None:
-        """
-        Set the nearest towers for the ue.
-        """
-        self.nearest_towers_df = nearest_towers_df
-
-    def _initiate_models(self) -> None:
+    def _activate_models(self) -> None:
         """
         Initiate the models related to this ue.
         """
-        # Create mobility model
-        self.mobility_model = MobilityModel(self.positions)
         self.mobility_model.activate()
-
-        # Create the coverage model
-        self.coverage_model = CoverageModel(self.coverage)
-        self.coverage_model.activate()
-
-        # Create the tower finder model
-        self.tower_finder_model = TowerFinderModel(self.nearest_towers_df)
-        self.tower_finder_model.activate()
+        self.data_unit_model.activate()
 
     def _deactivate_models(self) -> None:
         """
         Deactivate the models related to this ue.
         """
-        # Deactivate the mobility model
         self.mobility_model.deactivate()
-
-        # Deactivate the coverage model
-        self.coverage_model.deactivate()
-
-        # Deactivate the tower finder model
-        self.tower_finder_model.deactivate()
+        self.data_unit_model.deactivate()
 
     def step(self) -> None:
         """
@@ -80,45 +49,24 @@ class VehicleUE(BaseUE):
         # Update the current position
         self.current_position = self.mobility_model.get_location()
 
-        # Step through the mobility model and coverage model.
+        # Step through the models
         self.mobility_model.step(self.sim_model.current_time)
-        self.coverage_model.step(self.sim_model.current_time)
-        self.tower_finder_model.step(self.sim_model.current_time)
+        self.data_unit_model.step(self.sim_model.current_time)
 
-        self._generate_data()
-        self._collect_neighbours_data()
-
-    def _collect_neighbours_data(self) -> None:
+    def get_generated_data(self) -> int:
         """
-        Collect data from the neighbors.
+        Get the generated data.
         """
-        # Get the neighbours
-        neighbours = self.coverage_model.get_ues_in_coverage()
+        return self.data_unit_model.get_generated_data()
 
-        # Clear the neighbour data
-        self.neighbour_data.clear()
-
-        # Collect the data from the ues within the coverage area
-        for neighbour in neighbours:
-            if neighbour is not self.unique_id and self.sim_model.ues[neighbour].get_data_transmit_status():
-                self.neighbour_data[neighbour] = self.sim_model.ues[neighbour].get_cached_data()
-
-    def get_neighbour_data(self) -> dict[int, float]:
+    def get_cached_data(self) -> int:
         """
-        Get the data from the neighbours.
+        Get the cached data.
         """
-        return self.neighbour_data
+        return self.data_unit_model.get_cached_data()
 
-    def _generate_data(self) -> None:
+    def get_start_and_end_time(self) -> tuple[int, int]:
         """
-        Generate data for the ue.
+        Get the start and end time of the ue.
         """
-        # Update the data cache
-        if self.ue_data is not None:
-            self.ue_data_cache.appendleft(self.ue_data)
-
-        # Get the nearest tower
-        self.nearest_tower = self.tower_finder_model.get_nearest_tower()
-
-        # Generate new data
-        self.ue_data = OnetoOneData(self.sim_model.current_time, self.ue_data_rate, self.unique_id, self.nearest_tower)
+        return self.start_time, self.end_time
