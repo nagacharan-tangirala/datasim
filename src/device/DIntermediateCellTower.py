@@ -1,16 +1,10 @@
-from pandas import Series
+from pandas import DataFrame, Series
 
 from src.device.BCellTower import BaseCellTower
 
 
 class IntermediateCellTower(BaseCellTower):
-    def step(self):
-        pass
-
-    def receive_data(self, ue_id, data: float):
-        pass
-
-    def __init__(self, cell_tower_id: int, cell_tower_data: Series):
+    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict, cell_tower_links_data: DataFrame):
         """
         Initialize the intermediate cell_tower.
 
@@ -19,7 +13,7 @@ class IntermediateCellTower(BaseCellTower):
         cell_tower_data : Series
             Series containing all the parameters for the intermediate cell tower.
         """
-        super().__init__(cell_tower_id, cell_tower_data)
+        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data, cell_tower_links_data)
 
         self.in_range_cell_towers = []
         self.cell_towers_data = 0
@@ -34,6 +28,12 @@ class IntermediateCellTower(BaseCellTower):
             The collected data size.
         """
         return self.cell_towers_data
+
+    def step(self):
+        pass
+
+    def receive_data(self, ue_id, data: float):
+        pass
 
     def update_cell_tower(self, time: int):
         """
