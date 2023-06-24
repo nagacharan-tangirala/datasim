@@ -62,3 +62,47 @@ class DuplicateDeviceModelError(Exception):
 
     def __str__(self):
         return f"The model '{self.model}' is duplicated for a given device."
+
+
+class UnsupportedInputFormatError(Exception):
+    """ The input file is not supported. """
+
+    def __init__(self, file_name: str, message: str = ""):
+        super().__init__(message)
+        self.file_name = file_name
+
+    def __str__(self):
+        return f"The input file '{self.file_name}' has unsupported format."
+
+
+class UnsupportedFormatForStreamingError(Exception):
+    """ The input file is not supported for streaming. """
+
+    def __init__(self, file_name: str, message: str = ""):
+        super().__init__(message)
+        self.file_name = file_name
+
+    def __str__(self):
+        return f"The input file '{self.file_name}' has unsupported format for streaming."
+
+
+class StreamingNotEnabledError(Exception):
+    """ The streaming is not enabled. """
+
+    def __init__(self, file_name: str, message: str = ""):
+        super().__init__(message)
+        self.file_name = file_name
+
+    def __str__(self):
+        return f"The streaming is not enabled for the input file '{self.file_name}'."
+
+
+class StreamingEnabledError(Exception):
+    """ The streaming is enabled. """
+
+    def __init__(self, file_name: str, message: str = ""):
+        super().__init__(message)
+        self.file_name = file_name
+
+    def __str__(self):
+        return f"The streaming is enabled for the input file '{self.file_name}'."
