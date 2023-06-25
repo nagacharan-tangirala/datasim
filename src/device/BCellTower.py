@@ -1,11 +1,11 @@
 from abc import abstractmethod
 
 from mesa import Agent
-from pandas import DataFrame, Series
+from pandas import Series
 
 
 class BaseCellTower(Agent):
-    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_model_data: dict, controller_links_data: DataFrame, sim_model=None):
+    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_model_data: dict, sim_model=None):
         """
         Initialize the cell tower class.
 
@@ -18,7 +18,6 @@ class BaseCellTower(Agent):
         self.location = [cell_tower_data['x'], cell_tower_data['y']]
 
         self.cell_tower_model_data = cell_tower_model_data
-        self.tower_to_controller_links_df = controller_links_data
 
     def get_id(self) -> int:
         """

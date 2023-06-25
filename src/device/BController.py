@@ -14,7 +14,7 @@ class Link:
 
 
 class BaseController(Agent):
-    def __init__(self, controller_id: int, position: list[float], controller_models_data: dict, controller_links_data: DataFrame, model=None):
+    def __init__(self, controller_id: int, position: list[float], controller_models_data: dict, model=None):
         """
         Initialize the traffic controller.
 
@@ -35,7 +35,6 @@ class BaseController(Agent):
         self.outgoing_data = None
 
         self.controller_models_data = controller_models_data
-        self.controller_links_data = controller_links_data
 
     def get_id(self) -> int:
         """
