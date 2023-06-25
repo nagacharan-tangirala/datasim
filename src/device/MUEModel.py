@@ -2,12 +2,12 @@ from mesa import Model
 from mesa.time import BaseScheduler
 
 from src.channel.BUEChannel import BaseUEChannel
+from src.core.CustomExceptions import DuplicateDeviceFoundError
 from src.device.BUE import BaseUE
-from src.setup.SDeviceModelFactory import DeviceModelFactory
 
 
 class UEModel(Model):
-    def __init__(self, ues: dict[int, BaseUE], ue_model_data: dict):
+    def __init__(self, ues: dict[int, BaseUE]):
         """
         Initialize the model for the ues.
         """
@@ -17,6 +17,7 @@ class UEModel(Model):
 
         self.ues: dict[int, BaseUE] = ues
         self.ue_activation_times: dict[int, list[int]] = {}
+        self.ue_deactivation_times: dict[int, list[int]] = {}
 
         self.current_time: int = 0
 
@@ -24,44 +25,69 @@ class UEModel(Model):
         self.ue_channel: BaseUEChannel | None = None
         self.data_model: dict[int, float] = {}
 
-        self._prepare_active_ues_dict()
-        self._create_models(ue_model_data)
-
-    def _prepare_active_ues_dict(self) -> None:
+    def _prepare_active_ue_times(self) -> None:
         """
         Prepare a dictionary with time step as the key and the respective ues to activate in that time step.
         """
         for ue_id, ue in self.ues.items():
             start_time, end_time = ue.get_start_and_end_time()
-            # Add the ue to the dictionary with the start time as the key
-            if start_time not in self.ue_activation_times:
-                self.ue_activation_times[start_time] = [ue_id]
-            else:
-                self.ue_activation_times[start_time].append(ue_id)
+            self._save_activation_time(start_time, ue_id)
+            self._save_deactivation_time(end_time, ue_id)
 
-            # Add the ue to the dictionary with the end time as the key
-            if end_time not in self.ue_activation_times:
-                self.ue_activation_times[end_time] = [ue_id]
-            else:
-                self.ue_activation_times[end_time].append(ue_id)
+    def update_ues(self, ues: dict[int, BaseUE]) -> None:
+        """
+        Update the ues.
 
-    def _create_models(self, ue_model_data: dict) -> None:
+        Parameters
+        ----------
+        ues : dict[int, BaseUE]
+            The ues to update.
         """
-        Create all the models for the ues.
-        """
-        # Iterate through the model data and create the models
-        model_factory = DeviceModelFactory()
-        for model_id, model_data in ue_model_data.items():
-            if model_data['type'] == 'channel':
-                self.ue_channel = model_factory.create_ue_channel(model_data)
-            else:
-                raise ValueError(f"Unknown model type {model_data['type']}")
+        for ue_id, ue in ues.items():
+            if ue_id in self.ues:
+                raise DuplicateDeviceFoundError(ue_id, 'ue')
+            self.ues[ue_id] = ue
 
-    def get_ue_channel(self) -> BaseUEChannel | None:
+        self._update_active_ue_times()
+
+    def _update_active_ue_times(self) -> None:
         """
-        Get the channel for the ue model.
+        Update the activation and deactivation times for the UEs. This function is called when the UEs are updated.
         """
-        return self.ue_channel
+        for ue_id, ue in self.ues.items():
+            start_time, end_time = ue.get_start_and_end_time()
+
+            # If end time is less than the current time, the device is already deactivated
+            if end_time < self.current_time:
+                continue
+
+            if start_time > self.current_time:
+                # If start time is greater than the current time, the device is not activated yet. Add the activation time and deactivation time.
+                self._save_activation_time(start_time, ue_id)
+                self._save_deactivation_time(end_time, ue_id)
+            else:
+                # The device is already activated. Remove the current deactivation time and add the new one.
+                if self.current_time in self.ue_deactivation_times:
+                    self.ue_deactivation_times[end_time].pop(ue_id)
+                self._save_deactivation_time(end_time, ue_id)
+
+    def _save_activation_time(self, time: int, ue_id: int):
+        """
+        Update the activation time of the ue.
+        """
+        if time not in self.ue_activation_times:
+            self.ue_activation_times[time] = [ue_id]
+        else:
+            self.ue_activation_times[time].append(ue_id)
+
+    def _save_deactivation_time(self, time: int, ue_id: int):
+        """
+        Update the deactivation time of the ue.
+        """
+        if time not in self.ue_deactivation_times:
+            self.ue_deactivation_times[time] = [ue_id]
+        else:
+            self.ue_deactivation_times[time].append(ue_id)
 
     def _refresh_active_ues(self, time_step: int) -> None:
         """
@@ -72,20 +98,39 @@ class UEModel(Model):
         time_step : int
             The time step of the simulation.
         """
-        ues_to_update = self.ue_activation_times[time_step]
-        for ue_id in ues_to_update:
-            ue = self.ues[ue_id]
-            ue.toggle_status()
+        if len(self.ue_activation_times) == 0:
+            self._prepare_active_ue_times()
 
-            # If the ue is active, add it to the scheduler and channel. Otherwise, remove from them.
-            if ue.is_active():
-                self.schedule.add(ue)
-                self.ue_channel.add_ue(ue)
-                ue.sim_model = self
-            else:
-                self.schedule.remove(ue)
-                self.ue_channel.remove_ue(ue)
-                ue.sim_model = None
+        self._activate_ues(time_step)
+        self._deactivate_ues(time_step)
+
+    def _activate_ues(self, time_step: int) -> None:
+        """
+        Activate the ues in the current time step.
+        """
+        ues_to_activate = self.ue_activation_times[time_step]
+        for ue_id in ues_to_activate:
+            ue = self.ues[ue_id]
+            ue.activate_ue(time_step)
+
+            # Add to the schedule and channel and set the mesa model to this
+            self.schedule.add(ue)
+            self.ue_channel.add_ue(ue)
+            ue.sim_model = self
+
+    def _deactivate_ues(self, time_step: int) -> None:
+        """
+        Deactivate the ues in the current time step.
+        """
+        ues_to_deactivate = self.ue_deactivation_times[time_step]
+        for ue_id in ues_to_deactivate:
+            ue = self.ues[ue_id]
+            ue.deactivate_ue(time_step)
+
+            # Remove from the schedule and channel and set the mesa model to None
+            self.schedule.remove(ue)
+            self.ue_channel.remove_ue(ue)
+            ue.sim_model = None
 
     def step(self, *args, **kwargs):
         """
