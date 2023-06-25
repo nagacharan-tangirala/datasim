@@ -1,9 +1,9 @@
 from pandas import DataFrame
 
-from src.models.BUEMobility import UEMobility
+from src.models.BUEMobility import UEMobilityBase
 
 
-class StaticUEMobility(UEMobility):
+class StaticUEMobility(UEMobilityBase):
     def __init__(self, positions: DataFrame):
         """
         Initialize the static mobility model.
@@ -13,8 +13,7 @@ class StaticUEMobility(UEMobility):
         positions : DataFrame
             DataFrame of positions for the ue.
         """
-        super().__init__()
-        self.positions = positions
+        super().__init__(positions)
 
     def step(self):
         """
@@ -43,4 +42,4 @@ class StaticUEMobility(UEMobility):
         positions : DataFrame
             The positions of the ue.
         """
-        pass
+        self.positions = positions

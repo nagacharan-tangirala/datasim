@@ -4,14 +4,14 @@ from mesa import Agent
 from pandas import DataFrame
 
 
-class UEMobility(Agent):
-    def __init__(self):
+class UEMobilityBase(Agent):
+    def __init__(self, positions: DataFrame):
         """
         Initialize the mobility model.
         """
         super().__init__(0, None)
 
-        self.positions = None
+        self.positions: DataFrame = positions
         self.current_time: int = 0
         self.current_location: list[float] = []
 
@@ -54,6 +54,17 @@ class UEMobility(Agent):
         ----------
         positions : DataFrame
             The positions of the ue.
+        """
+        pass
+
+    def get_start_and_end_time(self) -> tuple[int, int]:
+        """
+        Get the start and end time of the ue.
+
+        Returns
+        ----------
+        tuple
+            The start and end time of the ue.
         """
         pass
 
