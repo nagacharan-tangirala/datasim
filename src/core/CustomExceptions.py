@@ -75,34 +75,48 @@ class UnsupportedInputFormatError(Exception):
         return f"The input file '{self.file_name}' has unsupported format."
 
 
-class UnsupportedFormatForStreamingError(Exception):
-    """ The input file is not supported for streaming. """
+class TimeColumnMissingError(Exception):
+    """ The time column is missing in the input file. """
 
     def __init__(self, file_name: str, message: str = ""):
         super().__init__(message)
         self.file_name = file_name
 
     def __str__(self):
-        return f"The input file '{self.file_name}' has unsupported format for streaming."
+        return f"The time column is missing in the input file '{self.file_name}'."
 
 
-class StreamingNotEnabledError(Exception):
-    """ The streaming is not enabled. """
+class WrongActivationTimeError(Exception):
+    """ The activation time is wrong. """
 
-    def __init__(self, file_name: str, message: str = ""):
+    def __init__(self, activation_time: int, start_time: int, message: str = ""):
         super().__init__(message)
-        self.file_name = file_name
+        self.activation_time = activation_time
+        self.start_time = start_time
 
     def __str__(self):
-        return f"The streaming is not enabled for the input file '{self.file_name}'."
+        return f"The activation time '{self.activation_time}' is wrong. It should be equal to the start time '{self.start_time}'."
 
 
-class StreamingEnabledError(Exception):
-    """ The streaming is enabled. """
+class WrongDeactivationTimeError(Exception):
+    """ The deactivation time is wrong. """
 
-    def __init__(self, file_name: str, message: str = ""):
+    def __init__(self, deactivation_time: int, end_time: int, message: str = ""):
         super().__init__(message)
-        self.file_name = file_name
+        self.deactivation_time = deactivation_time
+        self.end_time = end_time
 
     def __str__(self):
-        return f"The streaming is enabled for the input file '{self.file_name}'."
+        return f"The deactivation time '{self.deactivation_time}' is wrong. It should be equal to the end time '{self.end_time}'."
+
+
+class DuplicateDeviceFoundError(Exception):
+    """ The UE is duplicated in the input file. """
+
+    def __init__(self, device_id: int, device_type: str, message: str = ""):
+        super().__init__(message)
+        self.device_id = device_id
+        self.device_type = device_type
+
+    def __str__(self):
+        return f"The device with id '{self.device_id}' and '{self.device_type}' is duplicated in the input file."
