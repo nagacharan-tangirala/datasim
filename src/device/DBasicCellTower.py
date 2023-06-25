@@ -1,11 +1,11 @@
-from pandas import DataFrame, Series
+from pandas import Series
 
 from src.data_unit.BDataUnit import DataUnitBase
 from src.device.BCellTower import BaseCellTower
 
 
 class BasicCellTower(BaseCellTower):
-    def __init__(self, cell_tower_id, cell_tower_data: Series, cell_tower_models_data: dict, controller_links_data: DataFrame):
+    def __init__(self, cell_tower_id, cell_tower_data: Series, cell_tower_models_data: dict):
         """
         Initialize the base station.
 
@@ -14,7 +14,7 @@ class BasicCellTower(BaseCellTower):
         cell_tower_data : Series
             Series containing all the parameters for the base station.
         """
-        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data, controller_links_data)
+        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data)
 
         self.incoming_ues_data: dict[int, DataUnitBase] = {}
 

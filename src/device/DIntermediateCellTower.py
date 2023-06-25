@@ -1,10 +1,10 @@
-from pandas import DataFrame, Series
+from pandas import Series
 
 from src.device.BCellTower import BaseCellTower
 
 
 class IntermediateCellTower(BaseCellTower):
-    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict, cell_tower_links_data: DataFrame):
+    def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict):
         """
         Initialize the intermediate cell_tower.
 
@@ -13,7 +13,7 @@ class IntermediateCellTower(BaseCellTower):
         cell_tower_data : Series
             Series containing all the parameters for the intermediate cell tower.
         """
-        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data, cell_tower_links_data)
+        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data)
 
         self.in_range_cell_towers = []
         self.cell_towers_data = 0

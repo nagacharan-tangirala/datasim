@@ -4,7 +4,7 @@ from src.device.BController import BaseController
 
 
 class CentralController(BaseController):
-    def __init__(self, controller_id, position, controller_models_data: dict, controller_links: DataFrame):
+    def __init__(self, controller_id, position, controller_models_data: dict):
         """
         Initialize the central controller.
 
@@ -15,7 +15,7 @@ class CentralController(BaseController):
         position : list[float]
             The position of the controller.
         """
-        super().__init__(controller_id, position, controller_models_data, controller_links)
+        super().__init__(controller_id, position, controller_models_data)
 
     def get_location(self):
         """
