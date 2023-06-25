@@ -2,6 +2,7 @@ from mesa import Model
 from mesa.time import BaseScheduler
 from pandas import DataFrame
 
+from src.models.BUEMobility import UEMobilityBase
 from src.models.DStaticUEMobility import StaticUEMobility
 from src.models.DTraceUEMobility import TraceUEMobility
 
@@ -13,7 +14,7 @@ class UEMobilityModel(Model):
         """
         super().__init__()
 
-        self.mobility = self._create_mobility(mobility_model_data)
+        self.mobility: UEMobilityBase = self._create_mobility(mobility_model_data)
 
     def step(self, *args, **kwargs):
         """
@@ -40,18 +41,28 @@ class UEMobilityModel(Model):
         """
         self.schedule.remove(self.mobility)
 
-    def update_mobility_data(self, mobility_data: DataFrame) -> None:
-        """
-        Update the mobility data.
-        """
-        if self.mobility.get_type() == 'trace':
-            self.mobility.update_positions(mobility_data)
-
     def get_location(self) -> list[float]:
         """
         Get the current location of the ue.
         """
         return self.mobility.get_current_location()
+
+    def update_data(self, positions: DataFrame) -> None:
+        """
+        Update the mobility model.
+        """
+        self.mobility.update_positions(positions)
+
+    def get_start_and_end_time(self) -> tuple[int, int]:
+        """
+        Get the start and end time of the mobility model.
+
+        Returns
+        -------
+        tuple[int, int]
+            The start and end time of the mobility model.
+        """
+        return self.mobility.get_start_and_end_time()
 
     def _create_mobility(self, mobility_model_data: dict) -> StaticUEMobility | TraceUEMobility:
         """
@@ -65,8 +76,8 @@ class UEMobilityModel(Model):
         model_name = mobility_model_data['name']
         match model_name:
             case 'static':
-                return StaticUEMobility(mobility_model_data['positions'])
+                return StaticUEMobility(mobility_model_data['trace'])
             case 'trace':
-                return TraceUEMobility()
+                return TraceUEMobility(mobility_model_data['trace'])
             case _:
                 raise NotImplementedError("Other mobility types are not implemented.")
