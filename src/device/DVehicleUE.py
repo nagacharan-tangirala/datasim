@@ -1,3 +1,5 @@
+from pandas import DataFrame
+
 from src.device.BUE import BaseUE
 from src.models.MUEDataUnitModel import UEDataUnitModel
 from src.models.MUEMobilityModel import UEMobilityModel
@@ -11,18 +13,17 @@ class VehicleUE(BaseUE):
         super().__init__(ue_id)
 
         # Create the models.
-        self._create_models()
-        self.mobility_model_data: dict = ue_models['mobility']
-        self.data_unit_model_data: dict = ue_models['data_unit']
-
+        self.model_data = ue_models
         self.neighbour_data: dict[int, float] = {}
+
+        self._create_models()
 
     def _create_models(self) -> None:
         """
         Create the models for this ue.
         """
-        self.mobility_model = UEMobilityModel(self.mobility_model_data)
-        self.data_unit_model = UEDataUnitModel(self.get_id(), self.data_unit_model_data)
+        self.mobility_model = UEMobilityModel(self.model_data['mobility'])
+        self.data_unit_model = UEDataUnitModel(self.unique_id, self.model_data['data_unit'])
 
     def _activate_models(self) -> None:
         """
@@ -37,21 +38,6 @@ class VehicleUE(BaseUE):
         """
         self.mobility_model.deactivate()
         self.data_unit_model.deactivate()
-
-    def step(self) -> None:
-        """
-        Step function for the ue.
-        """
-        # Check if the ue is active
-        if not self.active:
-            return
-
-        # Update the current position
-        self.current_position = self.mobility_model.get_location()
-
-        # Step through the models
-        self.mobility_model.step(self.sim_model.current_time)
-        self.data_unit_model.step(self.sim_model.current_time)
 
     def get_generated_data(self) -> int:
         """
@@ -70,3 +56,25 @@ class VehicleUE(BaseUE):
         Get the start and end time of the ue.
         """
         return self.start_time, self.end_time
+
+    def update_mobility_data(self, mobility_data: DataFrame) -> None:
+        """
+        Update the mobility data.
+        """
+        self.mobility_model.update_data(mobility_data)
+        self.start_time, self.end_time = self.mobility_model.get_start_and_end_time()
+
+    def step(self) -> None:
+        """
+        Step function for the ue.
+        """
+        # Check if the ue is active
+        if not self.active:
+            return
+
+        # Step through the models
+        self.mobility_model.step(self.sim_model.current_time)
+        self.data_unit_model.step(self.sim_model.current_time)
+
+        # Update the current position
+        self.current_position = self.mobility_model.get_location()
