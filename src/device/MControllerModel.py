@@ -1,6 +1,7 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
+from src.core.CustomExceptions import DuplicateDeviceFoundError
 from src.device.BController import BaseController
 
 
@@ -42,3 +43,12 @@ class ControllerModel(Model):
         """
         for controller_id, controller in self.controllers.items():
             self.schedule.add(controller)
+
+    def update_controllers(self, new_controllers):
+        """
+        Update the controllers.
+        """
+        for controller_id, controller in new_controllers:
+            if controller_id in self.controllers:
+                raise DuplicateDeviceFoundError(controller_id, 'controller')
+            self.controllers[controller_id] = controller

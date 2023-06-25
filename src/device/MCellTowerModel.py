@@ -1,6 +1,7 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
+from src.core.CustomExceptions import DuplicateDeviceFoundError
 from src.device.BCellTower import BaseCellTower
 
 
@@ -29,3 +30,12 @@ class CellTowerModel(Model):
         """
         # Step the scheduler
         self.schedule.step()
+
+    def update_cell_towers(self, new_cell_towers):
+        """
+        Update the cell towers.
+        """
+        for cell_tower_id, cell_tower in new_cell_towers:
+            if cell_tower_id in self.cell_towers:
+                raise DuplicateDeviceFoundError(cell_tower_id, 'cell tower')
+            self.cell_towers[cell_tower_id] = cell_tower
