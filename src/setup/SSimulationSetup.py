@@ -4,7 +4,9 @@ from os.path import dirname, exists, join
 from typing import Any, Dict
 
 from src.core.CustomExceptions import *
-from src.setup.SInputDataStreamer import InputDataStreamer
+from src.setup.SCSVDataReader import CSVDataReader
+from src.setup.SInputDataReader import InputDataReader
+from src.setup.SParquetDataReader import ParquetDataReader
 
 
 class SimulationSetup:
@@ -20,13 +22,7 @@ class SimulationSetup:
         self.config_file: str = config_file
         self.project_path: str = dirname(config_file)
 
-        self.ue_trace_data: InputDataStreamer | None = None
-        self.cell_tower_data: InputDataStreamer | None = None
-        self.controller_data: InputDataStreamer | None = None
-
-        self.ue_links_data: InputDataStreamer | None = None
-        self.cell_tower_links_data: InputDataStreamer | None = None
-        self.controller_links_data: InputDataStreamer | None = None
+        self.file_readers: dict[str, InputDataReader] = {}
 
         self.ue_models_data: dict = {}
         self.cell_tower_models_data: dict = {}
@@ -42,7 +38,7 @@ class SimulationSetup:
         config_root = Et.parse(self.config_file).getroot()
         for child in config_root:
             if child.tag == 'input_files':
-                self._read_input_files(child)
+                self._read_input_files(child, child.attrib['read_chunks'].lower())
             elif child.tag == 'simulation':
                 self._read_simulation_settings(child)
             elif child.tag == 'channels':
@@ -56,7 +52,7 @@ class SimulationSetup:
             else:
                 raise InvalidXMLTagError(child.tag)
 
-    def _read_input_files(self, input_files) -> None:
+    def _read_input_files(self, input_files: Et.Element, read_in_chunks: str) -> None:
         """
         Read the input files.
 
@@ -65,11 +61,12 @@ class SimulationSetup:
         input_files : Element
             The input files element.
         """
+        self.read_in_chunks: bool = True if read_in_chunks == 'true' else False
         for child in input_files:
             if child.tag == 'ue_trace':
                 self._read_ue_trace(child)
             elif child.tag == 'ue_links':
-                self.read_ue_links(child)
+                self._read_ue_links(child)
             elif child.tag == 'cell_towers':
                 self._read_cell_towers(child)
             elif child.tag == 'tower_links':
@@ -94,11 +91,19 @@ class SimulationSetup:
         ue_trace_file = join(self.project_path, ue_trace_element.text)
         column_names = ['vehicle_id', 'time', 'x', 'y']
         column_dtypes = {'vehicle_id': int, 'time': int, 'x': float, 'y': float}
-        stream_flag = True if ue_trace_element.attrib['stream'].lower() == 'true' else False
 
-        self.ue_trace_data = InputDataStreamer(ue_trace_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = ue_trace_file.split('.')[-1]
 
-    def read_ue_links(self, ue_links_element: Et.Element) -> None:
+        match file_type:
+            case 'parquet':
+                self.file_readers['ue_trace'] = ParquetDataReader(ue_trace_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['ue_trace'] = CSVDataReader(ue_trace_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
+
+    def _read_ue_links(self, ue_links_element: Et.Element) -> None:
         """
         Read the coverage data from the parquet file.
 
@@ -111,9 +116,17 @@ class SimulationSetup:
         ue_links_file = join(self.project_path, ue_links_element.text)
         column_names = ['vehicle_id', 'time', 'neighbours', 'neighbour_distances']
         column_dtypes = {'vehicle_id': int, 'time': int, 'neighbours': str, 'neighbour_distances': str}
-        stream_flag = True if ue_links_element.attrib['stream'].lower() == 'true' else False
 
-        self.ue_links_data = InputDataStreamer(ue_links_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = ue_links_file.split('.')[-1]
+
+        match file_type:
+            case 'parquet':
+                self.file_readers['ue_links'] = ParquetDataReader(ue_links_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['ue_links'] = CSVDataReader(ue_links_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
 
     def _read_cell_towers(self, cell_towers_element: Et.Element) -> None:
         """
@@ -127,9 +140,17 @@ class SimulationSetup:
         cell_towers_file = join(self.project_path, cell_towers_element.text)
         column_names = ['cell_tower_id', 'x', 'y', 'type']
         column_dtypes = {'cell_tower_id': int, 'x': float, 'y': float, 'type': str}
-        stream_flag = True if cell_towers_element.attrib['stream'].lower() == 'true' else False
 
-        self.cell_tower_data = InputDataStreamer(cell_towers_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = cell_towers_file.split('.')[-1]
+
+        match file_type:
+            case 'parquet':
+                self.file_readers['cell_towers'] = ParquetDataReader(cell_towers_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['cell_towers'] = CSVDataReader(cell_towers_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
 
     def _read_controllers(self, controller_element: Et.Element) -> None:
         """
@@ -143,9 +164,17 @@ class SimulationSetup:
         controller_file = join(self.project_path, controller_element.text)
         column_names = ['controller_id', 'x', 'y']
         column_dtypes = {'controller_id': int, 'x': float, 'y': float}
-        stream_flag = True if controller_element.attrib['stream'].lower() == 'true' else False
 
-        self.controller_data = InputDataStreamer(controller_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = controller_file.split('.')[-1]
+
+        match file_type:
+            case 'parquet':
+                self.file_readers['controllers'] = ParquetDataReader(controller_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['controllers'] = CSVDataReader(controller_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
 
     def _read_controller_links(self, controller_links_element: Et.Element) -> None:
         """
@@ -159,9 +188,17 @@ class SimulationSetup:
         controller_links_file = join(self.project_path, controller_links_element.text)
         column_names = ['link_id', 'source_type', 'source_id', 'target_type', 'target_id']
         column_dtypes = {'link_id': int, 'source_type': str, 'source_id': int, 'target_type': str, 'target_id': int}
-        stream_flag = True if controller_links_element.attrib['stream'].lower() == 'true' else False
 
-        self.controller_links_data = InputDataStreamer(controller_links_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = controller_links_file.split('.')[-1]
+
+        match file_type:
+            case 'parquet':
+                self.file_readers['controller_links'] = ParquetDataReader(controller_links_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['controller_links'] = CSVDataReader(controller_links_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
 
     def _read_tower_links(self, tower_links_element: Et.Element) -> None:
         """
@@ -175,9 +212,17 @@ class SimulationSetup:
         tower_links_file = join(self.project_path, tower_links_element.text)
         column_names = ['link_id', 'source_type', 'source_id', 'target_type', 'target_id']
         column_dtypes = {'link_id': int, 'source_type': str, 'source_id': int, 'target_type': str, 'target_id': int}
-        stream_flag = True if tower_links_element.attrib['stream'].lower() == 'true' else False
 
-        self.tower_links_data = InputDataStreamer(tower_links_file, column_names, column_dtypes, stream_flag)
+        # Get the file type
+        file_type = tower_links_file.split('.')[-1]
+
+        match file_type:
+            case 'parquet':
+                self.file_readers['tower_links'] = ParquetDataReader(tower_links_file, column_names, column_dtypes)
+            case 'csv':
+                self.file_readers['tower_links'] = CSVDataReader(tower_links_file, column_names, column_dtypes)
+            case _:
+                raise UnsupportedInputFormatError(file_type)
 
     def _read_output_settings(self, child):
         """
@@ -221,6 +266,8 @@ class SimulationSetup:
                 simulation_settings['seed'] = int(child.text)
             elif child.tag == 'update_step':
                 simulation_settings['update_step'] = int(child.text)
+            elif child.tag == 'chunk_ts':
+                simulation_settings['chunk_ts'] = int(child.text)
             elif child.tag == 'output':
                 simulation_settings.update(self._read_output_settings(child))
             else:
