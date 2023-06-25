@@ -1,6 +1,9 @@
 from abc import abstractmethod
 
 from mesa import Agent
+from pandas import DataFrame
+
+from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
 
 
 class BaseUE(Agent):
@@ -41,6 +44,13 @@ class BaseUE(Agent):
         """
         pass
 
+    @abstractmethod
+    def update_mobility_data(self, mobility_data: DataFrame) -> None:
+        """
+        Update the mobility model data.
+        """
+        pass
+
     def get_id(self) -> int:
         """
         Get the ue id.
@@ -63,30 +73,21 @@ class BaseUE(Agent):
         """
         return self.current_position
 
-    def is_active(self) -> bool:
+    def activate_ue(self, time_step: int) -> None:
         """
-        Check if the ue is active.
+        Activate the ue.
+        """
+        if time_step != self.start_time:
+            raise WrongActivationTimeError(time_step, self.start_time)
+        self._activate_models()
 
-        Returns
-        -------
-        bool
-            True if the ue is active, False otherwise.
+    def deactivate_ue(self, time_step: int) -> None:
         """
-        return self.active
-
-    def toggle_status(self) -> None:
+        Deactivate the ue.
         """
-        Toggle the active status of the ue.
-        """
-        # Toggle the status
-        self.active = not self.active
-
-        if self.active:
-            # Initiate the models
-            self._activate_models()
-        else:
-            # Deactivate the models
-            self._deactivate_models()
+        if time_step != self.end_time:
+            raise WrongDeactivationTimeError(time_step, self.end_time)
+        self._deactivate_models()
 
     def get_start_and_end_time(self) -> tuple[int, int]:
         """
