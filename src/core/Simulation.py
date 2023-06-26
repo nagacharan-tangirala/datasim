@@ -1,9 +1,8 @@
 import pandas as pd
 from pandas import DataFrame
 
-from src.channel.MCellTowerChannelModel import CellTowerChannelModel
-from src.channel.MControllerChannelModel import ControllerChannelModel
-from src.channel.MUEChannelModel import UEChannelModel
+from src.channel.MWiredChannelModel import WiredChannelModel
+from src.channel.MWirelessChannelModel import WirelessChannelModel
 from src.core.CustomExceptions import UnsupportedInputFormatError
 from src.device.MCellTowerModel import CellTowerModel
 from src.device.MControllerModel import ControllerModel
@@ -22,9 +21,9 @@ class Simulation:
 
         # Create the dictionaries to store the devices in the simulation
         self.device_factory: DeviceFactory = DeviceFactory()
-        self.ues: dict = {}
-        self.cell_towers: dict = {}
-        self.controllers: dict = {}
+        self._ues: dict = {}
+        self._cell_towers: dict = {}
+        self._controllers: dict = {}
 
         # Create objects to store device models
         self.ue_model: UEModel | None = None
@@ -32,9 +31,17 @@ class Simulation:
         self.controller_model: ControllerModel | None = None
 
         # Create objects to store channel models
-        self.cell_tower_channel_model: CellTowerChannelModel | None = None
-        self.ue_channel_model: UEChannelModel | None = None
-        self.controller_channel_model: ControllerChannelModel | None = None
+        self.wireless_channel_model: WirelessChannelModel | None = None
+        self.cell_tower_channel_model: WiredChannelModel | None = None
+
+        # Define the simulation parameters
+        self.start_time: int = -1
+        self.end_time: int = -1
+        self.time_step: int = -1
+        self.current_time: int = -1
+        self.output_dir: str = ''
+        self.chunk_time_step: int = -1
+        self.simulation_settings: SimulationSetup | None = None
 
     def setup_simulation(self) -> None:
         """
@@ -51,15 +58,15 @@ class Simulation:
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        self.sim_config = SimulationSetup(self.config_file)
-        self.sim_config.read_input_file()
+        self.simulation_settings = SimulationSetup(self.config_file)
+        self.simulation_settings.read_input_file()
 
     def _read_simulation_parameters(self) -> None:
         """
         Initialize the controller model.
         """
         # Get the simulation parameters
-        simulation_data = self.sim_config.simulation_data
+        simulation_data = self.simulation_settings.simulation_data
 
         self.start_time: int = simulation_data['start']
         self.end_time: int = simulation_data['end']
@@ -73,12 +80,12 @@ class Simulation:
         """
         Read the CSV input data.
         """
-        self.ue_trace_data = self._read_file(self.sim_config.file_readers['ue_trace'])
-        self.ue_links_data = self._read_file(self.sim_config.file_readers['ue_links'])
-        self.cell_tower_data = self._read_file(self.sim_config.file_readers['cell_tower'])
-        self.cell_tower_links_data = self._read_file(self.sim_config.file_readers['cell_tower_links'])
-        self.controller_data = self._read_file(self.sim_config.file_readers['controller'])
-        self.controller_links_data = self._read_file(self.sim_config.file_readers['controller_links'])
+        self.ue_trace_data = self._read_file(self.simulation_settings.file_readers['ue_trace'])
+        self.ue_links_data = self._read_file(self.simulation_settings.file_readers['ue_links'])
+        self.cell_tower_data = self._read_file(self.simulation_settings.file_readers['cell_tower'])
+        self.cell_tower_links_data = self._read_file(self.simulation_settings.file_readers['cell_tower_links'])
+        self.controller_data = self._read_file(self.simulation_settings.file_readers['controller'])
+        self.controller_links_data = self._read_file(self.simulation_settings.file_readers['controller_links'])
 
     def _read_file(self, data_reader: InputDataReader) -> DataFrame:
         """
@@ -94,40 +101,39 @@ class Simulation:
         DataFrame
             The input data.
         """
-        match data_reader.get_type():
+        match data_reader.type:
             case 'csv':
                 return data_reader.read_all_data()
             case 'parquet':
                 return data_reader.read_data_until_timestamp(self.chunk_time_step)
             case _:
-                raise UnsupportedInputFormatError(data_reader.get_input_file())
+                raise UnsupportedInputFormatError(data_reader.input_file)
 
     def _create_devices_and_models(self) -> None:
         """
         Create the devices in the simulation.
         """
         # Create a device factory object and create the participants
-        self.device_factory.create_ues(self.ue_trace_data, self.sim_config.ue_models_data)
-        self.device_factory.create_cell_towers(self.cell_tower_data, self.sim_config.cell_tower_models_data)
-        self.device_factory.create_controllers(self.controller_data, self.sim_config.controller_models_data)
+        self.device_factory.create_ues(self.ue_trace_data, self.simulation_settings.ue_models_data)
+        self.device_factory.create_cell_towers(self.cell_tower_data, self.simulation_settings.cell_tower_models_data)
+        self.device_factory.create_controllers(self.controller_data, self.simulation_settings.controller_models_data)
 
         # Get the devices from the factory
-        self.ues = self.device_factory.get_ues()
-        self.cell_towers = self.device_factory.get_cell_towers()
-        self.controllers = self.device_factory.get_controllers()
+        self._ues = self.device_factory.ues
+        self._cell_towers = self.device_factory.cell_towers
+        self._controllers = self.device_factory.controllers
 
-        self.ue_model = UEModel(self.ues)
-        self.cell_tower_model = CellTowerModel(self.cell_towers)
-        self.controller_model = ControllerModel(self.controllers)
+        self.ue_model = UEModel(self._ues)
+        self.cell_tower_model = CellTowerModel(self._cell_towers)
+        self.controller_model = ControllerModel(self._controllers)
 
     def _create_channel_models(self) -> None:
         """
         Create the channel models.
         """
         # Create the channel models
-        self.ue_channel_model = UEChannelModel(self.ue_links_data)
-        self.cell_tower_channel_model = CellTowerChannelModel(self.cell_tower_links_data)
-        self.controller_channel_model = ControllerChannelModel(self.controller_links_data)
+        self.wireless_channel_model = WirelessChannelModel(self._cell_towers, self.ue_links_data, self.cell_tower_links_data, self.simulation_settings.channel_model_data['wireless'])
+        self.wired_channel_model = WiredChannelModel(self.controller_links_data, self.simulation_settings.channel_model_data['wired'])
 
     def _refresh_simulation(self) -> None:
         """
@@ -141,30 +147,30 @@ class Simulation:
         """
         Refresh the input data.
         """
-        self.ue_trace_data = self._read_next_chunk(self.sim_config.file_readers['ue_trace'])
-        self.ue_links_data = self._read_next_chunk(self.sim_config.file_readers['ue_links'])
-        self.cell_tower_data = self._read_next_chunk(self.sim_config.file_readers['cell_tower'])
-        self.cell_tower_links_data = self._read_next_chunk(self.sim_config.file_readers['cell_tower_links'])
-        self.controller_data = self._read_next_chunk(self.sim_config.file_readers['controller'])
-        self.controller_links_data = self._read_next_chunk(self.sim_config.file_readers['controller_links'])
+        self.ue_trace_data = self._read_next_chunk(self.simulation_settings.file_readers['ue_trace'])
+        self.ue_links_data = self._read_next_chunk(self.simulation_settings.file_readers['ue_links'])
+        self.cell_tower_data = self._read_next_chunk(self.simulation_settings.file_readers['cell_tower'])
+        self.cell_tower_links_data = self._read_next_chunk(self.simulation_settings.file_readers['cell_tower_links'])
+        self.controller_data = self._read_next_chunk(self.simulation_settings.file_readers['controller'])
+        self.controller_links_data = self._read_next_chunk(self.simulation_settings.file_readers['controller_links'])
 
     def _update_devices_and_models(self) -> None:
         """
         Update the devices.
         """
         if not self.ue_trace_data.empty:
-            self.device_factory.update_ues(self.ue_trace_data, self.sim_config.ue_models_data)
-            updated_ues = self.device_factory.get_ues()
+            self.device_factory.update_ues(self.ue_trace_data, self.simulation_settings.ue_models_data)
+            updated_ues = self.device_factory.ues
             self.ue_model.update_ues(updated_ues)
 
         if not self.cell_tower_data.empty:
-            self.device_factory.update_cell_towers(self.cell_tower_data, self.sim_config.cell_tower_models_data)
-            updated_cell_towers = self.device_factory.get_cell_towers()
+            self.device_factory.update_cell_towers(self.cell_tower_data, self.simulation_settings.cell_tower_models_data)
+            updated_cell_towers = self.device_factory.cell_towers
             self.cell_tower_model.update_cell_towers(updated_cell_towers)
 
         if not self.controller_data.empty:
-            self.device_factory.update_controllers(self.controller_data, self.sim_config.controller_models_data)
-            updated_controllers = self.device_factory.get_controllers()
+            self.device_factory.update_controllers(self.controller_data, self.simulation_settings.controller_models_data)
+            updated_controllers = self.device_factory.controllers
             self.controller_model.update_controllers(updated_controllers)
 
     def _update_channel_models(self) -> None:
@@ -172,13 +178,14 @@ class Simulation:
         Update the channel models.
         """
         if not self.ue_links_data.empty:
-            self.ue_channel_model.update_ue_links(self.ue_links_data)
+            self.wireless_channel_model.update_ue_links(self.ue_links_data)
 
         if not self.cell_tower_links_data.empty:
-            self.cell_tower_channel_model.update_cell_tower_links(self.cell_tower_links_data)
+            self.wireless_channel_model.update_cell_tower_links(self.cell_tower_links_data)
+            self.wired_channel_model.update_cell_tower_links(self.cell_tower_links_data)
 
         if not self.controller_links_data.empty:
-            self.controller_channel_model.update_controller_links(self.controller_links_data)
+            self.wired_channel_model.update_controller_links(self.controller_links_data)
 
     def _read_next_chunk(self, data_reader: InputDataReader) -> DataFrame:
         """
@@ -194,13 +201,13 @@ class Simulation:
         DataFrame
             The input data.
         """
-        match data_reader.get_type():
+        match data_reader.type:
             case 'csv':
                 return pd.DataFrame()
             case 'parquet':
                 return data_reader.read_data_until_timestamp(self.current_time + self.chunk_time_step)
             case _:
-                raise UnsupportedInputFormatError(data_reader.get_input_file())
+                raise UnsupportedInputFormatError(data_reader.input_file)
 
     def run(self) -> None:
         """
@@ -214,7 +221,7 @@ class Simulation:
         Step the simulation.
         """
         self.ue_model.step(self.current_time)
-        self.ue_channel_model.step(self.current_time)
+        self.wireless_channel_model.step(self.current_time)
 
         self.cell_tower_model.step()
         self.cell_tower_channel_model.step()
