@@ -1,9 +1,9 @@
 from pandas import Series
 
-from src.device.BCellTower import BaseCellTower
+from src.device.BCellTower import CellTowerBase
 
 
-class IntermediateCellTower(BaseCellTower):
+class IntermediateCellTower(CellTowerBase):
     def __init__(self, cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict):
         """
         Initialize the intermediate cell_tower.

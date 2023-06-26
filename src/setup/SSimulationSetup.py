@@ -285,21 +285,32 @@ class SimulationSetup:
         channels_element : Et.Element
             The channel data element from the config file.
         """
-        allowed_device_types = ['ue', 'cell_tower', 'controller']
+        allowed_channel_types = ['wired', 'wireless']
         for channel in channels_element:
             if channel.tag != 'channel':
                 raise InvalidXMLTagError(channel.tag)
 
-            device_type = channel.attrib['device']
-            parsed_model_data = self._read_all_models(channel)
+            channel_info = {}
+            channel_type = channel.attrib['type']
+            if channel_type not in allowed_channel_types:
+                raise InvalidXMLAttributeError('device', channel_type, allowed_channel_types)
 
-            if device_type not in allowed_device_types:
-                raise InvalidXMLAttributeError('device', device_type, allowed_device_types)
-            self.channel_model_data[device_type] = parsed_model_data
+            channel_info['name'] = channel.attrib['name']
+            channel_info['models'] = self._read_all_models(channel)
+
+            if channel_type in self.channel_model_data:
+                raise DuplicateChannelModelError(channel_type)
+
+            self.channel_model_data[channel_type] = channel_info
 
     def _read_ue_models(self, ues_element: Et.Element) -> None:
         """
         Read the types of UEs from the config file.
+
+        Parameters
+        ----------
+        ues_element : Et.Element
+            The element with all the UE data from the config file.
         """
         for child in ues_element:
             ue_info = {}

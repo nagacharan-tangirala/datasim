@@ -1,13 +1,12 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 
-from src.channel.BUEChannel import BaseUEChannel
 from src.core.CustomExceptions import DuplicateDeviceFoundError
-from src.device.BUE import BaseUE
+from src.device.BUE import UEBase
 
 
 class UEModel(Model):
-    def __init__(self, ues: dict[int, BaseUE]):
+    def __init__(self, ues: dict[int, UEBase]):
         """
         Initialize the model for the ues.
         """
@@ -15,32 +14,33 @@ class UEModel(Model):
         super().__init__()
         self.schedule: BaseScheduler = BaseScheduler(self)
 
-        self.ues: dict[int, BaseUE] = ues
+        self.ues: dict[int, UEBase] = ues
         self.ue_activation_times: dict[int, list[int]] = {}
         self.ue_deactivation_times: dict[int, list[int]] = {}
 
-        self.current_time: int = 0
+        self._current_time: int = -1
 
-        # All models are defined here
-        self.ue_channel: BaseUEChannel | None = None
-        self.data_model: dict[int, float] = {}
-
+    @property
+    def current_time(self) -> int:
+        """Get the current time."""
+        return self._current_time
+    
     def _prepare_active_ue_times(self) -> None:
         """
         Prepare a dictionary with time step as the key and the respective ues to activate in that time step.
         """
         for ue_id, ue in self.ues.items():
-            start_time, end_time = ue.get_start_and_end_time()
+            start_time, end_time = ue.start_time, ue.end_time
             self._save_activation_time(start_time, ue_id)
             self._save_deactivation_time(end_time, ue_id)
 
-    def update_ues(self, ues: dict[int, BaseUE]) -> None:
+    def update_ues(self, ues: dict[int, UEBase]) -> None:
         """
         Update the ues.
 
         Parameters
         ----------
-        ues : dict[int, BaseUE]
+        ues : dict[int, UEBase]
             The ues to update.
         """
         for ue_id, ue in ues.items():
@@ -55,7 +55,7 @@ class UEModel(Model):
         Update the activation and deactivation times for the UEs. This function is called when the UEs are updated.
         """
         for ue_id, ue in self.ues.items():
-            start_time, end_time = ue.get_start_and_end_time()
+            start_time, end_time = ue.start_time, ue.end_time
 
             # If end time is less than the current time, the device is already deactivated
             if end_time < self.current_time:

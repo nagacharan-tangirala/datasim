@@ -11,17 +11,7 @@ class CSVDataReader(InputDataReader):
         Initialize the input data streamer.
         """
         super().__init__(input_file, column_names, column_dtypes)
-
-    def get_type(self) -> str:
-        """
-        Get the type of the input data reader.
-
-        Returns
-        -------
-        str
-            The type of the input data reader.
-        """
-        return 'csv'
+        self.type = 'csv'
 
     def read_all_data(self) -> pd.DataFrame:
         """
@@ -32,5 +22,5 @@ class CSVDataReader(InputDataReader):
         pd.DataFrame
             The data dataframe.
         """
-        self.data_df = pd.read_csv(self.input_file, names=self.column_names, dtype=self.column_dtypes)
+        self.data_df = pd.read_csv(self.input_file, names=self._column_names, dtype=self._column_dtypes)
         return self.data_df
