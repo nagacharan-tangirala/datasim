@@ -1,10 +1,13 @@
+from collections import namedtuple
+
 from pandas import Series
 
-from src.data_unit.BDataUnit import DataUnitBase
-from src.device.BCellTower import BaseCellTower
+from src.data.MTowerDataHandlerModel import TowerDataHandlerModel
+from src.data.UEDataHandler import UEDataHandler
+from src.device.BCellTower import CellTowerBase
 
 
-class BasicCellTower(BaseCellTower):
+class BasicCellTower(CellTowerBase):
     def __init__(self, cell_tower_id, cell_tower_data: Series, cell_tower_models_data: dict):
         """
         Initialize the base station.
@@ -14,9 +17,12 @@ class BasicCellTower(BaseCellTower):
         cell_tower_data : Series
             Series containing all the parameters for the base station.
         """
-        super().__init__(cell_tower_id, cell_tower_data, cell_tower_models_data)
+        super().__init__(cell_tower_id, cell_tower_data)
 
-        self.incoming_ues_data: dict[int, DataUnitBase] = {}
+        self._create_models(cell_tower_models_data)
+
+    def _create_models(self, cell_tower_models_data: dict) -> None:
+        self._data_handler_model: TowerDataHandlerModel = TowerDataHandlerModel(self.unique_id, cell_tower_models_data['data'])
 
     def step(self):
         """
@@ -36,10 +42,16 @@ class BasicCellTower(BaseCellTower):
         self.incoming_ues_data.clear()
 
         # Create a single data unit representing the total data received from the ues.
-        self.ues_data = DataUnitBase(current_time, total_data, agent_ids, self.get_id())
+        self.ues_data = UEDataHandler(current_time, total_data, agent_ids, self.get_id())
 
-    def receive_data(self, ue_id: int, data: DataUnitBase):
+    def receive_data(self, ue_id: int, ue_data: namedtuple):
         """
         Receive data from the ues.
         """
         self.incoming_ues_data[ue_id] = data
+
+    def _create_data_handler(self) -> TowerDataHandlerModel:
+        """
+        Create the data handler model.
+        """
+        return
