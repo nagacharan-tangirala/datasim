@@ -11,37 +11,26 @@ class UEMobilityBase(Agent):
         """
         super().__init__(0, None)
 
-        self.positions: DataFrame = positions
+        self._positions: DataFrame = positions
+        self._current_location: list[float] = []
+
         self.current_time: int = 0
-        self.current_location: list[float] = []
+        self._type: str = ''
 
-    def get_current_location(self) -> list[float]:
-        """
-        Get the current location of the ue.
+    @property
+    def type(self) -> str:
+        """Get the type of the mobility model."""
+        return self._type
 
-        Returns
-        ----------
-        list
-            The current location of the ue.
-        """
-        return self.current_location
+    @property
+    def current_location(self) -> list[float]:
+        """Get the current location of the ue."""
+        return self._current_location
 
     @abstractmethod
     def step(self):
         """
         Step through the model, should be implemented by the child class.
-        """
-        pass
-
-    @abstractmethod
-    def get_type(self) -> str:
-        """
-        Get the type of the model.
-
-        Returns
-        ----------
-        str
-            The type of the model.
         """
         pass
 
@@ -66,21 +55,10 @@ class UEMobilityBase(Agent):
         tuple
             The start and end time of the ue.
         """
-        pass
+        return self._positions["time"].min(), self._positions["time"].max()
 
     def activate(self):
         """
         Activate the mobility model.
         """
         self.model.schedule.add(self)
-
-    def set_current_time(self, current_time: int) -> None:
-        """
-        Set the current time for the coverage model.
-
-        Parameters
-        ----------
-        current_time : int
-            The current time.
-        """
-        self.current_time = current_time

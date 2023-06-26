@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from src.models.BUEMobility import UEMobilityBase
+from src.ue_models.BUEMobility import UEMobilityBase
 
 
 class StaticUEMobility(UEMobilityBase):
@@ -14,24 +14,14 @@ class StaticUEMobility(UEMobilityBase):
             DataFrame of positions for the ue.
         """
         super().__init__(positions)
+        self._type = 'static'
 
     def step(self):
         """
         Step through the model.
         """
         # Location is static, so just set the current location to the first position
-        self.current_location = self.positions.iloc[0].values.tolist()
-
-    def get_type(self) -> str:
-        """
-        Get the type of the model.
-
-        Returns
-        ----------
-        str
-            The type of the model.
-        """
-        return "static"
+        self._current_location = self._positions.iloc[0].values.tolist()
 
     def update_positions(self, positions: DataFrame) -> None:
         """
@@ -42,4 +32,4 @@ class StaticUEMobility(UEMobilityBase):
         positions : DataFrame
             The positions of the ue.
         """
-        self.positions = positions
+        self._positions = positions

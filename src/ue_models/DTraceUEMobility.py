@@ -1,6 +1,6 @@
 from pandas import DataFrame, concat
 
-from src.models.BUEMobility import UEMobilityBase
+from src.ue_models.BUEMobility import UEMobilityBase
 
 
 class TraceUEMobility(UEMobilityBase):
@@ -9,17 +9,7 @@ class TraceUEMobility(UEMobilityBase):
         Initialize the trace mobility model.
         """
         super().__init__(positions)
-
-    def get_type(self) -> str:
-        """
-        Get the type of the model.
-
-        Returns
-        ----------
-        str
-            The type of the model.
-        """
-        return "trace"
+        self._type = 'trace'
 
     def get_start_and_end_time(self) -> tuple[int, int]:
         """
@@ -30,7 +20,7 @@ class TraceUEMobility(UEMobilityBase):
         tuple[int, int]
             The start and end time of the ue.
         """
-        return self.positions["time"].min(), self.positions["time"].max()
+        return self._positions["time"].min(), self._positions["time"].max()
 
     def update_positions(self, positions: DataFrame) -> None:
         """
@@ -41,15 +31,15 @@ class TraceUEMobility(UEMobilityBase):
         positions : DataFrame
             The positions of the ue.
         """
-        self.positions = concat([self.positions, positions], ignore_index=True)
+        self._positions = concat([self._positions, positions], ignore_index=True)
 
     def step(self):
         """
         Step through the model.
         """
         # Check if the current time is in the positions dataframe
-        if self.current_time in self.positions["time"].values:
-            self.current_location = self.positions[self.positions["time"] == self.current_time].iloc[0].values[1:]
+        if self.current_time in self._positions["time"].values:
+            self._current_location = self._positions[self._positions["time"] == self.current_time].iloc[0].values[1:]
         else:
             # If not, then the ue is not moving
-            self.current_location = self.current_location
+            self._current_location = self._current_location

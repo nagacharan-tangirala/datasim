@@ -2,9 +2,9 @@ from mesa import Model
 from mesa.time import BaseScheduler
 from pandas import DataFrame
 
-from src.models.BUEMobility import UEMobilityBase
-from src.models.DStaticUEMobility import StaticUEMobility
-from src.models.DTraceUEMobility import TraceUEMobility
+from src.ue_models.BUEMobility import UEMobilityBase
+from src.ue_models.DStaticUEMobility import StaticUEMobility
+from src.ue_models.DTraceUEMobility import TraceUEMobility
 
 
 class UEMobilityModel(Model):
@@ -24,7 +24,7 @@ class UEMobilityModel(Model):
         current_time: int = int(args[0])
 
         # Set the current time and step through the scheduler
-        self.mobility.set_current_time(current_time)
+        self.mobility.current_time = current_time
         self.schedule.step()
 
     def activate(self):
@@ -45,7 +45,7 @@ class UEMobilityModel(Model):
         """
         Get the current location of the ue.
         """
-        return self.mobility.get_current_location()
+        return self.mobility.current_location
 
     def update_data(self, positions: DataFrame) -> None:
         """
