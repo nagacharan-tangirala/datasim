@@ -1,9 +1,8 @@
-from collections import namedtuple
-
 from mesa import Model
 from mesa.time import BaseScheduler
 
 from src.data.UEDataHandler import UEDataHandler
+from src.device.BUE import UEData
 
 
 class UEDataHandlerModel(Model):
@@ -37,13 +36,13 @@ class UEDataHandlerModel(Model):
         self.schedule.step()
         self._data_to_send = self.ue_data_handler.data_to_send
 
-    def get_generated_data(self) -> namedtuple:
+    def get_generated_data(self) -> UEData:
         """
         Get the generated data.
         """
         return self.ue_data_handler.data_to_send
 
-    def get_cached_data(self) -> namedtuple:
+    def get_cached_data(self) -> UEData:
         """
         Get the cached data.
         """

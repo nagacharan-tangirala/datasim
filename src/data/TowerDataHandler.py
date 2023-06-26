@@ -1,6 +1,6 @@
-from collections import namedtuple
-
 from mesa import Agent
+
+from src.device.BUE import UEData
 
 
 class TowerDataHandler(Agent):
@@ -13,9 +13,8 @@ class TowerDataHandler(Agent):
         self._tower_id: int = tower_id
 
         self._time_stamp: int = -1
-        self._data_from_ues: dict[int, namedtuple] = {}
-        # self._data_from_ues: namedtuple = namedtuple('tower_data', ['ts', 'data_size', 'ue_ids'])
-        self._data_from_controller: dict[int, dict[int, namedtuple]] = {}
+        self._data_from_ues: dict[int, UEData] = {}
+        self._data_from_controller: dict[int, dict[int, UEData]] = {}
 
     @property
     def tower_id(self) -> int:
@@ -33,7 +32,7 @@ class TowerDataHandler(Agent):
         """
         # Take the data received from the controler
 
-    def collect_ue_data(self, ue_id: int, ue_data: namedtuple) -> None:
+    def collect_ue_data(self, ue_id: int, ue_data: UEData) -> None:
         """
         Collect UE data.
         """

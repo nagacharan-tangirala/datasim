@@ -6,6 +6,8 @@ from pandas import DataFrame
 
 from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
 
+UEData = namedtuple('UEData', ['ts', 'data_size'])
+
 
 class UEBase(Agent):
     def __init__(self, ue_id: int):
@@ -76,7 +78,7 @@ class UEBase(Agent):
         pass
 
     @abstractmethod
-    def get_generated_data(self) -> namedtuple:
+    def get_generated_data(self) -> UEData:
         """
         Get the generated data.
         """

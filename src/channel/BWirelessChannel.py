@@ -1,11 +1,10 @@
 from abc import abstractmethod
-from collections import namedtuple
 
 from mesa import Agent
 from pandas import DataFrame
 
 from src.device.BCellTower import CellTowerBase
-from src.device.BUE import UEBase
+from src.device.BUE import UEBase, UEData
 
 
 class WirelessChannelBase(Agent):
@@ -21,8 +20,10 @@ class WirelessChannelBase(Agent):
         self._ue_links: DataFrame = ue_links_df
         self._tower_links: DataFrame = tower_links_df
 
-        self.data_from_ues: dict[int, namedtuple] = {}
-        self.data_from_controller: dict[dict[int, namedtuple]] = {}
+        self.data_from_ues: dict[int, UEData] = {}
+        self.processed_ue_data: dict[int, UEData] = {}
+        self.data_to_towers: dict[int, dict[int, UEData]] = {}
+        self.data_from_controller: dict[dict[int, UEData]] = {}
 
         self._current_time: int = -1
 

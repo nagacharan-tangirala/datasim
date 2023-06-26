@@ -1,9 +1,7 @@
-from collections import namedtuple
-
 from pandas import DataFrame
 
 from src.data.MUEDataHandlerModel import UEDataHandlerModel
-from src.device.BUE import UEBase
+from src.device.BUE import UEBase, UEData
 from src.ue_models.MUEMobilityModel import UEMobilityModel
 
 
@@ -40,13 +38,13 @@ class VehicleUE(UEBase):
         self.mobility_model.deactivate()
         self.data_handler_model.deactivate()
 
-    def get_generated_data(self) -> namedtuple:
+    def get_generated_data(self) -> UEData:
         """
         Get the generated data.
         """
         return self.data_handler_model.get_generated_data()
 
-    def get_cached_data(self) -> namedtuple:
+    def get_cached_data(self) -> UEData:
         """
         Get the cached data.
         """
