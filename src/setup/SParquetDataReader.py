@@ -16,17 +16,7 @@ class ParquetDataReader(InputDataReader):
 
         self.data_df: DataFrame = DataFrame()
         self.row_group_idx: int = 0
-
-    def get_type(self) -> str:
-        """
-        Get the type of the input data reader.
-
-        Returns
-        -------
-        str
-            The type of the input data reader.
-        """
-        return 'parquet'
+        self.type = 'parquet'
 
     def read_data_until_timestamp(self, timestamp: int) -> DataFrame:
         """
@@ -34,7 +24,7 @@ class ParquetDataReader(InputDataReader):
         """
         self.data_df = DataFrame()
         while self.row_group_idx < self.total_row_groups:
-            temp_data_df = read_parquet(self.input_file, columns=self.column_names, dtype=self.column_dtypes, row_group=self.row_group_idx)
+            temp_data_df = read_parquet(self.input_file, columns=self._column_names, dtype=self._column_dtypes, row_group=self.row_group_idx)
 
             # Check if the data is empty.
             if temp_data_df.empty:

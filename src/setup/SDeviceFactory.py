@@ -3,7 +3,7 @@ from random import choices
 from pandas import DataFrame, Series
 
 from src.core.CustomExceptions import NotSupportedCellTowerError
-from src.device.BUE import BaseUE
+from src.device.BUE import UEBase
 from src.device.DBasicCellTower import BasicCellTower
 from src.device.DCentralController import CentralController
 from src.device.DIntermediateCellTower import IntermediateCellTower
@@ -16,42 +16,30 @@ class DeviceFactory:
         Initialize the device factory object.
         """
         # Create the dictionaries to store the devices in the simulation
-        self.cell_towers: dict[int, BasicCellTower] = {}
-        self.ues: dict[int, BaseUE] = {}
-        self.controllers = {}
+        self._ues: dict[int, UEBase] = {}
+        self._cell_towers: dict[int, BasicCellTower] = {}
+        self._controllers = {}
 
-    def get_cell_towers(self) -> dict:
-        """
-        Get the cell towers in the simulation.
-
-        Returns
-        ----------
-        dict
-            Dictionary containing the cell_tower.
-        """
-        return self.cell_towers
-
-    def get_controllers(self) -> dict:
-        """
-        Get the controllers in the simulation.
-
-        Returns
-        ----------
-        dict
-            Dictionary containing the controllers.
-        """
-        return self.controllers
-
-    def get_ues(self) -> dict:
+    @property
+    def ues(self) -> dict[int, UEBase]:
         """
         Get the ues in the simulation.
-
-        Returns
-        ----------
-        dict
-            Dictionary containing the ues.
         """
-        return self.ues
+        return self._ues
+
+    @property
+    def cell_towers(self) -> dict[int, BasicCellTower]:
+        """
+        Get the cell towers in the simulation.
+        """
+        return self._cell_towers
+
+    @property
+    def controllers(self) -> dict[int, CentralController]:
+        """
+        Get the controllers in the simulation.
+        """
+        return self._controllers
 
     def create_cell_towers(self, cell_tower_data: DataFrame, cell_tower_models_data: dict) -> None:
         """
@@ -65,7 +53,7 @@ class DeviceFactory:
             cell_tower_data: Series = cell_tower_data[cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
 
             # Create the cell tower.
-            self.cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data, cell_tower_models_data)
+            self._cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data, cell_tower_models_data)
 
     @staticmethod
     def _create_cell_tower(cell_tower_id: int, cell_tower_data: Series, cell_tower_models_data: dict):
@@ -93,7 +81,7 @@ class DeviceFactory:
             controller_position: list[float, float] = controller_data[controller_data['controller_id'] == controller_id][['x', 'y']].values.tolist()
 
             # Create the controller.
-            self.controllers[controller_id] = self._create_controller(controller_id, controller_position, controller_models_data)
+            self._controllers[controller_id] = self._create_controller(controller_id, controller_position, controller_models_data)
 
     @staticmethod
     def _create_controller(controller_id, position, controller_models_data) -> CentralController:
@@ -127,11 +115,11 @@ class DeviceFactory:
             selected_ue_model_set = ue_models[ue_type_choice].copy()
 
             # Create the ue.
-            self.ues[ue_id] = self._create_ue(ue_id, selected_ue_model_set)
+            self._ues[ue_id] = self._create_ue(ue_id, selected_ue_model_set)
 
             # Update the ue trace data.
             this_ue_trace: DataFrame = ue_trace_data[ue_trace_data['vehicle_id'] == ue_id]
-            self.ues[ue_id].update_mobility_data(this_ue_trace)
+            self._ues[ue_id].update_mobility_data(this_ue_trace)
 
     @staticmethod
     def _create_ue(ue_id: int, ue_models: dict) -> VehicleUE:
@@ -157,9 +145,9 @@ class DeviceFactory:
 
         for ue_id in ue_list:
             this_ue_trace: DataFrame = ue_trace_data[ue_trace_data['vehicle_id'] == ue_id]
-            if ue_id in self.ues:
+            if ue_id in self._ues:
                 # Already exists, update the trace data.
-                self.ues[ue_id].update_mobility_data(this_ue_trace)
+                self._ues[ue_id].update_mobility_data(this_ue_trace)
                 continue
 
             # Randomly select the type of the ue and get the respective model set.
@@ -167,8 +155,8 @@ class DeviceFactory:
             selected_ue_model_set = ue_models[ue_type_choice].copy()
 
             # Create the ue and update the trace data.
-            self.ues[ue_id] = self._create_ue(ue_id, selected_ue_model_set)
-            self.ues[ue_id].update_mobility_data(this_ue_trace)
+            self._ues[ue_id] = self._create_ue(ue_id, selected_ue_model_set)
+            self._ues[ue_id].update_mobility_data(this_ue_trace)
 
     def update_cell_towers(self, cell_tower_data: DataFrame, cell_tower_models_data: dict) -> None:
         """
@@ -178,7 +166,7 @@ class DeviceFactory:
         cell_tower_list = cell_tower_data['cell_tower_id'].unique()
 
         for cell_tower_id in cell_tower_list:
-            if cell_tower_id in self.cell_towers:
+            if cell_tower_id in self._cell_towers:
                 # TODO: Update the cell tower if there is any requirement to do so. Currently, there is no requirement. All the cell tower data is static in the simulation.
                 continue
 
@@ -186,7 +174,7 @@ class DeviceFactory:
             cell_tower_data: Series = cell_tower_data[cell_tower_data['cell_tower_id'] == cell_tower_id].iloc[0]
 
             # Create the cell tower.
-            self.cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data, cell_tower_models_data)
+            self._cell_towers[cell_tower_id] = self._create_cell_tower(cell_tower_id, cell_tower_data, cell_tower_models_data)
 
     def update_controllers(self, controller_data: DataFrame, controller_models_data: dict) -> None:
         """
@@ -196,7 +184,7 @@ class DeviceFactory:
         controller_list = controller_data['controller_id'].unique()
 
         for controller_id in controller_list:
-            if controller_id in self.controllers:
+            if controller_id in self._controllers:
                 # TODO: Update the controller if there is any requirement to do so. Currently, there is no requirement. All the controller data is static in the simulation.
                 continue
 
@@ -204,4 +192,4 @@ class DeviceFactory:
             controller_position: list[float, float] = controller_data[controller_data['controller_id'] == controller_id][['x', 'y']].values.tolist()
 
             # Create the controller.
-            self.controllers[controller_id] = self._create_controller(controller_id, controller_position, controller_models_data)
+            self._controllers[controller_id] = self._create_controller(controller_id, controller_position, controller_models_data)
