@@ -120,3 +120,26 @@ class DuplicateDeviceFoundError(Exception):
 
     def __str__(self):
         return f"The device with id '{self.device_id}' and '{self.device_type}' is duplicated in the input file."
+
+
+class ModelTypeNotImplementedError(Exception):
+    """ The model type is not implemented. """
+
+    def __init__(self, model_name, model_type: str, message: str = ""):
+        super().__init__(message)
+        self.model_name = model_name
+        self.model_type = model_type
+
+    def __str__(self):
+        return f"The model '{self.model_name}' with type '{self.model_type}' is not implemented."
+
+
+class DuplicateChannelModelError(Exception):
+    """ The channel model is duplicated. """
+
+    def __init__(self, channel_model: str, message: str = ""):
+        super().__init__(message)
+        self.channel_model = channel_model
+
+    def __str__(self):
+        return f"The channel model '{self.channel_model}' is duplicated."
