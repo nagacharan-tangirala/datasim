@@ -2,17 +2,17 @@ from mesa import Model
 from mesa.time import BaseScheduler
 
 from src.core.CustomExceptions import DuplicateDeviceFoundError
-from src.device.BCellTower import BaseCellTower
+from src.device.BCellTower import CellTowerBase
 
 
 class CellTowerModel(Model):
-    def __init__(self, cell_towers: dict[int, BaseCellTower]):
+    def __init__(self, cell_towers: dict[int, CellTowerBase]):
         """
         Initialize the cell tower model.
         """
         super().__init__()
 
-        self.cell_towers: dict[int, BaseCellTower] = cell_towers
+        self.cell_towers: dict[int, CellTowerBase] = cell_towers
 
         self.schedule: BaseScheduler = BaseScheduler(self)
         self._add_cell_towers_to_scheduler()
