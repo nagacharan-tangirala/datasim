@@ -1,9 +1,9 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 from pandas import DataFrame
+from src.channel_models.DNearestTowerLookup import NearestTowerLookup
 
 from src.channel_models.BTowerLookup import TowerLookupBase
-from src.channel_models.DNearestTowerLookup import NearestTowerLookup
 from src.core.CustomExceptions import ModelTypeNotImplementedError
 
 
@@ -42,8 +42,8 @@ class TowerLookupModel(Model):
         self._tower_lookup.current_time = int(args[0])
         self.schedule.step()
 
-    def select_tower_for_ue(self, ue_id: int) -> int:
+    def select_n_nearest_towers_for_ue(self, ue_id: int, n: int) -> list[int]:
         """
-        Select towers for the ue.
+        Select n towers for the ue.
         """
-        return self._tower_lookup.select_tower_for_ue(ue_id)
+        return self._tower_lookup.select_n_towers_for_ue(ue_id, n)

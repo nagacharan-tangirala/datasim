@@ -3,6 +3,8 @@ from abc import abstractmethod
 from mesa import Agent
 from pandas import Series
 
+from src.device.BUE import UEData
+
 
 class CellTowerBase(Agent):
     def __init__(self, cell_tower_id: int, cell_tower_data: Series, sim_model=None):
@@ -16,6 +18,7 @@ class CellTowerBase(Agent):
         """
         super().__init__(cell_tower_id, sim_model)
         self._location = [cell_tower_data['x'], cell_tower_data['y']]
+        self.incoming_ues_data: dict[int, UEData] = {}
 
     @property
     def location(self) -> list[float, float]:

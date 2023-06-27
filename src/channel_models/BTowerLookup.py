@@ -35,8 +35,8 @@ class TowerLookupBase:
         pass
 
     @abstractmethod
-    def select_tower_for_ue(self, ue_id: int) -> int:
+    def select_n_towers_for_ue(self, ue_id: int, n: int) -> list:
         """
-        Select towers for the ue.
+        Select k towers for the ue.
         """
         pass
