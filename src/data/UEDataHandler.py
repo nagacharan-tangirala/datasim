@@ -1,6 +1,6 @@
-from collections import namedtuple
-
 from mesa import Agent
+
+from src.device.BUE import UEData
 
 
 class UEDataHandler(Agent):
@@ -16,9 +16,9 @@ class UEDataHandler(Agent):
         self._time_stamp: int = -1
         self._previous_time_stamp: int = -1
 
-        self._data_to_send: namedtuple = namedtuple('ue_data', ['ts', 'data_size'])
-        self._data_cache: namedtuple = namedtuple('ue_data', ['ts', 'data_size'])
-        self._data_received: namedtuple = namedtuple('ue_data', ['ts', 'data_size'])
+        self._data_to_send: UEData = UEData(-1, -1.0)
+        self._data_cache: UEData = UEData(-1, -1.0)
+        self._data_received: UEData = UEData(-1, -1.0)
 
     @property
     def time_stamp(self) -> int:
@@ -31,12 +31,12 @@ class UEDataHandler(Agent):
         return self._source_ue
 
     @property
-    def data_to_send(self) -> namedtuple:
+    def data_to_send(self) -> UEData:
         """ Get the data to send. """
         return self._data_to_send
 
     @property
-    def data_cache(self) -> namedtuple:
+    def data_cache(self) -> UEData:
         """ Get the data cache. """
         return self._data_cache
 
