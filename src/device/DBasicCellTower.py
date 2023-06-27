@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from pandas import Series
 
 from src.data.MTowerDataHandlerModel import TowerDataHandlerModel
@@ -22,6 +20,9 @@ class BasicCellTower(CellTowerBase):
         self._create_models(cell_tower_models_data)
 
     def _create_models(self, cell_tower_models_data: dict) -> None:
+        """
+        Create the models for the cell tower.
+        """
         self._data_handler_model: TowerDataHandlerModel = TowerDataHandlerModel(self.unique_id, cell_tower_models_data['data'])
 
     def step(self):
@@ -43,12 +44,6 @@ class BasicCellTower(CellTowerBase):
 
         # Create a single data unit representing the total data received from the ues.
         self.ues_data = UEDataHandler(current_time, total_data, agent_ids, self.get_id())
-
-    def receive_data(self, ue_id: int, ue_data: namedtuple):
-        """
-        Receive data from the ues.
-        """
-        self.incoming_ues_data[ue_id] = data
 
     def _create_data_handler(self) -> TowerDataHandlerModel:
         """
