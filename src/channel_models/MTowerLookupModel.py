@@ -1,9 +1,9 @@
 from mesa import Model
 from mesa.time import BaseScheduler
 from pandas import DataFrame
-from src.channel_models.DNearestTowerLookup import NearestTowerLookup
 
 from src.channel_models.BTowerLookup import TowerLookupBase
+from src.channel_models.DNNearestTowersLookup import NNearestTowerLookup
 from src.core.CustomExceptions import ModelTypeNotImplementedError
 
 
@@ -30,7 +30,7 @@ class TowerLookupModel(Model):
         """
         match model_data['name']:
             case 'nearest':
-                return NearestTowerLookup(cell_towers, tower_links_df)
+                return NNearestTowerLookup(cell_towers, tower_links_df)
             case _:
                 raise ModelTypeNotImplementedError('tower_lookup', model_data['name'])
 
