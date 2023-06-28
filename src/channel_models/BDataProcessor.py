@@ -1,7 +1,7 @@
 from src.device.BUE import UEData
 
 
-class DataReductionBase:
+class DataProcessorBase:
     def __init__(self):
         """
         Initialize the data reduction.

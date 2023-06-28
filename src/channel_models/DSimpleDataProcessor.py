@@ -1,8 +1,10 @@
-from src.channel_models.BDataReduction import DataReductionBase
+from random import shuffle
+
+from src.channel_models.BDataProcessor import DataProcessorBase
 from src.device.BUE import UEData
 
 
-class SimpleDataReduction(DataReductionBase):
+class SimpleDataReduction(DataProcessorBase):
     def __init__(self, model_data: dict):
         """
         Initialize the simple data reduction.
@@ -25,7 +27,13 @@ class SimpleDataReduction(DataReductionBase):
             The simplified ue data.
         """
         simplified_ue_data: dict[int, UEData] = {}
-        for ue_id, ue_data in ue_data.items():
+
+        # Shuffle the ue data keys
+        ue_shuffled_keys = list(ue_data.keys())
+        shuffle(ue_shuffled_keys)
+
+        for ue_id in ue_shuffled_keys:
+            ue_data = ue_data[ue_id]
             simplified_ue_data[ue_id] = UEData(ue_data.ts, ue_data.data_size * self._compression_factor)
 
         return simplified_ue_data
