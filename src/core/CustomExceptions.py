@@ -29,28 +29,15 @@ class NoCellTowersInSimulationError(Exception):
         return f"There are no cell towers in the simulation."
 
 
-class InvalidXMLTagError(Exception):
-    """ The XML tag is invalid. """
+class KeyMissinginConfigError(Exception):
+    """ The JSON file is missing a key. """
 
-    def __init__(self, tag: str, message: str = ""):
+    def __init__(self, key: str, message: str = ""):
         super().__init__(message)
-        self.tag = tag
+        self.key: str = key
 
     def __str__(self):
-        return f"The XML tag '{self.tag}' is invalid in the configuration file."
-
-
-class InvalidXMLAttributeError(Exception):
-    """ The XML attribute is invalid. """
-
-    def __init__(self, tag: str, attribute: str, valid_values: list, message: str = ""):
-        super().__init__(message)
-        self.tag = tag
-        self.attribute = attribute
-        self.valid_values = valid_values
-
-    def __str__(self):
-        return f"The XML attribute '{self.attribute}' in the XML tag '{self.tag}' is invalid. Valid values are {self.valid_values}."
+        return f"The JSON file does not contain the key '{self.key}'."
 
 
 class DuplicateDeviceModelError(Exception):
