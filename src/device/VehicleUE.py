@@ -8,19 +8,38 @@ from src.application.Payload import VehiclePayload, VehicleResponse
 from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
 from src.device.ActivationSettings import ActivationSettings
 from src.device.ComputingHardware import ComputingHardware
-from src.device.NetworkHardware import NetworkingHardware
+from src.device.NetworkHardware import NetworkHardware
 from src.models.ModelFactory import ModelFactory
 
 logger = logging.getLogger(__name__)
 
 
 class VehicleUE(Agent):
-    def __init__(self, vehicle_id: int,
-                 vehicle_models: dict,
+    def __init__(self,
+                 vehicle_id: int,
                  computing_hardware: ComputingHardware,
-                 wireless_hardware: NetworkingHardware,
+                 wireless_hardware: NetworkHardware,
                  activation_settings: ActivationSettings,
-                 application_settings: list[ApplicationSettings]):
+                 application_settings: list[ApplicationSettings],
+                 vehicle_models: dict) -> None:
+        """
+        Initialize the vehicle.
+
+        Parameters
+        ----------
+        vehicle_id : int
+            The id of the vehicle.
+        computing_hardware : ComputingHardware
+            The computing hardware of the vehicle.
+        wireless_hardware : NetworkHardware
+            The wireless hardware of the vehicle.
+        activation_settings : ActivationSettings
+            The activation settings of the vehicle.
+        application_settings : list[ApplicationSettings]
+            The application settings of the vehicle.
+        vehicle_models : dict
+            The model data of the vehicle.
+        """
         super().__init__(vehicle_id, None)
 
         self._location: list[float] = []
@@ -30,7 +49,7 @@ class VehicleUE(Agent):
         self._downlink_response: VehicleResponse | None = None
 
         self._computing_hardware: ComputingHardware = computing_hardware
-        self._networking_hardware: NetworkingHardware = wireless_hardware
+        self._networking_hardware: NetworkHardware = wireless_hardware
         self._activation_settings: ActivationSettings = activation_settings
         self._application_settings: list[ApplicationSettings] = application_settings
 
@@ -68,7 +87,7 @@ class VehicleUE(Agent):
 
     def _create_models(self, model_data: dict) -> None:
         """
-        Create the models for this ue.
+        Create the models for this vehicle.
         """
         logger.debug(f"Creating models for vehicle {self.unique_id}")
         model_factory = ModelFactory()
@@ -92,7 +111,7 @@ class VehicleUE(Agent):
                 logger.debug(f"Updating position for vehicle {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
             case 'trace':
-                logger.debug(f"Updating trace for vehicle {self.unique_id}")
+                logger.debug(f"Updating trace for vehicle {self.unique_id} with length {len(mobility_data)}")
                 self._mobility_model.update_positions(mobility_data)
 
     def activate_vehicle(self, time_step: int) -> None:

@@ -1,56 +1,51 @@
 from mesa import Agent
 from pandas import Series
 
-from src.application.ApplicationSettings import ApplicationSettings
 from src.application.Payload import VehiclePayload, BaseStationPayload, BaseStationResponse, VehicleResponse
 from src.device.ActivationSettings import ActivationSettings
 from src.device.ComputingHardware import ComputingHardware
-from src.device.NetworkHardware import NetworkingHardware
+from src.device.NetworkHardware import NetworkHardware
 from src.models.ModelFactory import ModelFactory
 
 
 class BaseStation(Agent):
     def __init__(self,
-                 cell_tower_id,
-                 cell_tower_position: Series,
+                 base_station_id,
+                 base_station_position: Series,
                  computing_hardware: ComputingHardware,
-                 wireless_hardware: NetworkingHardware,
-                 wired_hardware: NetworkingHardware,
+                 wireless_hardware: NetworkHardware,
+                 wired_hardware: NetworkHardware,
                  activation_settings: ActivationSettings,
-                 application_settings: list[ApplicationSettings],
-                 cell_tower_models_data: dict):
+                 base_station_models_data: dict):
         """
         Initialize the base station.
 
         Parameters
         ----------
-        cell_tower_id : int
-            The id of the cell tower.
-        cell_tower_position : Series
-            The position of the cell tower.
+        base_station_id : int
+            The id of the base station.
+        base_station_position : Series
+            The position of the base station.
         computing_hardware : ComputingHardware
-            The computing hardware of the cell tower.
-        wireless_hardware : NetworkingHardware
-            The wireless hardware of the cell tower.
-        wired_hardware : NetworkingHardware
-            The wired hardware of the cell tower.
+            The computing hardware of the base station.
+        wireless_hardware : NetworkHardware
+            The wireless hardware of the base station.
+        wired_hardware : NetworkHardware
+            The wired hardware of the base station.
         activation_settings : ActivationSettings
-            The activation settings of the cell tower.
-        application_settings : list[ApplicationSettings]
-            The application settings of the cell tower.
-        cell_tower_models_data : dict
-            The model data of the cell tower.
+            The activation settings of the base station.
+        base_station_models_data : dict
+            The model data of the base station.
         """
-        super().__init__(cell_tower_id, None)
+        super().__init__(base_station_id, None)
 
         self._location: list[float] = []
         self.sim_model = None
 
-        self._wired_hardware: NetworkingHardware = wired_hardware
+        self._wired_hardware: NetworkHardware = wired_hardware
         self._computing_hardware: ComputingHardware = computing_hardware
-        self._wireless_hardware: NetworkingHardware = wireless_hardware
+        self._wireless_hardware: NetworkHardware = wireless_hardware
         self._activation_settings: ActivationSettings = activation_settings
-        self._application_settings: list[ApplicationSettings] = application_settings
 
         # Incoming vehicle data from the vehicles, set by the edge orchestrator
         self._uplink_vehicle_data: dict[int, VehiclePayload] = {}
@@ -65,8 +60,9 @@ class BaseStation(Agent):
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        cell_tower_models_data['mobility_model']['position'] = [cell_tower_position['x'], cell_tower_position['y']]
-        self._create_models(cell_tower_models_data)
+        base_station_models_data['mobility_model']['position'] = [base_station_position['x'],
+                                                                  base_station_position['y']]
+        self._create_models(base_station_models_data)
 
     @property
     def location(self) -> list[float, float]:
@@ -99,14 +95,14 @@ class BaseStation(Agent):
         """
         self._uplink_vehicle_data = incoming_data
 
-    def _create_models(self, cell_tower_models_data: dict) -> None:
+    def _create_models(self, base_station_models_data: dict) -> None:
         """
         Create the models for the base station.
         """
         model_factory = ModelFactory()
-        self._mobility_model = model_factory.create_mobility_model(cell_tower_models_data['mobility_model'])
+        self._mobility_model = model_factory.create_mobility_model(base_station_models_data['mobility_model'])
         self._base_station_data_processor = model_factory.create_base_station_data_processor(
-            cell_tower_models_data['data_processor_model'])
+            base_station_models_data['data_processor_model'])
         self.base_station_app_runner = model_factory.create_basestation_app_runner(self.unique_id,
                                                                                    self._computing_hardware)
 
