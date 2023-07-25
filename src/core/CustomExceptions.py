@@ -1,54 +1,11 @@
-class NearestTowerNotAssignedError(Exception):
-    """ The nearest tower is not assigned to a vehicle. """
-
-    def __init__(self, message):
-        super().__init__(message)
-
-    def __str__(self):
-        return f"The nearest tower is not assigned to a vehicle."
-
-
-class NotSupportedCellTowerError(Exception):
-    """ The cell tower type is not supported. """
-
-    def __init__(self, cell_tower_type: str, message: str = ""):
-        super().__init__(message)
-        self.cell_tower_type = cell_tower_type
-
-    def __str__(self):
-        return f"The cell tower type '{self.cell_tower_type}' is not supported."
-
-
-class NoCellTowersInSimulationError(Exception):
-    """ There are no cell towers in the simulation. """
+class NoBaseStationsInSimulationError(Exception):
+    """ There are no base stations in the simulation. """
 
     def __init__(self, message: str = ""):
         super().__init__(message)
 
     def __str__(self):
-        return f"There are no cell towers in the simulation."
-
-
-class KeyMissinginConfigError(Exception):
-    """ The JSON file is missing a key. """
-
-    def __init__(self, key: str, message: str = ""):
-        super().__init__(message)
-        self.key: str = key
-
-    def __str__(self):
-        return f"The JSON file does not contain the key '{self.key}'."
-
-
-class DuplicateDeviceModelError(Exception):
-    """ The model is duplicated for a given device. """
-
-    def __init__(self, model: str, message: str = ""):
-        super().__init__(message)
-        self.model = model
-
-    def __str__(self):
-        return f"The model '{self.model}' is duplicated for a given device."
+        return f"There are no base stations in the simulation."
 
 
 class UnsupportedInputFormatError(Exception):
@@ -60,17 +17,6 @@ class UnsupportedInputFormatError(Exception):
 
     def __str__(self):
         return f"The input file '{self.file_name}' has unsupported format."
-
-
-class TimeColumnMissingError(Exception):
-    """ The time column is missing in the input file. """
-
-    def __init__(self, file_name: str, message: str = ""):
-        super().__init__(message)
-        self.file_name = file_name
-
-    def __str__(self):
-        return f"The time column is missing in the input file '{self.file_name}'."
 
 
 class WrongActivationTimeError(Exception):
@@ -119,14 +65,3 @@ class ModelTypeNotImplementedError(Exception):
 
     def __str__(self):
         return f"The model '{self.model_name}' with type '{self.model_type}' is not implemented."
-
-
-class DuplicateChannelModelError(Exception):
-    """ The channel model is duplicated. """
-
-    def __init__(self, channel_model: str, message: str = ""):
-        super().__init__(message)
-        self.channel_model = channel_model
-
-    def __str__(self):
-        return f"The channel model '{self.channel_model}' is duplicated."
