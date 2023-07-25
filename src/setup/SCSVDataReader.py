@@ -1,19 +1,35 @@
+import logging
 from typing import Any
 
-import pandas as pd
+from pandas import DataFrame, read_csv
 
-from src.setup.SInputDataReader import InputDataReader
+from src.core.CommonConstants import CC_CSV
+
+logger = logging.getLogger(__name__)
 
 
-class CSVDataReader(InputDataReader):
+class CSVDataReader:
     def __init__(self, input_file: str, column_names: list[str], column_dtypes: dict[str, Any]):
         """
         Initialize the input data streamer.
         """
-        super().__init__(input_file, column_names, column_dtypes)
-        self.type = 'csv'
+        self._input_file: str = input_file
+        self._column_names: list[str] = column_names
+        self._column_dtypes: dict[str, Any] = column_dtypes
 
-    def read_all_data(self) -> pd.DataFrame:
+        self._type = CC_CSV
+
+    @property
+    def input_file(self) -> str:
+        """ Returns the input file."""
+        return self._input_file
+
+    @property
+    def type(self) -> str:
+        """ Returns the data reader type."""
+        return self._type
+
+    def read_all_data(self) -> DataFrame:
         """
         Reads all data from the input file.
 
@@ -22,5 +38,6 @@ class CSVDataReader(InputDataReader):
         pd.DataFrame
             The data dataframe.
         """
-        self.data_df = pd.read_csv(self.input_file, names=self._column_names, dtype=self._column_dtypes)
-        return self.data_df
+        data_df = read_csv(self._input_file, names=self._column_names, dtype=self._column_dtypes, skiprows=1)
+        logger.debug(f"Returning all data with {len(data_df)} rows.")
+        return data_df
