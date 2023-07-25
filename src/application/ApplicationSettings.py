@@ -1,8 +1,5 @@
-import json
-
-
 class ApplicationSettings:
-    def __init__(self, app_settings: json):
+    def __init__(self, app_settings: dict):
         """
         Initialize the application settings.
         """
@@ -17,9 +14,6 @@ class ApplicationSettings:
 
         self._uplink_required: float = app_settings["uplink_required"]
         self._downlink_required: float = app_settings["downlink_required"]
-
-        self._start_time: int = app_settings["start_time"]
-        self._end_time: int = app_settings["end_time"]
 
     @property
     def type(self) -> str:
@@ -58,4 +52,4 @@ class ApplicationSettings:
 
     def is_active(self, current_time) -> bool:
         """ Get the active status. """
-        return self._start_time <= current_time <= self._end_time
+        return True
