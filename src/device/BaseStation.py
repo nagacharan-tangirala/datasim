@@ -1,5 +1,4 @@
 from mesa import Agent
-from pandas import Series
 
 from src.application.Payload import VehiclePayload, BaseStationPayload, BaseStationResponse, VehicleResponse
 from src.device.ActivationSettings import ActivationSettings
@@ -11,7 +10,7 @@ from src.models.ModelFactory import ModelFactory
 class BaseStation(Agent):
     def __init__(self,
                  base_station_id,
-                 base_station_position: Series,
+                 base_station_position: list[float],
                  computing_hardware: ComputingHardware,
                  wireless_hardware: NetworkHardware,
                  wired_hardware: NetworkHardware,
@@ -24,7 +23,7 @@ class BaseStation(Agent):
         ----------
         base_station_id : int
             The id of the base station.
-        base_station_position : Series
+        base_station_position : list[float]
             The position of the base station.
         computing_hardware : ComputingHardware
             The computing hardware of the base station.
@@ -60,8 +59,7 @@ class BaseStation(Agent):
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        base_station_models_data['mobility_model']['position'] = [base_station_position['x'],
-                                                                  base_station_position['y']]
+        base_station_models_data['mobility_model']['position'] = base_station_position
         self._create_models(base_station_models_data)
 
     @property
