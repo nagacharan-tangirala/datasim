@@ -70,7 +70,7 @@ class EdgeOrchestrator(Agent):
         model_factory = ModelFactory()
         self._base_station_finder = model_factory.create_basestation_finder(self._base_stations,
                                                                             self._base_station_links,
-                                                                            model_data['base_station_finder_model'])
+                                                                            model_data['base_station_finder'])
 
     def uplink_stage(self) -> None:
         """

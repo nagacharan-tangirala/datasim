@@ -9,7 +9,7 @@ class StaticMobilityModel(Agent):
         Parameters
         ----------
         position : DataFrame
-            DataFrame of positions for the ue.
+            DataFrame of positions.
         """
         super().__init__(0, None)
         self._type = 'static'
@@ -22,7 +22,7 @@ class StaticMobilityModel(Agent):
 
     @property
     def current_location(self) -> list[float]:
-        """Get the current location of the ue."""
+        """Get the current location."""
         return self._current_location
 
     def step(self) -> None:
@@ -30,11 +30,11 @@ class StaticMobilityModel(Agent):
 
     def update_position(self, new_position: list[float]) -> None:
         """
-        Update the position of the device.
+        Update the position.
 
         Parameters
         ----------
         new_position : DataFrame
-            The positions of the device.
+            The new positions.
         """
         self._current_location = new_position

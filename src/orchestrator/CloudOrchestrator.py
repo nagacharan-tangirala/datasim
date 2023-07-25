@@ -11,7 +11,8 @@ class CloudOrchestrator(Agent):
     def __init__(self,
                  controllers: dict,
                  base_stations: dict[int, BaseStation],
-                 controller_links_df: DataFrame):
+                 controller_links_df: DataFrame,
+                 model_data: dict):
         """
         Initialize the cloud orchestrator.
 
@@ -23,6 +24,8 @@ class CloudOrchestrator(Agent):
             The base stations in the network.
         controller_links_df : DataFrame
             The links between the controllers.
+        model_data : dict
+            The model data.
         """
         super().__init__(0, None)
 
@@ -41,6 +44,8 @@ class CloudOrchestrator(Agent):
 
         self._base_station_controller_dict = {}
         self._current_time: int = -1
+
+        self._create_models(model_data)
 
     @property
     def current_time(self) -> int:

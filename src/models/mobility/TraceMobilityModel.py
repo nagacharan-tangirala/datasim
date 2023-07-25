@@ -21,7 +21,7 @@ class TraceMobilityModel(Agent):
 
     @property
     def current_location(self) -> list[float]:
-        """Get the current location of the ue."""
+        """Get the current location."""
         return self._current_location
 
     @property
@@ -36,12 +36,12 @@ class TraceMobilityModel(Agent):
 
     def update_positions(self, positions: DataFrame) -> None:
         """
-        Update the positions of the ue.
+        Update the positions.
 
         Parameters
         ----------
         positions : DataFrame
-            The positions of the ue.
+            The new positions.
         """
         self._positions = concat([self._positions, positions], ignore_index=True)
 

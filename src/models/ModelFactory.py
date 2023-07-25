@@ -77,7 +77,7 @@ class ModelFactory:
         """
         Create the base station finder.
         """
-        match model_data['tower_lookup_name']:
+        match model_data['base_station_finder_name']:
             case 'nearest':
                 return BaseStationFinder(base_stations, base_station_links_df)
             case _:
