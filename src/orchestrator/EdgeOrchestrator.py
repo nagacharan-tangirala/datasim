@@ -16,6 +16,17 @@ class EdgeOrchestrator(Agent):
                  model_data: dict):
         """
         Initialize the edge orchestrator.
+
+        Parameters
+        ----------
+        base_stations : dict[int, BaseStation]
+            The base stations in the network.
+        vehicle_links_df : DataFrame
+            The links between the vehicles and the base stations.
+        base_station_links_df : DataFrame
+            The links between the base stations.
+        model_data : dict
+            The model data.
         """
         super().__init__(0, None)
 
