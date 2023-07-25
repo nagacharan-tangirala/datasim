@@ -1,7 +1,7 @@
-class NetworkingHardware:
-    def __init__(self, capacity: float, max_connections: int):
-        self._capacity: float = capacity
-        self._max_connections: int = max_connections
+class NetworkHardware:
+    def __init__(self, networking_hardware: dict):
+        self._capacity: float = networking_hardware["capacity"]
+        self._max_connections: int = networking_hardware["max_connections"]
 
     @property
     def capacity(self) -> float:
