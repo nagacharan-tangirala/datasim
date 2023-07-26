@@ -1,14 +1,16 @@
 from mesa import Agent
 from pandas import DataFrame
 
+from src.core.CommonConstants import CC_VEHICLE_ID, CC_BASE_STATIONS, CC_DISTANCES, CC_TIME_STEP
+
 
 class BaseStationFinder(Agent):
-    def __init__(self, cell_base_stations: dict, tower_links_df: DataFrame):
+    def __init__(self, base_stations: dict, tower_links_df: DataFrame):
         """
         Initialize the nearest tower look up model.
         """
         super().__init__(0, None)
-        self._cell_base_stations: dict = cell_base_stations
+        self._base_stations: dict = base_stations
         self._base_station_links_df: DataFrame = tower_links_df
 
         self._filtered_base_station_links_df: DataFrame = DataFrame()
