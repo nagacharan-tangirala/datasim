@@ -15,7 +15,7 @@ class VehiclePayload:
 
 @dataclass
 class BaseStationPayload:
-    sources: list[int] = None
+    sources: list[int] = field(default_factory=lambda: [-1])
     timestamp: int = -1
     cpu_required: float = 0.0
     memory_required: float = 0.0
@@ -35,7 +35,7 @@ class VehicleResponse:
 
 @dataclass
 class BaseStationResponse:
-    destination_vehicles: list[int] = field(default_factory=lambda: [0])
+    destination_vehicles: list[int] = field(default_factory=lambda: [-1])
     timestamp: int = -1
     downlink_data: list[float] = field(default_factory=lambda: [0.0])
     status: bool = False
