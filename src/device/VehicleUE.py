@@ -6,7 +6,7 @@ from pandas import DataFrame
 from src.application.ApplicationSettings import ApplicationSettings
 from src.application.Payload import VehiclePayload, VehicleResponse
 from src.core.Constants import *
-from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
+from src.core.CustomExceptions import WrongActivationTimeError
 from src.device.ActivationSettings import ActivationSettings
 from src.device.ComputingHardware import ComputingHardware
 from src.device.NetworkHardware import NetworkHardware
@@ -128,7 +128,7 @@ class VehicleUE(Agent):
         Deactivate the vehicle if the time step is correct.
         """
         if time_step != self._activation_settings.end_time:
-            raise WrongDeactivationTimeError(time_step, self._activation_settings.end_time)
+            logger.warning(f"Deactivating vehicle {self.unique_id} at unexpected time {time_step}")
         self._activation_settings.active = False
 
     def use_network_for_uplink(self) -> None:
@@ -169,4 +169,3 @@ class VehicleUE(Agent):
         logger.debug(f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}")
         # Process the data from the applications
         self._vehicle_app_runner.process_result(self._downlink_response)
-        logger.debug(f"Response processed: {self._downlink_response}")
