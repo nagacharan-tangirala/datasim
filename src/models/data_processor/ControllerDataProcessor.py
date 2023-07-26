@@ -1,4 +1,5 @@
 from src.application.Payload import BaseStationPayload
+from src.core.Constants import C_REDUCTION_FACTOR
 
 
 class ControllerDataProcessor:
@@ -6,7 +7,7 @@ class ControllerDataProcessor:
         """
         Initialize the controller data reduction.
         """
-        self._compression_factor: float = float(model_data['data_compression_factor'])
+        self._compression_factor: float = float(model_data[C_REDUCTION_FACTOR])
 
     def simplify_controller_data(self, base_station_data: dict[int, BaseStationPayload]) -> dict[
         int, BaseStationPayload]:

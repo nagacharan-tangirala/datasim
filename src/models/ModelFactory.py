@@ -6,6 +6,7 @@ from src.application.ApplicationSettings import ApplicationSettings
 from src.application.BaseStationAppRunner import BaseStationAppRunner
 from src.application.ControllerAppRunner import ControllerAppRunner
 from src.application.VehicleAppRunner import VehicleAppRunner
+from src.core.Constants import C_MODEL_NAME, C_DATA_PROCESSOR, C_POSITION, C_BASE_STATION_FINDER
 from src.core.CustomExceptions import ModelTypeNotImplementedError
 from src.device.ComputingHardware import ComputingHardware
 from src.models.data_processor.BaseStationDataProcessor import BaseStationDataProcessor
@@ -35,11 +36,11 @@ class ModelFactory:
         model_data : dict
             Dictionary containing all the mobility model data.
         """
-        model_name = model_data['mobility_model_name']
+        model_name = model_data[C_MODEL_NAME]
         match model_name:
             case 'static':
-                logger.debug("Creating static mobility model.")
-                return StaticMobilityModel(model_data['position'])
+                logger.debug(f"Creating static mobility model with position {model_data[C_POSITION]}.")
+                return StaticMobilityModel(model_data[C_POSITION])
             case 'trace':
                 logger.debug("Creating trace mobility model.")
                 return TraceMobilityModel()
@@ -52,7 +53,7 @@ class ModelFactory:
         """
         Create a vehicle application runner.
         """
-        logger.debug("Creating application runner for vehicle {vehicle_id}.")
+        logger.debug(f"Creating application runner for vehicle {vehicle_id}.")
         return VehicleAppRunner(vehicle_id, application_settings, computing_hardware)
 
     @staticmethod
@@ -60,7 +61,7 @@ class ModelFactory:
         """
         Create a base station application runner.
         """
-        logger.debug("Creating application runner for base station {station_id}.")
+        logger.debug(f"Creating application runner for base station {station_id}.")
         return BaseStationAppRunner(station_id, computing_hardware)
 
     @staticmethod
@@ -68,7 +69,7 @@ class ModelFactory:
         """
         Create a controller application runner.
         """
-        logger.debug("Creating application runner for controller {controller_id}.")
+        logger.debug(f"Creating application runner for controller {controller_id}.")
         return ControllerAppRunner(controller_id, computing_hardware)
 
     @staticmethod
@@ -77,41 +78,42 @@ class ModelFactory:
         """
         Create the base station finder.
         """
-        match model_data['base_station_finder_name']:
+        match model_data[C_MODEL_NAME]:
             case 'nearest':
+                logger.debug(f"Creating nearest base station finder.")
                 return BaseStationFinder(base_stations, base_station_links_df)
             case _:
-                raise ModelTypeNotImplementedError('base_station_finder', model_data['base_station_finder_name'])
+                raise ModelTypeNotImplementedError(C_BASE_STATION_FINDER, model_data[C_MODEL_NAME])
 
     @staticmethod
     def create_vehicle_data_processor(data_processor_model_data: dict) -> VehicleDataProcessor:
         """
         Create the vehicle data processor model.
         """
-        match data_processor_model_data['data_processor_name']:
+        match data_processor_model_data[C_MODEL_NAME]:
             case "simple":
                 return VehicleDataProcessor(data_processor_model_data)
             case _:
-                raise ModelTypeNotImplementedError('data reduction', data_processor_model_data['data_processor_name'])
+                raise ModelTypeNotImplementedError(C_DATA_PROCESSOR, data_processor_model_data[C_MODEL_NAME])
 
     @staticmethod
     def create_base_station_data_processor(data_processor_model_data: dict) -> BaseStationDataProcessor:
         """
         Create the base station data processor model.
         """
-        match data_processor_model_data['data_processor_name']:
+        match data_processor_model_data[C_MODEL_NAME]:
             case "simple":
                 return BaseStationDataProcessor(data_processor_model_data)
             case _:
-                raise ModelTypeNotImplementedError('data reduction', data_processor_model_data['data_processor_name'])
+                raise ModelTypeNotImplementedError(C_DATA_PROCESSOR, data_processor_model_data[C_MODEL_NAME])
 
     @staticmethod
     def create_controller_data_processor(data_processor_model_data: dict) -> ControllerDataProcessor:
         """
         Create the controller data processor model.
         """
-        match data_processor_model_data['data_processor_name']:
+        match data_processor_model_data[C_MODEL_NAME]:
             case "simple":
                 return ControllerDataProcessor(data_processor_model_data)
             case _:
-                raise ModelTypeNotImplementedError('data reduction', data_processor_model_data['data_processor_name'])
+                raise ModelTypeNotImplementedError(C_DATA_PROCESSOR, data_processor_model_data[C_MODEL_NAME])

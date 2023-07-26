@@ -39,5 +39,5 @@ class CSVDataReader:
             The data dataframe.
         """
         data_df = read_csv(self._input_file, names=self._column_names, dtype=self._column_dtypes, skiprows=1)
-        logger.debug(f"Returning all data with {len(data_df)} rows.")
+        logger.debug(f"Returning {len(data_df)} rows from the file {self._input_file}.")
         return data_df

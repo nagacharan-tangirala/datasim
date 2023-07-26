@@ -286,7 +286,7 @@ class DeviceFactory:
             this_activation_settings = \
                 self._vehicle_activations_data[self._vehicle_activations_data[CC_VEHICLE_ID] == vehicle_id].iloc[0]
 
-            # Create the ue and update the trace data.
+            # Create the vehicle and update the trace data.
             self._vehicles[vehicle_id] = self._create_vehicle(vehicle_id,
                                                               this_activation_settings,
                                                               selected_vehicle_models)

@@ -1,4 +1,5 @@
 from src.application.Payload import BaseStationPayload
+from src.core.Constants import C_REDUCTION_FACTOR
 
 
 class BaseStationDataProcessor:
@@ -6,7 +7,7 @@ class BaseStationDataProcessor:
         """
         Initialize the base station data reduction.
         """
-        self._compression_factor: float = float(model_data['data_compression_factor'])
+        self._compression_factor: float = float(model_data[C_REDUCTION_FACTOR])
 
     def simplify_base_station_data(self, base_station_payload: BaseStationPayload) -> BaseStationPayload:
         """

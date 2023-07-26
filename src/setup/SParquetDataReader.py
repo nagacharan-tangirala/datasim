@@ -39,14 +39,14 @@ class ParquetDataReader:
         Stream the data from the input file until the timestamp.
         """
         data_df = DataFrame()
-        logger.debug(f"Trying to fetch data until timestamp {timestamp}.")
+        logger.debug(f"Trying to fetch data until timestamp {timestamp} from the file {self._input_file}.")
         while self._row_group_idx < self._total_row_groups:
             # Read the next row group from the input file and convert it to a pandas dataframe.
             temp_data_df = self._input_file_reader.read_row_group(self._row_group_idx,
                                                                   columns=self._column_names,
                                                                   use_threads=True).to_pandas()
 
-            logger.debug(f"Got data for row group {self._row_group_idx} from the input file.")
+            logger.debug(f"Got data for row group {self._row_group_idx}.")
             logger.debug(f"Number of rows in the row group is {len(temp_data_df)}.")
 
             if temp_data_df.empty:
