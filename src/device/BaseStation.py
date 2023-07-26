@@ -1,16 +1,23 @@
+import logging
+
 from mesa import Agent
+from numpy import ndarray
 
 from src.application.Payload import VehiclePayload, BaseStationPayload, BaseStationResponse, VehicleResponse
+from src.core.Constants import C_MOBILITY_MODEL, C_POSITION, C_DATA_PROCESSOR
+from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
 from src.device.ActivationSettings import ActivationSettings
 from src.device.ComputingHardware import ComputingHardware
 from src.device.NetworkHardware import NetworkHardware
 from src.models.ModelFactory import ModelFactory
 
+logger = logging.getLogger(__name__)
+
 
 class BaseStation(Agent):
     def __init__(self,
                  base_station_id,
-                 base_station_position: list[float],
+                 base_station_position: ndarray[float],
                  computing_hardware: ComputingHardware,
                  wireless_hardware: NetworkHardware,
                  wired_hardware: NetworkHardware,
@@ -23,7 +30,7 @@ class BaseStation(Agent):
         ----------
         base_station_id : int
             The id of the base station.
-        base_station_position : list[float]
+        base_station_position : ndarray[float]
             The position of the base station.
         computing_hardware : ComputingHardware
             The computing hardware of the base station.
@@ -38,7 +45,7 @@ class BaseStation(Agent):
         """
         super().__init__(base_station_id, None)
 
-        self._location: list[float] = []
+        self._location: ndarray[float] = []
         self.sim_model = None
 
         self._wired_hardware: NetworkHardware = wired_hardware
@@ -59,13 +66,25 @@ class BaseStation(Agent):
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        base_station_models_data['mobility_model']['position'] = base_station_position
+        base_station_models_data[C_MOBILITY_MODEL][C_POSITION] = base_station_position
         self._create_models(base_station_models_data)
 
+        logger.debug(f"Base station {self.unique_id} created.")
+
     @property
-    def location(self) -> list[float, float]:
+    def location(self) -> ndarray[float]:
         """ Get the location of the base station. """
         return self._location
+
+    @property
+    def start_time(self) -> int:
+        """ Get the start time. """
+        return self._activation_settings.start_time
+
+    @property
+    def end_time(self) -> int:
+        """ Get the end time. """
+        return self._activation_settings.end_time
 
     @property
     def uplink_payload(self) -> BaseStationPayload:
@@ -87,6 +106,20 @@ class BaseStation(Agent):
         """ Get the downlink vehicle data. """
         return self._downlink_vehicle_data
 
+    def activate_base_station(self, time_step: int) -> None:
+        """
+        Activate the base station.
+        """
+        if self._activation_settings.start_time != time_step:
+            raise WrongActivationTimeError(self._activation_settings.start_time, time_step)
+
+    def deactivate_base_station(self, time_step: int) -> None:
+        """
+        Deactivate the base station.
+        """
+        if self._activation_settings.end_time != time_step:
+            raise WrongDeactivationTimeError(self._activation_settings.end_time, time_step)
+
     def set_uplink_vehicle_data(self, incoming_data: dict[int, VehiclePayload]) -> None:
         """
         Set the incoming data for the base station.
@@ -98,9 +131,9 @@ class BaseStation(Agent):
         Create the models for the base station.
         """
         model_factory = ModelFactory()
-        self._mobility_model = model_factory.create_mobility_model(base_station_models_data['mobility_model'])
+        self._mobility_model = model_factory.create_mobility_model(base_station_models_data[C_MOBILITY_MODEL])
         self._base_station_data_processor = model_factory.create_base_station_data_processor(
-            base_station_models_data['data_processor_model'])
+            base_station_models_data[C_DATA_PROCESSOR])
         self.base_station_app_runner = model_factory.create_basestation_app_runner(self.unique_id,
                                                                                    self._computing_hardware)
 
@@ -130,14 +163,15 @@ class BaseStation(Agent):
 
     def uplink_stage(self) -> None:
         """
-            Uplink stage of the base station. Create data to be sent to the central controller.
-            This is the third step in the overall simulation.
-            """
+        Uplink stage of the base station. Create data to be sent to the central controller.
+        This is the third step in the overall simulation.
+        """
+        logger.debug(f"Uplink stage for base station {self.unique_id} at time {self.sim_model.current_time}.")
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        # Create base station payload.
+        # Create base station payload if the base station has received data from the vehicles.
         self._uplink_payload = self.base_station_app_runner.generate_basestation_payload(self.sim_model.current_time,
                                                                                          self._uplink_vehicle_data)
 
@@ -148,6 +182,7 @@ class BaseStation(Agent):
         """
         Downlink stage of the base station.
         """
+        logger.debug(f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}.")
         # Use the base station app runner to process the data.
         self.base_station_app_runner.process_result(self._downlink_response)
 
