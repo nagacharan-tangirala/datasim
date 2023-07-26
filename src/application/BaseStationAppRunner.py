@@ -25,8 +25,10 @@ class BaseStationAppRunner:
         """
         Generate data request by running the applications.
         """
-        logger.debug(f"Generating base station payload for device {self._device_id} at time {current_time}")
+        logger.debug(f"Generating payload for base station {self._device_id} at time {current_time}")
         base_station_payload_request: BaseStationPayload = BaseStationPayload()
+        base_station_payload_request.timestamp = current_time
+
         for vehicle_id, payload_request in incoming_data.items():
             base_station_payload_request.cpu_required += payload_request.cpu_required
             base_station_payload_request.memory_required += payload_request.memory_required
@@ -35,7 +37,7 @@ class BaseStationAppRunner:
             base_station_payload_request.storage_required += payload_request.storage_required
 
             # Collect the uplink and downlink data
-            base_station_payload_request.uplink_data += payload_request.uplink_data
+            base_station_payload_request.uplink_data.append(payload_request.uplink_data)
             base_station_payload_request.sources.append(vehicle_id)
 
         return base_station_payload_request
@@ -46,4 +48,5 @@ class BaseStationAppRunner:
         """
         # Applications are not interested in the response. They just want to know if the data was sent or not.
         if response.status:
-            logger.debug(f"Data transfer from {self._device_id} at time {response.timestamp} was successful.")
+            # logger.debug(f"Data transfer from {self._device_id} at time {response.timestamp} was successful.")
+            pass

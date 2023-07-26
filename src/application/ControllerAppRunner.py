@@ -44,14 +44,15 @@ class ControllerAppRunner:
         dict[int, BaseStationResponse]
             The response of the controller.
         """
-        logger.debug(f"Generating base station response for device {self._device_id} at time {current_time}")
+        logger.debug(f"Generating response for base station {self._device_id} at time {current_time}")
         base_station_responses: dict[int, BaseStationResponse] = {}
 
         for station_id, base_station_payload in incoming_data.items():
             response: BaseStationResponse = BaseStationResponse()
-            base_station_responses.status = True
-            base_station_responses.timestamp = current_time
-            base_station_responses.destination_vehicles = base_station_payload.sources
+            response.status = True
+            response.timestamp = current_time
+            response.destination_vehicles = base_station_payload.sources
+            response.downlink_data = ([1.0 for _ in base_station_payload.uplink_data])
             base_station_responses[station_id] = response
 
         return base_station_responses
