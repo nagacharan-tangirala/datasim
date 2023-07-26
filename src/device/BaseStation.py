@@ -179,20 +179,33 @@ class BaseStation(Agent):
 
         # Use the data processor to process the data.
         self._uplink_payload = self._base_station_data_processor.simplify_base_station_data(self._uplink_payload)
+        logger.debug(f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}.")
 
     def downlink_stage(self) -> None:
         """
         Downlink stage of the base station.
         """
+        # Clear the uplink vehicle data as the transfer is complete.
+        self._uplink_vehicle_data.clear()
+
         logger.debug(f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}.")
         # Use the base station app runner to process the data.
         self.base_station_app_runner.process_result(self._downlink_response)
 
         # Create the downlink vehicle response.
+        vehicle_index_in_data = 0
         for vehicle_id in self._downlink_response.destination_vehicles:
+            if vehicle_id == -1:
+                vehicle_index_in_data += 1
+                continue
+
             # Create the downlink vehicle response.
             self._downlink_vehicle_data[vehicle_id] = VehicleResponse(destination=vehicle_id,
                                                                       status=True,
                                                                       timestamp=self.sim_model.current_time,
                                                                       downlink_data=
-                                                                      self._downlink_response.downlink_data[vehicle_id])
+                                                                      self._downlink_response.downlink_data[
+                                                                          vehicle_index_in_data])
+
+            logger.debug(f"Downlink response for vehicle {vehicle_id} is {self._downlink_vehicle_data[vehicle_id]}.")
+            vehicle_index_in_data += 1

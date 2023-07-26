@@ -134,11 +134,19 @@ class CentralController(Agent):
         self._location = self._mobility_model.current_location
 
         # Use the data processor to process the data.
-        self.processed_base_station_data = self._controller_data_processor.simplify_controller_data(self._received_data)
+        # self.processed_base_station_data
+        # = self._controller_data_processor.simplify_controller_data(self._received_data)
+
+        # Capture the results based on the base station data.
+        self._controller_app_runner.process_incoming_data(self._received_data)
+
+        logger.debug(f" Time: {self.sim_model.current_time} - " +
+                     f"Vehicles: {self._controller_app_runner.vehicle_count} - " +
+                     f"Data: {self._controller_app_runner.data_count}.")
 
         # Create base station response.
         self._downlink_response = self._controller_app_runner.generate_basestation_response(self.sim_model.current_time,
-                                                                                            self.processed_base_station_data)
+                                                                                            self._received_data)
 
     def downlink_stage(self) -> None:
         """
