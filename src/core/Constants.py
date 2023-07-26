@@ -20,3 +20,19 @@ C_OUTPUT_LOCATION = "output_location"
 
 # Vehicle data keys
 C_VEHICLE_RATIO = "ratio"
+
+# Hardware data keys
+C_COMPUTING_HARDWARE = "computing_hardware"
+C_NETWORKING_HARDWARE = "networking_hardware"
+C_WIRED = "wired"
+C_WIRELESS = "wireless"
+
+# Model data keys
+C_MOBILITY_MODEL = "mobility_model"
+C_POSITION = "position"
+C_MODEL_NAME = "name"
+
+C_DATA_PROCESSOR = "data_processor"
+C_REDUCTION_FACTOR = "reduction_factor"
+
+C_BASE_STATION_FINDER = "base_station_finder"
