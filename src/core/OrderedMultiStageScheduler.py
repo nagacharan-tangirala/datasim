@@ -13,7 +13,7 @@ class TypeStage:
 class OrderedMultiStageScheduler(BaseScheduler):
     def __init__(self,
                  model: Model,
-                 type_stage_list: list[str] | None = None,
+                 type_stage_list: list[TypeStage] | None = None,
                  shuffle: bool = False) -> None:
         """
         Create an ordered multi-stage scheduler.
@@ -45,7 +45,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
         agent : Agent
             An Agent to be added to the schedule.
         """
-        super().add(agent)
+        # super().add(agent)
         agent_class: type[Agent] = type(agent)
         self.agents_by_type[agent_class][agent.unique_id] = agent
 
@@ -58,8 +58,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
         agent : Agent
             The agent to remove.
         """
-        super().remove(agent)
-
+        # super().remove(agent)
         agent_class: type[Agent] = type(agent)
         self.agents_by_type[agent_class].pop(agent.unique_id)
 
@@ -69,7 +68,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
         """
         for type_stage in self.types_with_stages:
             # Get the agents of the type
-            agent_keys = self.agents_by_type[type_stage.type].keys()
+            agent_keys = list(self.agents_by_type[type_stage.type].keys())
 
             if self.shuffle:
                 self.model.random.shuffle(agent_keys)
@@ -77,8 +76,8 @@ class OrderedMultiStageScheduler(BaseScheduler):
             # Get the stage and run this stage for the agents
             stage = type_stage.stage
             for agent_key in agent_keys:
-                if agent_key in self._agents:
-                    getattr(self._agents[agent_key], stage)()
+                if agent_key in self.agents_by_type[type_stage.type]:
+                    getattr(self.agents_by_type[type_stage.type][agent_key], stage)()
 
             self.time += self.stage_time
 
