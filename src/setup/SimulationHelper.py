@@ -146,6 +146,25 @@ class SimulationHelper:
                                      CC_B2C_LINKS_COLUMN_DTYPES,
                                      CC_B2C_LINKS_FILE)
 
+        logger.debug("Creating optional file readers if they are provided.")
+        if input_files[CC_BASE_STATION_ACTIVATIONS_FILE] != '':
+            logger.debug("Creating file reader for base station activations file.")
+            self._create_new_file_reader(input_files[CC_BASE_STATION_ACTIVATIONS_FILE],
+                                         CC_ACTIVATION_TIMES_COLUMN_NAMES,
+                                         CC_ACTIVATION_TIMES_COLUMN_DTYPES,
+                                         CC_BASE_STATION_ACTIVATIONS_FILE)
+        else:
+            self._create_none_file_reader(CC_BASE_STATION_ACTIVATIONS_FILE)
+
+        if input_files[CC_CONTROLLER_ACTIVATIONS_FILE] != '':
+            logger.debug("Creating file reader for controller activations file.")
+            self._create_new_file_reader(input_files[CC_CONTROLLER_ACTIVATIONS_FILE],
+                                         CC_ACTIVATION_TIMES_COLUMN_NAMES,
+                                         CC_ACTIVATION_TIMES_COLUMN_DTYPES,
+                                         CC_CONTROLLER_ACTIVATIONS_FILE)
+        else:
+            self._create_none_file_reader(CC_CONTROLLER_ACTIVATIONS_FILE)
+
     def _create_new_file_reader(self,
                                 filename: str,
                                 column_names: list[str],
@@ -176,6 +195,17 @@ class SimulationHelper:
             self.file_readers[file_key] = CSVDataReader(file_path, column_names, column_dtypes)
         else:
             raise UnsupportedInputFormatError(file_type)
+
+    def _create_none_file_reader(self, file_key: str) -> None:
+        """
+        Create a None file reader.
+
+        Parameters
+        ----------
+        file_key : str
+            The file key.
+        """
+        self.file_readers[file_key] = None
 
     def _create_output_dir(self, output_dir: str) -> str:
         """
