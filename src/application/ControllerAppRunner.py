@@ -21,10 +21,43 @@ class ControllerAppRunner:
         self._device_id: int = device_id
         self._hardware_settings: ComputingHardware = computing_hardware
 
+        self._vehicle_count: int = 0
+        self._data_count: int = 0
+
     @property
     def device_id(self) -> int:
         """ Get the device id. """
         return self._device_id
+
+    @property
+    def vehicle_count(self) -> int:
+        """ Get the vehicle count. """
+        return self._vehicle_count
+
+    @property
+    def data_count(self) -> int:
+        """ Get the data count. """
+        return self._data_count
+
+    def process_incoming_data(self, incoming_data: dict[int, BaseStationPayload]) -> None:
+        """
+        Process the incoming data.
+
+        Parameters
+        ----------
+        incoming_data : dict[int, BaseStationPayload]
+            The incoming data.
+        """
+        self._vehicle_count: int = 0
+        self._data_count: int = 0
+        # Count the number of vehicles
+        for _, payload in incoming_data.items():
+            valid_sources = [source for source in payload.sources if source != -1]
+            self._vehicle_count += len(valid_sources)
+
+        # Count the incoming data
+        for _, payload in incoming_data.items():
+            self._data_count += sum(payload.uplink_data)
 
     def generate_basestation_response(self,
                                       current_time: int,
