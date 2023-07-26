@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -22,7 +22,7 @@ class BaseStationPayload:
     gpu_required: float = 0.0
     battery_required: float = 0.0
     storage_required: float = 0.0
-    uplink_data: list[float] = 0.0
+    uplink_data: list[float] = field(default_factory=lambda: [0.0])
 
 
 @dataclass
@@ -35,7 +35,7 @@ class VehicleResponse:
 
 @dataclass
 class BaseStationResponse:
-    destination_vehicles: list[int] = None
+    destination_vehicles: list[int] = field(default_factory=lambda: [0])
     timestamp: int = -1
-    downlink_data: list[float] = None
+    downlink_data: list[float] = field(default_factory=lambda: [0.0])
     status: bool = False
