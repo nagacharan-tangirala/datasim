@@ -57,6 +57,36 @@ class CloudOrchestrator(Agent):
         """ Set the current time."""
         self._current_time = value
 
+    def add_controller(self, controller: CentralController) -> None:
+        """
+        Add a new controller.
+        """
+        self._controllers[controller.unique_id] = controller
+
+    def remove_controller(self, controller_id: int) -> None:
+        """
+        Remove the controller.
+        """
+        self._controllers.pop(controller_id)
+
+    def add_base_station(self, base_station: BaseStation) -> None:
+        """
+        Add a new base station.
+        """
+        self._base_stations[base_station.unique_id] = base_station
+
+    def remove_base_station(self, base_station_id: int) -> None:
+        """
+        Remove the base station.
+        """
+        self._base_stations.pop(base_station_id)
+
+    def update_b2c_links(self, b2c_links: DataFrame) -> None:
+        """
+        Update the B2B links.
+        """
+        self._controller_links_df = b2c_links
+
     def _prepare_network_mappings(self) -> None:
         """
         Prepare the base station controller mapping.

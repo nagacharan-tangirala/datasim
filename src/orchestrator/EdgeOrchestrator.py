@@ -74,6 +74,30 @@ class EdgeOrchestrator(Agent):
         """
         self._vehicles.pop(vehicle_id)
 
+    def add_base_station(self, base_station: BaseStation) -> None:
+        """
+        Add a new base station.
+        """
+        self._base_stations[base_station.unique_id] = base_station
+
+    def remove_base_station(self, base_station_id: int) -> None:
+        """
+        Remove the base station.
+        """
+        self._base_stations.pop(base_station_id)
+
+    def update_v2v_links(self, v2v_links: DataFrame) -> None:
+        """
+        Update the V2V links.
+        """
+        self._vehicle_links = v2v_links
+
+    def update_v2b_links(self, v2b_links: DataFrame) -> None:
+        """
+        Update the V2B links.
+        """
+        self._base_station_links = v2b_links
+
     def _create_models(self, model_data: dict):
         """
         Create the models
