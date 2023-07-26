@@ -125,6 +125,8 @@ class BaseStation(Agent):
         Set the incoming data for the base station.
         """
         self._uplink_vehicle_data = incoming_data
+        logger.debug(f"Vehicles at base station {self.unique_id} are "
+                     f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.sim_model.current_time}.")
 
     def _create_models(self, base_station_models_data: dict) -> None:
         """

@@ -1,6 +1,8 @@
 from mesa import Agent
 from pandas import DataFrame, concat
 
+from src.core.CommonConstants import CC_TIME_STEP
+
 
 class TraceMobilityModel(Agent):
     def __init__(self):
@@ -50,8 +52,9 @@ class TraceMobilityModel(Agent):
         Step through the model.
         """
         # Check if the current time is in the positions dataframe
-        if self._current_time in self._positions["time"].values:
-            self._current_location = self._positions[self._positions["time"] == self._current_time].iloc[0].values[1:]
+        if self._current_time in self._positions[CC_TIME_STEP].values:
+            self._current_location = self._positions[self._positions[CC_TIME_STEP] == self._current_time].iloc[
+                                         0].values[2:]
         else:
-            # If not, then the ue is not moving
+            # If not, then the vehicle is not moving
             self._current_location = self._current_location
