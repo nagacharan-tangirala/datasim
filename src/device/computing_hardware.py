@@ -1,10 +1,15 @@
-from src.application.Payload import VehiclePayload
+from src.application.payload import VehiclePayload
 
 
 class ComputingHardware:
     def __init__(self, hardware_settings: dict):
         """
         Initialize the hardware settings.
+
+        Parameters
+        ----------
+        hardware_settings : dict
+            The hardware settings.
         """
         self._cpu: float = hardware_settings["cpu"]
         self._gpu: float = hardware_settings["gpu"]

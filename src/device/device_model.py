@@ -2,20 +2,20 @@ import logging
 
 from mesa import Model
 
-from src.core.Constants import *
-from src.core.OrderedMultiStageScheduler import OrderedMultiStageScheduler, TypeStage
-from src.device.BaseStation import BaseStation
-from src.device.CentralController import CentralController
-from src.device.VehicleUE import VehicleUE
-from src.orchestrator.CloudOrchestrator import CloudOrchestrator
-from src.orchestrator.EdgeOrchestrator import EdgeOrchestrator
+from src.core.constants import *
+from src.core.ordered_multistage_scheduler import OrderedMultiStageScheduler, TypeStage
+from src.device.base_station import BaseStation
+from src.device.central_controller import CentralController
+from src.device.vehicle import Vehicle
+from src.orchestrator.cloud_orchestrator import CloudOrchestrator
+from src.orchestrator.edge_orchestrator import EdgeOrchestrator
 
 logger = logging.getLogger(__name__)
 
 
 class DeviceModel(Model):
     def __init__(self,
-                 vehicles: dict[int, VehicleUE],
+                 vehicles: dict[int, Vehicle],
                  base_stations: dict[int, BaseStation],
                  controllers: dict[int, CentralController],
                  edge_orchestrator: EdgeOrchestrator,
@@ -27,7 +27,7 @@ class DeviceModel(Model):
         Initialize the device model.
         """
         super().__init__()
-        self._vehicles: dict[int, VehicleUE] = vehicles
+        self._vehicles: dict[int, Vehicle] = vehicles
         self._base_stations: dict[int, BaseStation] = base_stations
         self._controllers: dict[int, CentralController] = controllers
 
@@ -200,13 +200,13 @@ class DeviceModel(Model):
         # Step through the schedule object
         self.schedule.step()
 
-    def update_vehicles(self, vehicles: dict[int, VehicleUE]) -> None:
+    def update_vehicles(self, vehicles: dict[int, Vehicle]) -> None:
         """
         Update the vehicles in the model.
 
         Parameters
         ----------
-        vehicles : dict[int, VehicleUE]
+        vehicles : dict[int, Vehicle]
             The vehicles to update.
         """
         for vehicle_id, vehicle in vehicles.items():

@@ -4,7 +4,7 @@ from typing import Any
 from pandas import DataFrame, concat
 from pyarrow.parquet import ParquetFile
 
-from src.core.CommonConstants import CC_PARQUET, CC_TIME_STEP
+from src.core.common_constants import CC_PARQUET, CC_TIME_STEP
 
 logger = logging.getLogger(__name__)
 

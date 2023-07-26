@@ -1,5 +1,5 @@
-from src.application.Payload import VehiclePayload
-from src.core.Constants import C_REDUCTION_FACTOR
+from src.application.payload import VehiclePayload
+from src.core.constants import C_REDUCTION_FACTOR
 
 
 class VehicleDataProcessor:

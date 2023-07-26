@@ -4,15 +4,15 @@ from random import choices
 from numpy import asarray, ndarray
 from pandas import DataFrame, Series
 
-from src.application.ApplicationSettings import ApplicationSettings
-from src.core.CommonConstants import *
-from src.core.Constants import *
-from src.device.ActivationSettings import ActivationSettings
-from src.device.BaseStation import BaseStation
-from src.device.CentralController import CentralController
-from src.device.ComputingHardware import ComputingHardware
-from src.device.NetworkHardware import NetworkHardware
-from src.device.VehicleUE import VehicleUE
+from src.application.application_settings import ApplicationSettings
+from src.core.common_constants import *
+from src.core.constants import *
+from src.device.activation_settings import ActivationSettings
+from src.device.base_station import BaseStation
+from src.device.central_controller import CentralController
+from src.device.computing_hardware import ComputingHardware
+from src.device.network_hardware import NetworkHardware
+from src.device.vehicle import Vehicle
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class DeviceFactory:
         self._controller_activations_data: DataFrame = controller_activations_data
 
         # Create the dictionaries to store the devices in the simulation
-        self._vehicles: dict[int, VehicleUE] = {}
+        self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}
         self._controllers: dict[int, CentralController] = {}
 
@@ -40,7 +40,7 @@ class DeviceFactory:
         self._create_applications(applications_data)
 
     @property
-    def vehicles(self) -> dict[int, VehicleUE]:
+    def vehicles(self) -> dict[int, Vehicle]:
         """ Get the vehicles in the simulation. """
         return self._vehicles
 
@@ -128,7 +128,7 @@ class DeviceFactory:
     def _create_vehicle(self,
                         vehicle_id: int,
                         activation_settings: ActivationSettings,
-                        vehicle_models: dict) -> VehicleUE:
+                        vehicle_models: dict) -> Vehicle:
         """
         Create a vehicle from the given parameters.
 
@@ -143,7 +143,7 @@ class DeviceFactory:
 
         Returns
         -------
-        VehicleUE
+        Vehicle
             The created vehicle.
         """
         # Create the computing hardware.
@@ -152,12 +152,12 @@ class DeviceFactory:
         # Create the networking hardware.
         wireless_hardware = DeviceFactory._create_networking_hardware(vehicle_models[C_NETWORKING_HARDWARE])
 
-        return VehicleUE(vehicle_id,
-                         computing_hardware,
-                         wireless_hardware,
-                         activation_settings,
-                         self._applications,
-                         vehicle_models)
+        return Vehicle(vehicle_id,
+                       computing_hardware,
+                       wireless_hardware,
+                       activation_settings,
+                       self._applications,
+                       vehicle_models)
 
     def create_base_stations(self, base_station_data: DataFrame, base_station_models_data: dict) -> None:
         """

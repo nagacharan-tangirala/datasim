@@ -3,19 +3,19 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.application.ApplicationSettings import ApplicationSettings
-from src.application.Payload import VehiclePayload, VehicleResponse
-from src.core.Constants import *
-from src.core.CustomExceptions import WrongActivationTimeError
-from src.device.ActivationSettings import ActivationSettings
-from src.device.ComputingHardware import ComputingHardware
-from src.device.NetworkHardware import NetworkHardware
-from src.models.ModelFactory import ModelFactory
+from src.application.application_settings import ApplicationSettings
+from src.application.payload import VehiclePayload, VehicleResponse
+from src.core.constants import *
+from src.core.custom_exceptions import WrongActivationTimeError
+from src.device.activation_settings import ActivationSettings
+from src.device.computing_hardware import ComputingHardware
+from src.device.network_hardware import NetworkHardware
+from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
 
 
-class VehicleUE(Agent):
+class Vehicle(Agent):
     def __init__(self,
                  vehicle_id: int,
                  computing_hardware: ComputingHardware,

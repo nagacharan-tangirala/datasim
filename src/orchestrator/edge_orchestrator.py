@@ -3,12 +3,12 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.application.Payload import VehiclePayload, VehicleResponse
-from src.core.Constants import C_BASE_STATION_FINDER
-from src.device.BaseStation import BaseStation
-from src.device.VehicleUE import VehicleUE
-from src.models.ModelFactory import ModelFactory
-from src.models.finder.BaseStationFinder import BaseStationFinder
+from src.application.payload import VehiclePayload, VehicleResponse
+from src.core.constants import C_BASE_STATION_FINDER
+from src.device.base_station import BaseStation
+from src.device.vehicle import Vehicle
+from src.models.finder.base_station_finder import BaseStationFinder
+from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class EdgeOrchestrator(Agent):
         """
         super().__init__(990000, None)
 
-        self._vehicles: dict[int, VehicleUE] = {}
+        self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}
 
         self._vehicle_links: DataFrame = vehicle_links_df
@@ -66,7 +66,7 @@ class EdgeOrchestrator(Agent):
         """
         return len(self._base_stations)
 
-    def add_vehicle(self, vehicle: VehicleUE) -> None:
+    def add_vehicle(self, vehicle: Vehicle) -> None:
         """
         Add a new vehicle.
         """

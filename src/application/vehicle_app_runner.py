@@ -1,8 +1,8 @@
 import logging
 
-from src.application.ApplicationSettings import ApplicationSettings
-from src.application.Payload import *
-from src.device.ComputingHardware import ComputingHardware
+from src.application.application_settings import ApplicationSettings
+from src.application.payload import *
+from src.device.computing_hardware import ComputingHardware
 
 logger = logging.getLogger(__name__)
 

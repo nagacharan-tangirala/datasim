@@ -3,7 +3,7 @@ from typing import Any
 
 from pandas import DataFrame, read_csv
 
-from src.core.CommonConstants import CC_CSV
+from src.core.common_constants import CC_CSV
 
 logger = logging.getLogger(__name__)
 

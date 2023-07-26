@@ -1,7 +1,7 @@
 import logging
 
-from src.application.Payload import VehiclePayload, BaseStationPayload, BaseStationResponse
-from src.device.ComputingHardware import ComputingHardware
+from src.application.payload import VehiclePayload, BaseStationPayload, BaseStationResponse
+from src.device.computing_hardware import ComputingHardware
 
 logger = logging.getLogger(__name__)
 

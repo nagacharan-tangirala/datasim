@@ -4,12 +4,12 @@ from os.path import dirname, exists, join
 
 import toml
 
-from src.core.CommonConstants import *
-from src.core.Constants import *
-from src.core.CustomExceptions import *
-from src.core.LoggerConfig import LoggerConfig
-from src.setup.SCSVDataReader import CSVDataReader
-from src.setup.SParquetDataReader import ParquetDataReader
+from src.core.common_constants import *
+from src.core.constants import *
+from src.core.custom_exceptions import *
+from src.core.logger_config import LoggerConfig
+from src.setup.csv_data_reader import CSVDataReader
+from src.setup.parquet_data_reader import ParquetDataReader
 
 logger = logging.getLogger(__name__)
 

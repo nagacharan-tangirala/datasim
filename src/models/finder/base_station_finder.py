@@ -1,7 +1,7 @@
 from mesa import Agent
 from pandas import DataFrame
 
-from src.core.CommonConstants import CC_VEHICLE_ID, CC_BASE_STATIONS, CC_DISTANCES, CC_TIME_STEP
+from src.core.common_constants import CC_VEHICLE_ID, CC_BASE_STATIONS, CC_DISTANCES, CC_TIME_STEP
 
 
 class BaseStationFinder(Agent):

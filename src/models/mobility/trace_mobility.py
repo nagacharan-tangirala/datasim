@@ -1,7 +1,7 @@
 from mesa import Agent
 from pandas import DataFrame, concat
 
-from src.core.CommonConstants import CC_TIME_STEP
+from src.core.common_constants import CC_TIME_STEP
 
 
 class TraceMobilityModel(Agent):

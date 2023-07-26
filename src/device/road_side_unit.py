@@ -1,10 +1,10 @@
 from mesa import Agent
 
-from src.device.ComputingHardware import ComputingHardware
-from src.device.NetworkHardware import NetworkHardware
+from src.device.computing_hardware import ComputingHardware
+from src.device.network_hardware import NetworkHardware
 
 
-class RoadSideUnitUE(Agent):
+class RoadSideUnit(Agent):
     def __init__(self,
                  rsu_id: int,
                  hardware_settings: ComputingHardware,
