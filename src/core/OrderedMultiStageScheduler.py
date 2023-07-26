@@ -45,7 +45,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
         agent : Agent
             An Agent to be added to the schedule.
         """
-        # super().add(agent)
+        super().add(agent)
         agent_class: type[Agent] = type(agent)
         self.agents_by_type[agent_class][agent.unique_id] = agent
 
@@ -58,7 +58,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
         agent : Agent
             The agent to remove.
         """
-        # super().remove(agent)
+        super().remove(agent)
         agent_class: type[Agent] = type(agent)
         self.agents_by_type[agent_class].pop(agent.unique_id)
 
