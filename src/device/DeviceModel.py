@@ -71,16 +71,14 @@ class DeviceModel(Model):
         """
         Complete the simulation setup.
         """
-        logger.info("Preparing activation and deactivation times all the devices.")
+        logger.debug("Preparing activation and deactivation times for all the devices.")
         self._prepare_device_activation_times()
 
-        logger.info("Initializing the scheduler.")
+        logger.debug("Initializing the scheduler.")
         self._initialize_scheduler()
 
-        logger.info("Add orchestrators to the scheduler.")
+        logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
-
-        logger.info("Final setup is complete.")
 
     def _prepare_device_activation_times(self) -> None:
         """
@@ -190,7 +188,11 @@ class DeviceModel(Model):
         """
         Prepare a dictionary with time step as the key and the respective vehicles to activate in that time step.
         """
-        logger.debug(f"Running step {self._current_time}.")
+        logger.info(f"Running step {self._current_time}.")
+        logger.debug(f"Current time: {self._current_time}.")
+        logger.debug(f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}.")
+        logger.debug(f"Active base stations: {self._edge_orchestrator.active_base_station_count()}.")
+        logger.debug(f"Active controllers: {self._cloud_orchestrator.active_controller_count()}.")
 
         # Refresh active devices at the current time step
         self._refresh_active_devices()
