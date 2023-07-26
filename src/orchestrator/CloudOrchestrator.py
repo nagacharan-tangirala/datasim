@@ -1,3 +1,5 @@
+import logging
+
 from mesa import Agent
 from pandas import DataFrame
 
@@ -5,6 +7,8 @@ from src.application.Payload import BaseStationPayload, BaseStationResponse
 from src.device.BaseStation import BaseStation
 from src.device.CentralController import CentralController
 from src.models.ModelFactory import ModelFactory
+
+logger = logging.getLogger(__name__)
 
 
 class CloudOrchestrator(Agent):
@@ -45,6 +49,7 @@ class CloudOrchestrator(Agent):
         self._base_station_controller_dict = {}
         self._current_time: int = -1
 
+        self.sim_model = None
         self._create_models(model_data)
 
     @property
@@ -105,6 +110,7 @@ class CloudOrchestrator(Agent):
         Step through the orchestration process for the uplink stage.
         This is the second step in the overall simulation.
         """
+        logger.debug(f"Uplink stage at time {self.current_time}.")
         # Step through the models.
 
         # Collect data from each base station
@@ -120,6 +126,7 @@ class CloudOrchestrator(Agent):
         """
         Collect data from each base station.
         """
+        logger.debug(f"Collecting data from base stations.")
         self.data_at_basestations.clear()
         for station_id, base_station in self._base_stations.items():
             self.data_at_basestations[station_id] = base_station.uplink_payload
@@ -130,6 +137,7 @@ class CloudOrchestrator(Agent):
         """
         Assign target controllers for each base station.
         """
+        logger.debug(f"Assigning target controllers.")
         # Clear the previous data
         self.uplink_basestations_data.clear()
 
@@ -145,6 +153,7 @@ class CloudOrchestrator(Agent):
         """
         Send data to controllers.
         """
+        logger.debug(f"Sending data to controllers.")
         for controller_id, base_station_data in self.uplink_basestations_data.items():
             self._controllers[controller_id].received_data = base_station_data
             # Consume the wired network bandwidth in the base station.
@@ -154,6 +163,7 @@ class CloudOrchestrator(Agent):
         """
         Step through the orchestration process for the downlink stage.
         """
+        logger.debug(f"Downlink stage at time {self.current_time}.")
         # Collect data from each controller
         self._collect_data_from_controllers()
 
@@ -164,6 +174,7 @@ class CloudOrchestrator(Agent):
         """
         Collect data from each controller.
         """
+        logger.debug(f"Collecting data from controllers.")
         self.downlink_response_at_controllers.clear()
         for controller_id, controller in self._controllers.items():
             self.downlink_response_at_controllers[controller_id] = controller.downlink_response
@@ -174,6 +185,7 @@ class CloudOrchestrator(Agent):
         """
         Send data to base stations.
         """
+        logger.debug(f"Sending data to base stations.")
         for controller_id, controller_data in self.downlink_response_at_controllers.items():
             for station_id, station_data in controller_data:
                 self._base_stations[station_id].downlink_response = station_data
