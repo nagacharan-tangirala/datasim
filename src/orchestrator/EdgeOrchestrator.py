@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 class EdgeOrchestrator(Agent):
     def __init__(self,
-                 base_stations: dict,
                  vehicle_links_df: DataFrame,
                  base_station_links_df: DataFrame,
                  model_data: dict):
@@ -31,10 +30,10 @@ class EdgeOrchestrator(Agent):
         model_data : dict
             The model data.
         """
-        super().__init__(0, None)
+        super().__init__(990000, None)
 
         self._vehicles: dict[int, VehicleUE] = {}
-        self._base_stations: dict[int, BaseStation] = base_stations
+        self._base_stations: dict[int, BaseStation] = {}
 
         self._vehicle_links: DataFrame = vehicle_links_df
         self._base_station_links: DataFrame = base_station_links_df
@@ -54,6 +53,18 @@ class EdgeOrchestrator(Agent):
 
         # Create the models
         self._create_models(model_data)
+
+    def active_vehicle_count(self) -> int:
+        """
+        Get the active vehicle count.
+        """
+        return len(self._vehicles)
+
+    def active_base_station_count(self) -> int:
+        """
+        Get the active base station count.
+        """
+        return len(self._base_stations)
 
     def add_vehicle(self, vehicle: VehicleUE) -> None:
         """
@@ -108,6 +119,7 @@ class EdgeOrchestrator(Agent):
         logger.debug(f"Uplink stage at time {self.sim_model.current_time}")
         # Step through the models.
         self._base_station_finder.current_time = self.sim_model.current_time
+        self._base_station_finder.step()
 
         # Collect data from each vehicle
         self._collect_data_from_vehicles()
@@ -124,6 +136,7 @@ class EdgeOrchestrator(Agent):
         """
         logger.debug(f"Collecting data from vehicles")
         self.data_at_vehicles.clear()
+
         for vehicle_id, vehicle in self._vehicles.items():
             self.data_at_vehicles[vehicle_id] = vehicle.uplink_payload
             # Consume the network bandwidth in the vehicle.
@@ -144,6 +157,9 @@ class EdgeOrchestrator(Agent):
             if base_station_id not in self.uplink_vehicle_data:
                 self.uplink_vehicle_data[base_station_id] = {}
             self.uplink_vehicle_data[base_station_id][vehicle_id] = vehicle_data
+
+            logger.debug(f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time " +
+                         f"{self.sim_model.current_time}")
 
     def _send_data_to_basestations(self) -> None:
         """
@@ -183,7 +199,10 @@ class EdgeOrchestrator(Agent):
         """
         logger.debug(f"Sending data to vehicles")
         for base_station_id, base_station_data in self.downlink_response_at_basestations.items():
-            for vehicle_id, veh_data in base_station_data:
+            for vehicle_id, veh_data in base_station_data.items():
+                if vehicle_id not in self._vehicles:
+                    logger.error(f"Vehicle {vehicle_id} not found in the network.")
+                    continue
                 self._vehicles[vehicle_id].downlink_response = veh_data
                 # Consume the network bandwidth in the vehicle.
                 self._vehicles[vehicle_id].use_network_for_downlink()

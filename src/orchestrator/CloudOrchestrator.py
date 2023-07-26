@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 
 class CloudOrchestrator(Agent):
     def __init__(self,
-                 controllers: dict,
-                 base_stations: dict[int, BaseStation],
                  controller_links_df: DataFrame,
                  model_data: dict):
         """
@@ -22,19 +20,15 @@ class CloudOrchestrator(Agent):
 
         Parameters
         ----------
-        controllers : dict
-            The controllers in the network.
-        base_stations : dict[int, BaseStation]
-            The base stations in the network.
         controller_links_df : DataFrame
             The links between the controllers.
         model_data : dict
             The model data.
         """
-        super().__init__(0, None)
+        super().__init__(990001, None)
 
-        self._controllers: dict[int, CentralController] = controllers
-        self._base_stations: dict[int, BaseStation] = base_stations
+        self._controllers: dict[int, CentralController] = {}
+        self._base_stations: dict[int, BaseStation] = {}
         self._controller_links_df: DataFrame = controller_links_df
 
         # Uplink data generated at the basestations
@@ -46,21 +40,17 @@ class CloudOrchestrator(Agent):
         # Downlink response created at the controllers
         self.downlink_response_at_controllers: dict[int, dict[int, BaseStationResponse]] = {}
 
-        self._base_station_controller_dict = {}
-        self._current_time: int = -1
+        # Prepare the dict with second column as the key and the third column as the value
+        self._base_station_controller_dict = {row[1]: row[2] for row in self._controller_links_df.values}
 
         self.sim_model = None
         self._create_models(model_data)
 
-    @property
-    def current_time(self) -> int:
-        """Get the time stamp."""
-        return self._current_time
-
-    @current_time.setter
-    def current_time(self, value: int) -> None:
-        """ Set the current time."""
-        self._current_time = value
+    def active_controller_count(self) -> int:
+        """
+        Get the active controller count.
+        """
+        return len(self._controllers)
 
     def add_controller(self, controller: CentralController) -> None:
         """
@@ -96,8 +86,6 @@ class CloudOrchestrator(Agent):
         """
         Prepare the base station controller mapping.
         """
-        # Prepare the dict with second column as the key and the third column as the value
-        self._base_station_controller_dict = {row[1]: row[2] for row in self._controller_links_df.values}
 
     def _create_models(self, model_data: dict):
         """
@@ -110,7 +98,7 @@ class CloudOrchestrator(Agent):
         Step through the orchestration process for the uplink stage.
         This is the second step in the overall simulation.
         """
-        logger.debug(f"Uplink stage at time {self.current_time}.")
+        logger.debug(f"Uplink stage at time {self.sim_model.current_time}.")
         # Step through the models.
 
         # Collect data from each base station
@@ -157,13 +145,13 @@ class CloudOrchestrator(Agent):
         for controller_id, base_station_data in self.uplink_basestations_data.items():
             self._controllers[controller_id].received_data = base_station_data
             # Consume the wired network bandwidth in the base station.
-            self._base_stations[controller_id].use_wired_for_uplink()
+            self._controllers[controller_id].use_network_for_uplink()
 
     def downlink_stage(self) -> None:
         """
         Step through the orchestration process for the downlink stage.
         """
-        logger.debug(f"Downlink stage at time {self.current_time}.")
+        logger.debug(f"Downlink stage at time {self.sim_model.current_time}.")
         # Collect data from each controller
         self._collect_data_from_controllers()
 
@@ -187,7 +175,7 @@ class CloudOrchestrator(Agent):
         """
         logger.debug(f"Sending data to base stations.")
         for controller_id, controller_data in self.downlink_response_at_controllers.items():
-            for station_id, station_data in controller_data:
+            for station_id, station_data in controller_data.items():
                 self._base_stations[station_id].downlink_response = station_data
                 # Consume the network bandwidth in the base station.
                 self._base_stations[station_id].use_wired_for_downlink()

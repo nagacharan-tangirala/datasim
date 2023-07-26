@@ -196,14 +196,11 @@ class Simulation:
         """
         Create the orchestrators.
         """
-        self.edge_orchestrator = EdgeOrchestrator(self._base_stations,
-                                                  self.v2v_links_data,
+        self.edge_orchestrator = EdgeOrchestrator(self.v2v_links_data,
                                                   self.v2b_links_data,
                                                   self.simulation_helper.orchestrator_models_data[C_EDGE_ORCHESTRATOR])
 
-        self.cloud_orchestrator = CloudOrchestrator(self._controllers,
-                                                    self._base_stations,
-                                                    self.b2c_links_data,
+        self.cloud_orchestrator = CloudOrchestrator(self.b2c_links_data,
                                                     self.simulation_helper.orchestrator_models_data[
                                                         C_CLOUD_ORCHESTRATOR])
 
