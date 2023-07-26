@@ -31,20 +31,20 @@ class BaseStationFinder(Agent):
         """
         # Filter the tower links df to only include the current time step
         self._filtered_base_station_links_df = self._base_station_links_df[
-            self._base_station_links_df['time'] == self._current_time]
+            self._base_station_links_df[CC_TIME_STEP] == self._current_time]
 
     def select_n_base_stations_for_vehicle(self, vehicle_id: int, n: int) -> list[int]:
         """
-        Select base stations for the ue.
+        Select base stations for the vehicle.
         """
-        # Get the base stations for the ue.
+        # Get the base stations for the vehicle.
         vehicle_base_stations = self._filtered_base_station_links_df[
-            self._filtered_base_station_links_df['vehicle_id'] == vehicle_id]
+            self._filtered_base_station_links_df[CC_VEHICLE_ID] == vehicle_id]
 
-        # Create a dictionary of base stations and their distances from the ue base stations df.
+        # Create a dictionary of base stations and their distances from the vehicle base stations df.
         tower_distances = {tower_id: distance for tower_id, distance in
-                           zip(vehicle_base_stations['nearest_base_stations'],
-                               vehicle_base_stations['tower_distances'])}
+                           zip([int(x) for x in vehicle_base_stations[CC_BASE_STATIONS]],
+                               [float(x) for x in vehicle_base_stations[CC_DISTANCES]])}
 
         # Sort the tower distances dictionary by distance.
         sorted_tower_distances = {tower_id: distance for tower_id, distance in

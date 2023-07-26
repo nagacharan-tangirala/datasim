@@ -24,8 +24,6 @@ class EdgeOrchestrator(Agent):
 
         Parameters
         ----------
-        base_stations : dict[int, BaseStation]
-            The base stations in the network.
         vehicle_links_df : DataFrame
             The links between the vehicles and the base stations.
         base_station_links_df : DataFrame

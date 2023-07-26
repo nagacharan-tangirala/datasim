@@ -9,15 +9,15 @@ class ControllerDataProcessor:
         """
         self._compression_factor: float = float(model_data[C_REDUCTION_FACTOR])
 
-    def simplify_controller_data(self, base_station_data: dict[int, BaseStationPayload]) -> dict[
-        int, BaseStationPayload]:
+    def simplify_controller_data(self, base_station_data: dict[int, BaseStationPayload]) \
+            -> dict[int, BaseStationPayload]:
         """
         Simplify the controller data by applying the data processing techniques.
 
         Parameters
         ----------
         base_station_data : dict[int, BaseStationPayload]
-            The vehicle data to simplify.
+            The base station data to simplify.
 
         Returns
         -------

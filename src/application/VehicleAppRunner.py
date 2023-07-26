@@ -50,4 +50,4 @@ class VehicleAppRunner:
         """
         # Applications are not interested in the response. They just want to know if the data was sent or not.
         if response.status:
-            logger.debug(f"Data transfer from {self._device_id} at time {response.timestamp} was successful.")
+            logger.debug(f"Data transfer from vehicle {self._device_id} at time {response.timestamp} was successful.")
