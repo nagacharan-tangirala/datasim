@@ -111,10 +111,10 @@ class SimulationHelper:
                                      CC_VEHICLE_TRACE_FILE)
 
         logger.debug("Creating file reader for activation times file.")
-        self._create_new_file_reader(input_files[CC_ACTIVATION_TIMES_FILE],
+        self._create_new_file_reader(input_files[CC_VEHICLE_ACTIVATIONS_FILE],
                                      CC_ACTIVATION_TIMES_COLUMN_NAMES,
                                      CC_ACTIVATION_TIMES_COLUMN_DTYPES,
-                                     CC_ACTIVATION_TIMES_FILE)
+                                     CC_VEHICLE_ACTIVATIONS_FILE)
 
         logger.debug("Creating file reader for v2v links file.")
         self._create_new_file_reader(input_files[CC_V2V_LINKS_FILE],
@@ -186,6 +186,12 @@ class SimulationHelper:
         """
         # Get the path to the file and the file type
         file_path = join(self.project_path, filename)
+
+        # Check if it is a valid file.
+        if not exists(file_path):
+            logger.warning("File %s does not exist. Skipping file.", file_path)
+            return
+
         file_type = filename.split('.')[-1]
 
         logger.debug("Creating reader object for file %s", file_path)
