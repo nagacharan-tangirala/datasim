@@ -1,10 +1,12 @@
 # Input file names
 CC_VEHICLE_TRACE_FILE = "vehicle_traces"
-CC_ACTIVATION_TIMES_FILE = "activation_times"
+CC_VEHICLE_ACTIVATIONS_FILE = "vehicle_activations"
 CC_V2V_LINKS_FILE = "v2v_links"
 CC_BASE_STATIONS_FILE = "base_stations"
+CC_BASE_STATION_ACTIVATIONS_FILE = "base_station_activations"
 CC_V2B_LINKS_FILE = "v2b_links"
 CC_CONTROLLERS_FILE = "controllers"
+CC_CONTROLLER_ACTIVATIONS_FILE = "controller_activations"
 CC_B2C_LINKS_FILE = "b2c_links"
 
 # Main columns in the input files
