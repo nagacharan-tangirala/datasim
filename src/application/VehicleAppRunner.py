@@ -30,6 +30,9 @@ class VehicleAppRunner:
         logger.debug(f"Generating vehicle payload for device {self._device_id} at time {current_time}")
         # Collect the hardware requirements for the applications
         payload_request: VehiclePayload = VehiclePayload()
+        payload_request.timestamp = current_time
+        payload_request.source = self._device_id
+
         for application in self._application_settings:
             if not application.is_active(current_time):
                 continue
