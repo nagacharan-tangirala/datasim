@@ -5,6 +5,7 @@ from pandas import DataFrame
 
 from src.application.ApplicationSettings import ApplicationSettings
 from src.application.Payload import VehiclePayload, VehicleResponse
+from src.core.Constants import *
 from src.core.CustomExceptions import WrongActivationTimeError, WrongDeactivationTimeError
 from src.device.ActivationSettings import ActivationSettings
 from src.device.ComputingHardware import ComputingHardware
@@ -91,8 +92,8 @@ class VehicleUE(Agent):
         """
         logger.debug(f"Creating models for vehicle {self.unique_id}")
         model_factory = ModelFactory()
-        self._mobility_model = model_factory.create_mobility_model(model_data['mobility_model'])
-        self._vehicle_data_processor = model_factory.create_vehicle_data_processor(model_data['data_processor_model'])
+        self._mobility_model = model_factory.create_mobility_model(model_data[C_MOBILITY_MODEL])
+        self._vehicle_data_processor = model_factory.create_vehicle_data_processor(model_data[C_DATA_PROCESSOR])
         self._vehicle_app_runner = model_factory.create_vehicle_app_runner(self.unique_id,
                                                                            self._application_settings,
                                                                            computing_hardware=self._computing_hardware)
@@ -146,6 +147,7 @@ class VehicleUE(Agent):
         """
         Downlink stage for the vehicle.
         """
+        logger.debug(f"Uplink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}")
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
@@ -164,6 +166,7 @@ class VehicleUE(Agent):
         """
         Downlink stage for the vehicle.
         """
+        logger.debug(f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}")
         # Process the data from the applications
         self._vehicle_app_runner.process_result(self._downlink_response)
         logger.debug(f"Response processed: {self._downlink_response}")
