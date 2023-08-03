@@ -6,12 +6,13 @@ authors = ["Nagacharan Teja Tangirala <nagacharan.tangirala@tum.de>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 geopandas = "^0.13.2"
-mesa = "^1.2.1"
+mesa = "^2.1.0"
 pyarrow = "^12.0.0"
 genson = "^1.2.2"
 toml = "^0.10.2"
+black = "^23.7.0"
 
 
 [build-system]
