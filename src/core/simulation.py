@@ -41,7 +41,7 @@ class Simulation:
         self.end_time: int = -1
         self.time_step: int = -1
         self.current_time: int = -1
-        self.output_dir: str = ''
+        self.output_dir: str = ""
         self.data_stream_interval: int = -1
         self.simulation_helper: SimulationHelper | None = None
 
@@ -132,13 +132,18 @@ class Simulation:
         Read the activation input data.
         """
         self._vehicle_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_VEHICLE_ACTIVATIONS_FILE])
+            self.simulation_helper.file_readers[CC_VEHICLE_ACTIVATIONS_FILE]
+        )
         self._base_station_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_BASE_STATION_ACTIVATIONS_FILE])
+            self.simulation_helper.file_readers[CC_BASE_STATION_ACTIVATIONS_FILE]
+        )
         self._controller_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_CONTROLLER_ACTIVATIONS_FILE])
+            self.simulation_helper.file_readers[CC_CONTROLLER_ACTIVATIONS_FILE]
+        )
 
-    def _read_file(self, data_reader: ParquetDataReader | CSVDataReader | None) -> DataFrame:
+    def _read_file(
+        self, data_reader: ParquetDataReader | CSVDataReader | None
+    ) -> DataFrame:
         """
         Read the input data.
 
@@ -160,7 +165,8 @@ class Simulation:
             return data_reader.read_all_data()
         elif data_reader.type == CC_PARQUET:
             logger.debug(
-                f"Reading partial data from {data_reader.input_file} file until timestamp {self.data_stream_interval}.")
+                f"Reading partial data from {data_reader.input_file} file until timestamp {self.data_stream_interval}."
+            )
             return data_reader.read_data_until_timestamp(self.data_stream_interval)
         else:
             raise UnsupportedInputFormatError(data_reader.input_file)
@@ -171,21 +177,28 @@ class Simulation:
         """
         # Create the device factory object.
         logger.debug("Creating the device factory.")
-        self._device_factory = DeviceFactory(self.simulation_helper.application_data,
-                                             self._vehicle_activations_data,
-                                             self._base_station_activations_data,
-                                             self._controller_activations_data)
+        self._device_factory = DeviceFactory(
+            self.simulation_helper.application_data,
+            self._vehicle_activations_data,
+            self._base_station_activations_data,
+            self._controller_activations_data,
+        )
 
         # Create a device factory object and create the participants
         logger.debug("Creating the Vehicles")
-        self._device_factory.create_vehicles(self.vehicle_trace_data, self.simulation_helper.vehicle_models_data)
+        self._device_factory.create_vehicles(
+            self.vehicle_trace_data, self.simulation_helper.vehicle_models_data
+        )
 
         logger.debug("Creating Base Stations.")
-        self._device_factory.create_base_stations(self.base_stations_data,
-                                                  self.simulation_helper.base_station_models_data)
+        self._device_factory.create_base_stations(
+            self.base_stations_data, self.simulation_helper.base_station_models_data
+        )
 
         logger.debug("Creating the Controllers.")
-        self._device_factory.create_controllers(self.controller_data, self.simulation_helper.controller_models_data)
+        self._device_factory.create_controllers(
+            self.controller_data, self.simulation_helper.controller_models_data
+        )
 
         # Get the devices from the factory
         self._vehicles = self._device_factory.vehicles
@@ -196,25 +209,30 @@ class Simulation:
         """
         Create the orchestrators.
         """
-        self.edge_orchestrator = EdgeOrchestrator(self.v2v_links_data,
-                                                  self.v2b_links_data,
-                                                  self.simulation_helper.orchestrator_models_data[C_EDGE_ORCHESTRATOR])
+        self.edge_orchestrator = EdgeOrchestrator(
+            self.v2v_links_data,
+            self.v2b_links_data,
+            self.simulation_helper.orchestrator_models_data[C_EDGE_ORCHESTRATOR],
+        )
 
-        self.cloud_orchestrator = CloudOrchestrator(self.b2c_links_data,
-                                                    self.simulation_helper.orchestrator_models_data[
-                                                        C_CLOUD_ORCHESTRATOR])
+        self.cloud_orchestrator = CloudOrchestrator(
+            self.b2c_links_data,
+            self.simulation_helper.orchestrator_models_data[C_CLOUD_ORCHESTRATOR],
+        )
 
     def _create_device_model(self) -> None:
         """
         Create the device model.
         """
-        self._device_model = DeviceModel(self._vehicles,
-                                         self._base_stations,
-                                         self._controllers,
-                                         self.edge_orchestrator,
-                                         self.cloud_orchestrator,
-                                         self.start_time,
-                                         self.end_time)
+        self._device_model = DeviceModel(
+            self._vehicles,
+            self._base_stations,
+            self._controllers,
+            self.edge_orchestrator,
+            self.cloud_orchestrator,
+            self.start_time,
+            self.end_time,
+        )
 
     def _refresh_simulation_data(self) -> None:
         """
@@ -228,14 +246,28 @@ class Simulation:
         """
         Read the input data for the first time.
         """
-        self.vehicle_trace_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE])
-        self.v2v_links_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_V2V_LINKS_FILE])
-        self.base_stations_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE])
-        self.v2b_links_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_V2B_LINKS_FILE])
-        self.controller_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_CONTROLLERS_FILE])
-        self.b2c_links_data = self._read_first_chunk(self.simulation_helper.file_readers[CC_B2C_LINKS_FILE])
+        self.vehicle_trace_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE]
+        )
+        self.v2v_links_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_V2V_LINKS_FILE]
+        )
+        self.base_stations_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE]
+        )
+        self.v2b_links_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_V2B_LINKS_FILE]
+        )
+        self.controller_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_CONTROLLERS_FILE]
+        )
+        self.b2c_links_data = self._read_first_chunk(
+            self.simulation_helper.file_readers[CC_B2C_LINKS_FILE]
+        )
 
-    def _read_first_chunk(self, data_reader: CSVDataReader | ParquetDataReader) -> DataFrame:
+    def _read_first_chunk(
+        self, data_reader: CSVDataReader | ParquetDataReader
+    ) -> DataFrame:
         """
         Read the first chunk of the input data. CSVs are read completely while parquet files are read partially.
         This method is called only once.
@@ -253,7 +285,9 @@ class Simulation:
         if data_reader.type == CC_CSV:
             return data_reader.read_all_data()
         elif data_reader.type == CC_PARQUET:
-            return data_reader.read_data_until_timestamp(self.current_time + self.data_stream_interval)
+            return data_reader.read_data_until_timestamp(
+                self.current_time + self.data_stream_interval
+            )
         else:
             raise UnsupportedInputFormatError(data_reader.input_file)
 
@@ -262,20 +296,23 @@ class Simulation:
         Update the devices.
         """
         if not self.vehicle_trace_data.empty:
-            self._device_factory.create_new_vehicles(self.vehicle_trace_data,
-                                                     self.simulation_helper.vehicle_models_data)
+            self._device_factory.create_new_vehicles(
+                self.vehicle_trace_data, self.simulation_helper.vehicle_models_data
+            )
             updated_vehicles = self._device_factory.vehicles
             self._device_model.update_vehicles(updated_vehicles)
 
         if not self.base_stations_data.empty:
-            self._device_factory.create_new_base_stations(self.base_stations_data,
-                                                          self.simulation_helper.base_station_models_data)
+            self._device_factory.create_new_base_stations(
+                self.base_stations_data, self.simulation_helper.base_station_models_data
+            )
             updated_base_stations = self._device_factory.base_stations
             self._device_model.update_base_stations(updated_base_stations)
 
         if not self.controller_data.empty:
-            self._device_factory.create_new_controllers(self.controller_data,
-                                                        self.simulation_helper.controller_models_data)
+            self._device_factory.create_new_controllers(
+                self.controller_data, self.simulation_helper.controller_models_data
+            )
             updated_controllers = self._device_factory.controllers
             self._device_model.update_controllers(updated_controllers)
 
@@ -296,14 +333,28 @@ class Simulation:
         """
         Refresh the input data until the next streaming interval.
         """
-        self.vehicle_trace_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE])
-        self.v2v_links_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_V2V_LINKS_FILE])
-        self.base_stations_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE])
-        self.v2b_links_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_V2B_LINKS_FILE])
-        self.controller_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_CONTROLLERS_FILE])
-        self.b2c_links_data = self._read_next_chunk(self.simulation_helper.file_readers[CC_B2C_LINKS_FILE])
+        self.vehicle_trace_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE]
+        )
+        self.v2v_links_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_V2V_LINKS_FILE]
+        )
+        self.base_stations_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE]
+        )
+        self.v2b_links_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_V2B_LINKS_FILE]
+        )
+        self.controller_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_CONTROLLERS_FILE]
+        )
+        self.b2c_links_data = self._read_next_chunk(
+            self.simulation_helper.file_readers[CC_B2C_LINKS_FILE]
+        )
 
-    def _read_next_chunk(self, data_reader: CSVDataReader | ParquetDataReader) -> DataFrame:
+    def _read_next_chunk(
+        self, data_reader: CSVDataReader | ParquetDataReader
+    ) -> DataFrame:
         """
         Read the next chunk of the input data. Only parquet files are read partially.
 
@@ -320,7 +371,9 @@ class Simulation:
         if data_reader.type == CC_CSV:
             return DataFrame()
         elif data_reader.type == CC_PARQUET:
-            return data_reader.read_data_until_timestamp(self.current_time + self.data_stream_interval)
+            return data_reader.read_data_until_timestamp(
+                self.current_time + self.data_stream_interval
+            )
         else:
             raise UnsupportedInputFormatError(data_reader.input_file)
 

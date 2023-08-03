@@ -2,7 +2,9 @@ from numpy import ndarray
 
 
 class ActivationSettings:
-    def __init__(self, activate_times: ndarray, disable_times: ndarray, active: bool = False):
+    def __init__(
+        self, activate_times: ndarray, disable_times: ndarray, active: bool = False
+    ):
         """
         Initialize the activation settings.
         """
@@ -13,14 +15,14 @@ class ActivationSettings:
 
     @property
     def start_time(self) -> int:
-        """ Get the start time. """
+        """Get the start time."""
         if self._index >= len(self._activate_times):
             return 0
         return self._activate_times[self._index]
 
     @property
     def end_time(self) -> int:
-        """ Get the end time. """
+        """Get the end time."""
         if self._index >= len(self._activate_times):
             # Return a very large number to ensure that the device is never deactivated
             return 100000000
@@ -28,12 +30,12 @@ class ActivationSettings:
 
     @property
     def active(self) -> bool:
-        """ Get the active state. """
+        """Get the active state."""
         return self._active
 
     @active.setter
     def active(self, active: bool) -> None:
-        """ Set the active state. """
+        """Set the active state."""
         self._active = active
         # Increment the index if the device is deactivated
         if not active:

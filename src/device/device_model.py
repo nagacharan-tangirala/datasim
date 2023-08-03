@@ -14,15 +14,16 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceModel(Model):
-    def __init__(self,
-                 vehicles: dict[int, Vehicle],
-                 base_stations: dict[int, BaseStation],
-                 controllers: dict[int, CentralController],
-                 edge_orchestrator: EdgeOrchestrator,
-                 cloud_orchestrator: CloudOrchestrator,
-                 start_time: int,
-                 end_time: int
-                 ):
+    def __init__(
+        self,
+        vehicles: dict[int, Vehicle],
+        base_stations: dict[int, BaseStation],
+        controllers: dict[int, CentralController],
+        edge_orchestrator: EdgeOrchestrator,
+        cloud_orchestrator: CloudOrchestrator,
+        start_time: int,
+        end_time: int,
+    ):
         """
         Initialize the device model.
         """
@@ -39,18 +40,18 @@ class DeviceModel(Model):
             C_BASE_STATIONS: self._base_stations,
             C_CONTROLLERS: self._controllers,
             C_EDGE_ORCHESTRATOR: [self._edge_orchestrator],
-            C_CLOUD_ORCHESTRATOR: [self._cloud_orchestrator]
+            C_CLOUD_ORCHESTRATOR: [self._cloud_orchestrator],
         }
 
         self._device_activation_times: dict[str, dict[int, list[int]]] = {
             C_VEHICLES: {},
             C_BASE_STATIONS: {},
-            C_CONTROLLERS: {}
+            C_CONTROLLERS: {},
         }
         self._device_deactivation_times: dict[str, dict[int, list[int]]] = {
             C_VEHICLES: {},
             C_BASE_STATIONS: {},
-            C_CONTROLLERS: {}
+            C_CONTROLLERS: {},
         }
 
         self._start_time: int = start_time
@@ -64,7 +65,7 @@ class DeviceModel(Model):
 
     @current_time.setter
     def current_time(self, value: int) -> None:
-        """ Set the current time."""
+        """Set the current time."""
         self._current_time = value
 
     def perform_final_setup(self) -> None:
@@ -110,43 +111,63 @@ class DeviceModel(Model):
         type_stage_list: list[TypeStage] = []
 
         # Add the vehicle type to the type stage list for the uplink stage.
-        vehicle_type_stage = TypeStage(type=type(list(self._vehicles.values())[0]), stage='uplink_stage')
+        vehicle_type_stage = TypeStage(
+            type=type(list(self._vehicles.values())[0]), stage="uplink_stage"
+        )
         type_stage_list.append(vehicle_type_stage)
 
         # Add the edge orchestrator type to the type stage list for the uplink stage.
-        edge_orchestrator_type_stage = TypeStage(type=type(self._edge_orchestrator), stage='uplink_stage')
+        edge_orchestrator_type_stage = TypeStage(
+            type=type(self._edge_orchestrator), stage="uplink_stage"
+        )
         type_stage_list.append(edge_orchestrator_type_stage)
 
         # Add the base station type to the type stage list for the uplink stage.
-        base_station_type_stage = TypeStage(type=type(list(self._base_stations.values())[0]), stage='uplink_stage')
+        base_station_type_stage = TypeStage(
+            type=type(list(self._base_stations.values())[0]), stage="uplink_stage"
+        )
         type_stage_list.append(base_station_type_stage)
 
         # Add the cloud orchestrator type to the type stage list for the uplink stage.
-        cloud_orchestrator_type_stage = TypeStage(type=type(self._cloud_orchestrator), stage='uplink_stage')
+        cloud_orchestrator_type_stage = TypeStage(
+            type=type(self._cloud_orchestrator), stage="uplink_stage"
+        )
         type_stage_list.append(cloud_orchestrator_type_stage)
 
         # Add the controller type to the type stage list for the uplink stage.
-        controller_type_stage = TypeStage(type=type(list(self._controllers.values())[0]), stage='uplink_stage')
+        controller_type_stage = TypeStage(
+            type=type(list(self._controllers.values())[0]), stage="uplink_stage"
+        )
         type_stage_list.append(controller_type_stage)
 
         # Add the controller type to the type stage list for the downlink stage.
-        controller_type_stage = TypeStage(type=type(list(self._controllers.values())[0]), stage='downlink_stage')
+        controller_type_stage = TypeStage(
+            type=type(list(self._controllers.values())[0]), stage="downlink_stage"
+        )
         type_stage_list.append(controller_type_stage)
 
         # Add the cloud orchestrator type to the type stage list for the downlink stage.
-        cloud_orchestrator_type_stage = TypeStage(type=type(self._cloud_orchestrator), stage='downlink_stage')
+        cloud_orchestrator_type_stage = TypeStage(
+            type=type(self._cloud_orchestrator), stage="downlink_stage"
+        )
         type_stage_list.append(cloud_orchestrator_type_stage)
 
         # Add the base station type to the type stage list for the downlink stage.
-        base_station_type_stage = TypeStage(type=type(list(self._base_stations.values())[0]), stage='downlink_stage')
+        base_station_type_stage = TypeStage(
+            type=type(list(self._base_stations.values())[0]), stage="downlink_stage"
+        )
         type_stage_list.append(base_station_type_stage)
 
         # Add the edge orchestrator type to the type stage list for the downlink stage.
-        edge_orchestrator_type_stage = TypeStage(type=type(self._edge_orchestrator), stage='downlink_stage')
+        edge_orchestrator_type_stage = TypeStage(
+            type=type(self._edge_orchestrator), stage="downlink_stage"
+        )
         type_stage_list.append(edge_orchestrator_type_stage)
 
         # Add the vehicle type to the type stage list for the downlink stage.
-        vehicle_type_stage = TypeStage(type=type(list(self._vehicles.values())[0]), stage='downlink_stage')
+        vehicle_type_stage = TypeStage(
+            type=type(list(self._vehicles.values())[0]), stage="downlink_stage"
+        )
         type_stage_list.append(vehicle_type_stage)
 
         self.schedule = OrderedMultiStageScheduler(self, type_stage_list, shuffle=True)
@@ -160,7 +181,9 @@ class DeviceModel(Model):
         self._edge_orchestrator.sim_model = self
         self._cloud_orchestrator.sim_model = self
 
-    def _save_activation_time(self, time_stamp: int, device_id: int, device_type: str) -> None:
+    def _save_activation_time(
+        self, time_stamp: int, device_id: int, device_type: str
+    ) -> None:
         """
         Update the activation time of the device.
         """
@@ -172,7 +195,9 @@ class DeviceModel(Model):
         else:
             self._device_activation_times[device_type][time_stamp].append(device_id)
 
-    def _save_deactivation_time(self, time_stamp: int, device_id: int, device_type: str) -> None:
+    def _save_deactivation_time(
+        self, time_stamp: int, device_id: int, device_type: str
+    ) -> None:
         """
         Update the deactivation time of the device.
         """
@@ -190,9 +215,15 @@ class DeviceModel(Model):
         """
         logger.info(f"Running step {self._current_time}.")
         logger.debug(f"Current time: {self._current_time}.")
-        logger.debug(f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}.")
-        logger.debug(f"Active base stations: {self._edge_orchestrator.active_base_station_count()}.")
-        logger.debug(f"Active controllers: {self._cloud_orchestrator.active_controller_count()}.")
+        logger.debug(
+            f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}."
+        )
+        logger.debug(
+            f"Active base stations: {self._edge_orchestrator.active_base_station_count()}."
+        )
+        logger.debug(
+            f"Active controllers: {self._cloud_orchestrator.active_controller_count()}."
+        )
 
         # Refresh active devices at the current time step
         self._refresh_active_devices()
@@ -260,8 +291,12 @@ class DeviceModel(Model):
         """
         Activate the vehicles in the current time step.
         """
-        vehicles_to_activate = self._device_activation_times[C_VEHICLES][self._current_time]
-        logger.debug(f"Activating vehicles {vehicles_to_activate} at time {self._current_time}")
+        vehicles_to_activate = self._device_activation_times[C_VEHICLES][
+            self._current_time
+        ]
+        logger.debug(
+            f"Activating vehicles {vehicles_to_activate} at time {self._current_time}"
+        )
         for vehicle_id in vehicles_to_activate:
             vehicle = self._vehicles[vehicle_id]
             vehicle.activate_vehicle(self._current_time)
@@ -275,8 +310,12 @@ class DeviceModel(Model):
         """
         Deactivate the vehicles in the current time step.
         """
-        vehicles_to_deactivate = self._device_deactivation_times[C_VEHICLES][self._current_time]
-        logger.debug(f"Deactivating vehicles {vehicles_to_deactivate} at time {self._current_time}")
+        vehicles_to_deactivate = self._device_deactivation_times[C_VEHICLES][
+            self._current_time
+        ]
+        logger.debug(
+            f"Deactivating vehicles {vehicles_to_deactivate} at time {self._current_time}"
+        )
         for vehicle_id in vehicles_to_deactivate:
             vehicle = self._vehicles[vehicle_id]
             vehicle.deactivate_vehicle(self._current_time)
@@ -290,8 +329,12 @@ class DeviceModel(Model):
         """
         Activate the base stations in the current time step.
         """
-        base_stations_to_activate = self._device_activation_times[C_BASE_STATIONS][self._current_time]
-        logger.debug(f"Activating base stations {base_stations_to_activate} at time {self._current_time}")
+        base_stations_to_activate = self._device_activation_times[C_BASE_STATIONS][
+            self._current_time
+        ]
+        logger.debug(
+            f"Activating base stations {base_stations_to_activate} at time {self._current_time}"
+        )
         for base_station_id in base_stations_to_activate:
             base_station = self._base_stations[base_station_id]
             base_station.activate_base_station(self._current_time)
@@ -306,8 +349,12 @@ class DeviceModel(Model):
         """
         Deactivate the base stations in the current time step.
         """
-        base_stations_to_deactivate = self._device_activation_times[C_BASE_STATIONS][self._current_time]
-        logger.debug(f"Deactivating base stations {base_stations_to_deactivate} at time {self._current_time}")
+        base_stations_to_deactivate = self._device_activation_times[C_BASE_STATIONS][
+            self._current_time
+        ]
+        logger.debug(
+            f"Deactivating base stations {base_stations_to_deactivate} at time {self._current_time}"
+        )
         for base_station_id in base_stations_to_deactivate:
             base_station = self._base_stations[base_station_id]
             base_station.deactivate_base_station(self._current_time)
@@ -322,8 +369,12 @@ class DeviceModel(Model):
         """
         Activate the controllers in the current time step.
         """
-        controllers_to_activate = self._device_activation_times[C_CONTROLLERS][self._current_time]
-        logger.debug(f"Activating controllers {controllers_to_activate} at time {self._current_time}")
+        controllers_to_activate = self._device_activation_times[C_CONTROLLERS][
+            self._current_time
+        ]
+        logger.debug(
+            f"Activating controllers {controllers_to_activate} at time {self._current_time}"
+        )
         for controller_id in controllers_to_activate:
             controller = self._controllers[controller_id]
             controller.activate_controller(self._current_time)
@@ -337,8 +388,12 @@ class DeviceModel(Model):
         """
         Deactivate the controllers in the current time step.
         """
-        controllers_to_deactivate = self._device_activation_times[C_CONTROLLERS][self._current_time]
-        logger.debug(f"Deactivating controllers {controllers_to_deactivate} at time {self._current_time}")
+        controllers_to_deactivate = self._device_activation_times[C_CONTROLLERS][
+            self._current_time
+        ]
+        logger.debug(
+            f"Deactivating controllers {controllers_to_deactivate} at time {self._current_time}"
+        )
         for controller_id in controllers_to_deactivate:
             controller = self._controllers[controller_id]
             controller.deactivate_controller(self._current_time)

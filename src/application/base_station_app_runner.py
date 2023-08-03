@@ -1,6 +1,10 @@
 import logging
 
-from src.application.payload import VehiclePayload, BaseStationPayload, BaseStationResponse
+from src.application.payload import (
+    VehiclePayload,
+    BaseStationPayload,
+    BaseStationResponse,
+)
 from src.device.computing_hardware import ComputingHardware
 
 logger = logging.getLogger(__name__)
@@ -16,25 +20,33 @@ class BaseStationAppRunner:
 
     @property
     def device_id(self) -> int:
-        """ Get the device id. """
+        """Get the device id."""
         return self._device_id
 
-    def generate_basestation_payload(self,
-                                     current_time: int,
-                                     incoming_data: dict[int, VehiclePayload]) -> BaseStationPayload:
+    def generate_basestation_payload(
+        self, current_time: int, incoming_data: dict[int, VehiclePayload]
+    ) -> BaseStationPayload:
         """
         Generate data request by running the applications.
         """
-        logger.debug(f"Generating payload for base station {self._device_id} at time {current_time}")
+        logger.debug(
+            f"Generating payload for base station {self._device_id} at time {current_time}"
+        )
         base_station_payload_request: BaseStationPayload = BaseStationPayload()
         base_station_payload_request.timestamp = current_time
 
         for vehicle_id, payload_request in incoming_data.items():
             base_station_payload_request.cpu_required += payload_request.cpu_required
-            base_station_payload_request.memory_required += payload_request.memory_required
+            base_station_payload_request.memory_required += (
+                payload_request.memory_required
+            )
             base_station_payload_request.gpu_required += payload_request.gpu_required
-            base_station_payload_request.battery_required += payload_request.battery_required
-            base_station_payload_request.storage_required += payload_request.storage_required
+            base_station_payload_request.battery_required += (
+                payload_request.battery_required
+            )
+            base_station_payload_request.storage_required += (
+                payload_request.storage_required
+            )
 
             # Collect the uplink and downlink data
             base_station_payload_request.uplink_data.append(payload_request.uplink_data)

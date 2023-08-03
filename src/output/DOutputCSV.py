@@ -12,15 +12,21 @@ class OutputCSV(OutputBase):
         """
         super().__init__(params)
 
-        time_now = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
+        time_now = datetime.datetime.fromtimestamp(time.time()).strftime(
+            "%Y-%m-%d_%H-%M-%S"
+        )
 
         self.nodes_file = join(self.output_dir, "nodes_output.csv")
         if exists(self.nodes_file):
-            self.nodes_file = join(self.output_dir, "nodes_output_{}.csv".format(time_now))
+            self.nodes_file = join(
+                self.output_dir, "nodes_output_{}.csv".format(time_now)
+            )
 
         self.agents_file = join(self.output_dir, "agents_output.csv")
         if exists(self.agents_file):
-            self.agents_file = join(self.output_dir, "agents_output_{}.csv".format(time_now))
+            self.agents_file = join(
+                self.output_dir, "agents_output_{}.csv".format(time_now)
+            )
 
         self._write_headers_to_csv()
 
@@ -28,10 +34,10 @@ class OutputCSV(OutputBase):
         """
         Write the headers to the output CSV files.
         """
-        with open(self.nodes_file, 'w') as f:
+        with open(self.nodes_file, "w") as f:
             f.write("time,node_id,data_collected\n")
 
-        with open(self.agents_file, 'w') as f:
+        with open(self.agents_file, "w") as f:
             f.write("time,agent_id,data_collected\n")
 
     def _write_data(self, agents: dict, nodes: dict):
@@ -57,7 +63,7 @@ class OutputCSV(OutputBase):
         nodes : dict[dict[list]]
             Dictionary of nodes in the simulation.
         """
-        with open(self.nodes_file, 'a') as f:
+        with open(self.nodes_file, "a") as f:
             for ts, node_data_ts in nodes.items():
                 for node_id, data_collected in node_data_ts.items():
                     f.write("{},{},{}\n".format(ts, node_id, data_collected))
@@ -71,7 +77,7 @@ class OutputCSV(OutputBase):
         agents : dict
             Dictionary of agents in the simulation.
         """
-        with open(self.agents_file, 'a') as f:
+        with open(self.agents_file, "a") as f:
             for ts, agent_data_ts in agents.items():
                 for agent_id, data_collected in agent_data_ts.items():
                     f.write("{},{},{}\n".format(ts, agent_id, data_collected))

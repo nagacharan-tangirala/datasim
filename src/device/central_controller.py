@@ -15,13 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 class CentralController(Agent):
-    def __init__(self,
-                 controller_id: int,
-                 controller_position: ndarray[float],
-                 computing_hardware: ComputingHardware,
-                 wireless_hardware: NetworkHardware,
-                 activation_settings: ActivationSettings,
-                 controller_models: dict):
+    def __init__(
+        self,
+        controller_id: int,
+        controller_position: ndarray[float],
+        computing_hardware: ComputingHardware,
+        wireless_hardware: NetworkHardware,
+        activation_settings: ActivationSettings,
+        controller_models: dict,
+    ):
         """
         Initialize the central controller.
 
@@ -59,32 +61,32 @@ class CentralController(Agent):
 
     @property
     def location(self) -> list[float, float]:
-        """ Get the location of the base station. """
+        """Get the location of the base station."""
         return self._location
 
     @property
     def start_time(self) -> int:
-        """ Get the start time. """
+        """Get the start time."""
         return self._activation_settings.start_time
 
     @property
     def end_time(self) -> int:
-        """ Get the end time. """
+        """Get the end time."""
         return self._activation_settings.end_time
 
     @property
     def received_data(self) -> dict[int, BaseStationPayload]:
-        """ Get the received data. """
+        """Get the received data."""
         return self._received_data
 
     @received_data.setter
     def received_data(self, data: dict[int, BaseStationPayload]) -> None:
-        """ Set the received data. """
+        """Set the received data."""
         self._received_data = data
 
     @property
     def downlink_response(self) -> dict[int, BaseStationResponse]:
-        """ Get the downlink response. """
+        """Get the downlink response."""
         return self._downlink_response
 
     def activate_controller(self, time_step: int) -> None:
@@ -104,11 +106,17 @@ class CentralController(Agent):
         Create the models for the base station.
         """
         model_factory = ModelFactory()
-        self._mobility_model = model_factory.create_mobility_model(controller_models[C_MOBILITY_MODEL])
-        self._controller_data_processor = model_factory.create_controller_data_processor(
-            controller_models[C_DATA_PROCESSOR])
-        self._controller_app_runner = model_factory.create_controller_app_runner(self.unique_id,
-                                                                                 self._computing_hardware)
+        self._mobility_model = model_factory.create_mobility_model(
+            controller_models[C_MOBILITY_MODEL]
+        )
+        self._controller_data_processor = (
+            model_factory.create_controller_data_processor(
+                controller_models[C_DATA_PROCESSOR]
+            )
+        )
+        self._controller_app_runner = model_factory.create_controller_app_runner(
+            self.unique_id, self._computing_hardware
+        )
 
     def use_network_for_uplink(self) -> None:
         """
@@ -128,7 +136,9 @@ class CentralController(Agent):
         """
         Step through the central controller for the uplink stage.
         """
-        logger.debug(f"Uplink stage for controller {self.unique_id} at time {self.sim_model.current_time}.")
+        logger.debug(
+            f"Uplink stage for controller {self.unique_id} at time {self.sim_model.current_time}."
+        )
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
@@ -140,17 +150,24 @@ class CentralController(Agent):
         # Capture the results based on the base station data.
         self._controller_app_runner.process_incoming_data(self._received_data)
 
-        logger.debug(f" Time: {self.sim_model.current_time} - " +
-                     f"Vehicles: {self._controller_app_runner.vehicle_count} - " +
-                     f"Data: {self._controller_app_runner.data_count}.")
+        logger.debug(
+            f" Time: {self.sim_model.current_time} - "
+            + f"Vehicles: {self._controller_app_runner.vehicle_count} - "
+            + f"Data: {self._controller_app_runner.data_count}."
+        )
 
         # Create base station response.
-        self._downlink_response = self._controller_app_runner.generate_basestation_response(self.sim_model.current_time,
-                                                                                            self._received_data)
+        self._downlink_response = (
+            self._controller_app_runner.generate_basestation_response(
+                self.sim_model.current_time, self._received_data
+            )
+        )
 
     def downlink_stage(self) -> None:
         """
         Step through the central controller for the downlink stage.
         """
-        logger.debug(f"Downlink stage for controller {self.unique_id} at time {self.sim_model.current_time}.")
+        logger.debug(
+            f"Downlink stage for controller {self.unique_id} at time {self.sim_model.current_time}."
+        )
         pass

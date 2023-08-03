@@ -5,12 +5,12 @@ class NetworkHardware:
 
     @property
     def capacity(self) -> float:
-        """ Get the capacity. """
+        """Get the capacity."""
         return self._capacity
 
     @property
     def max_connections(self) -> int:
-        """ Get the max connections. """
+        """Get the max connections."""
         return self._max_connections
 
     def consume_capacity(self, data_size: float) -> None:

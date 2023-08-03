@@ -11,10 +11,12 @@ class TypeStage:
 
 
 class OrderedMultiStageScheduler(BaseScheduler):
-    def __init__(self,
-                 model: Model,
-                 type_stage_list: list[TypeStage] | None = None,
-                 shuffle: bool = False) -> None:
+    def __init__(
+        self,
+        model: Model,
+        type_stage_list: list[TypeStage] | None = None,
+        shuffle: bool = False,
+    ) -> None:
         """
         Create an ordered multi-stage scheduler.
 
@@ -29,7 +31,9 @@ class OrderedMultiStageScheduler(BaseScheduler):
             the stages and the types.
         """
         super().__init__(model)
-        self.types_with_stages: list[TypeStage] = type_stage_list if type_stage_list else []
+        self.types_with_stages: list[TypeStage] = (
+            type_stage_list if type_stage_list else []
+        )
         self.shuffle = shuffle
         self.stage_time = 1 / len(self.types_with_stages)
         self.agents_by_type: dict[type[Agent], dict[int, Agent]] = {}

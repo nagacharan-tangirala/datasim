@@ -24,17 +24,17 @@ class ComputingHardware:
 
     @property
     def cpu_load(self) -> float:
-        """ Get the cpu load. """
+        """Get the cpu load."""
         return self._cpu_load
 
     @property
     def gpu_load(self) -> float:
-        """ Get the gpu load. """
+        """Get the gpu load."""
         return self._gpu_load
 
     @property
     def memory_load(self) -> float:
-        """ Get the memory load. """
+        """Get the memory load."""
         return self._memory_load
 
     def update_consumption(self, payload_request: VehiclePayload) -> None:
@@ -60,8 +60,10 @@ class ComputingHardware:
         """
         Check if the new load is feasible to run.
         """
-        return self._cpu_load + payload_request.cpu_required <= self._cpu and \
-            self._gpu_load + payload_request.gpu_required <= self._gpu and \
-            self._memory_load + payload_request.memory_required <= self._memory and \
-            self._battery - payload_request.battery_required >= 0.0 and \
-            self._storage_load + payload_request.storage_required <= self._storage
+        return (
+            self._cpu_load + payload_request.cpu_required <= self._cpu
+            and self._gpu_load + payload_request.gpu_required <= self._gpu
+            and self._memory_load + payload_request.memory_required <= self._memory
+            and self._battery - payload_request.battery_required >= 0.0
+            and self._storage_load + payload_request.storage_required <= self._storage
+        )

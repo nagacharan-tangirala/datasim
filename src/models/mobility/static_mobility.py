@@ -12,7 +12,7 @@ class StaticMobilityModel(Agent):
             DataFrame of positions.
         """
         super().__init__(0, None)
-        self._type = 'static'
+        self._type = "static"
         self._current_location = position
 
     @property

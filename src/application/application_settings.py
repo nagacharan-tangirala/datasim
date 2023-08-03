@@ -17,39 +17,39 @@ class ApplicationSettings:
 
     @property
     def type(self) -> str:
-        """ Get the type. """
+        """Get the type."""
         return self._type
 
     @property
     def cpu_required(self) -> float:
-        """ Get the cpu usage. """
+        """Get the cpu usage."""
         return self._cpu_required
 
     @property
     def memory_required(self) -> float:
-        """ Get the memory usage. """
+        """Get the memory usage."""
         return self._memory_required
 
     @property
     def gpu_required(self) -> float:
-        """ Get the gpu usage. """
+        """Get the gpu usage."""
         return self._gpu_required
 
     @property
     def battery_required(self) -> float:
-        """ Get the battery usage. """
+        """Get the battery usage."""
         return self._battery_required
 
     @property
     def storage_required(self) -> float:
-        """ Get the storage usage. """
+        """Get the storage usage."""
         return self._storage_required
 
     @property
     def uplink_data(self) -> float:
-        """ Get the uplink data. """
+        """Get the uplink data."""
         return self._uplink_required
 
     def is_active(self, current_time) -> bool:
-        """ Get the active status. """
+        """Get the active status."""
         return True

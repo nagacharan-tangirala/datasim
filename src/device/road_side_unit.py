@@ -5,10 +5,12 @@ from src.device.network_hardware import NetworkHardware
 
 
 class RoadSideUnit(Agent):
-    def __init__(self,
-                 rsu_id: int,
-                 hardware_settings: ComputingHardware,
-                 network_settings: NetworkHardware):
+    def __init__(
+        self,
+        rsu_id: int,
+        hardware_settings: ComputingHardware,
+        network_settings: NetworkHardware,
+    ):
         """
         Initialize the rsu.
         """

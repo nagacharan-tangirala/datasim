@@ -12,9 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class CloudOrchestrator(Agent):
-    def __init__(self,
-                 controller_links_df: DataFrame,
-                 model_data: dict):
+    def __init__(self, controller_links_df: DataFrame, model_data: dict):
         """
         Initialize the cloud orchestrator.
 
@@ -38,10 +36,14 @@ class CloudOrchestrator(Agent):
         self.uplink_basestations_data: dict[int, dict[int, BaseStationPayload]] = {}
 
         # Downlink response created at the controllers
-        self.downlink_response_at_controllers: dict[int, dict[int, BaseStationResponse]] = {}
+        self.downlink_response_at_controllers: dict[
+            int, dict[int, BaseStationResponse]
+        ] = {}
 
         # Prepare the dict with second column as the key and the third column as the value
-        self._base_station_controller_dict = {row[1]: row[2] for row in self._controller_links_df.values}
+        self._base_station_controller_dict = {
+            row[1]: row[2] for row in self._controller_links_df.values
+        }
 
         self.sim_model = None
         self._create_models(model_data)
@@ -135,7 +137,9 @@ class CloudOrchestrator(Agent):
 
             if controller_id not in self.uplink_basestations_data:
                 self.uplink_basestations_data[controller_id] = {}
-            self.uplink_basestations_data[controller_id][base_station_id] = base_station_data
+            self.uplink_basestations_data[controller_id][
+                base_station_id
+            ] = base_station_data
 
     def _send_data_to_controllers(self) -> None:
         """
@@ -165,7 +169,9 @@ class CloudOrchestrator(Agent):
         logger.debug(f"Collecting data from controllers.")
         self.downlink_response_at_controllers.clear()
         for controller_id, controller in self._controllers.items():
-            self.downlink_response_at_controllers[controller_id] = controller.downlink_response
+            self.downlink_response_at_controllers[
+                controller_id
+            ] = controller.downlink_response
             # Controller has to consume the wired bandwidth
             controller.use_network_for_downlink()
 
@@ -174,7 +180,10 @@ class CloudOrchestrator(Agent):
         Send data to base stations.
         """
         logger.debug(f"Sending data to base stations.")
-        for controller_id, controller_data in self.downlink_response_at_controllers.items():
+        for (
+            controller_id,
+            controller_data,
+        ) in self.downlink_response_at_controllers.items():
             for station_id, station_data in controller_data.items():
                 self._base_stations[station_id].downlink_response = station_data
                 # Consume the network bandwidth in the base station.

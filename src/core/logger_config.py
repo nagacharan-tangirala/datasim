@@ -22,8 +22,8 @@ class LoggerConfig:
         if self._log_file:
             # self._log_file = self._log_file.replace('.log', '_%s.log' % datetime.now().strftime('%Y%m%d_%H%M%S'))
             # Clear the contents.
-            with open(self._log_file, 'w') as f:
-                f.write('')
+            with open(self._log_file, "w") as f:
+                f.write("")
 
         simple_config = {
             "version": 1,
@@ -33,15 +33,13 @@ class LoggerConfig:
                     "format": "%(asctime)s - %(name)20s - %(levelname)6s - %(message)s"
                 },
             },
-
             "handlers": {
                 "stderr": {
                     "class": "logging.StreamHandler",
                     "level": "ERROR",
                     "formatter": "simple",
-                    "stream": "ext://sys.stderr"
+                    "stream": "ext://sys.stderr",
                 },
-
                 "local_file_handler": {
                     "class": "logging.handlers.RotatingFileHandler",
                     "level": self._log_level,
@@ -49,11 +47,7 @@ class LoggerConfig:
                     "filename": self._log_file,
                 },
             },
-
-            "root": {
-                "level": self._log_level,
-                "handlers": ["local_file_handler"]
-            }
+            "root": {"level": self._log_level, "handlers": ["local_file_handler"]},
         }
 
         logging.config.dictConfig(simple_config)

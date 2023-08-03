@@ -1,5 +1,5 @@
 class NoBaseStationsInSimulationError(Exception):
-    """ There are no base stations in the simulation. """
+    """There are no base stations in the simulation."""
 
     def __init__(self, message: str = ""):
         super().__init__(message)
@@ -9,7 +9,7 @@ class NoBaseStationsInSimulationError(Exception):
 
 
 class UnsupportedInputFormatError(Exception):
-    """ The input file is not supported. """
+    """The input file is not supported."""
 
     def __init__(self, file_name: str, message: str = ""):
         super().__init__(message)
@@ -20,7 +20,7 @@ class UnsupportedInputFormatError(Exception):
 
 
 class WrongActivationTimeError(Exception):
-    """ The activation time is wrong. """
+    """The activation time is wrong."""
 
     def __init__(self, activation_time: int, start_time: int, message: str = ""):
         super().__init__(message)
@@ -32,7 +32,7 @@ class WrongActivationTimeError(Exception):
 
 
 class WrongDeactivationTimeError(Exception):
-    """ The deactivation time is wrong. """
+    """The deactivation time is wrong."""
 
     def __init__(self, deactivation_time: int, end_time: int, message: str = ""):
         super().__init__(message)
@@ -44,7 +44,7 @@ class WrongDeactivationTimeError(Exception):
 
 
 class DuplicateDeviceFoundError(Exception):
-    """ The UE is duplicated in the input file. """
+    """The UE is duplicated in the input file."""
 
     def __init__(self, device_id: int, device_type: str, message: str = ""):
         super().__init__(message)
@@ -56,7 +56,7 @@ class DuplicateDeviceFoundError(Exception):
 
 
 class ModelTypeNotImplementedError(Exception):
-    """ The model type is not implemented. """
+    """The model type is not implemented."""
 
     def __init__(self, model_name, model_type: str, message: str = ""):
         super().__init__(message)

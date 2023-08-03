@@ -14,10 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class EdgeOrchestrator(Agent):
-    def __init__(self,
-                 vehicle_links_df: DataFrame,
-                 base_station_links_df: DataFrame,
-                 model_data: dict):
+    def __init__(
+        self,
+        vehicle_links_df: DataFrame,
+        base_station_links_df: DataFrame,
+        model_data: dict,
+    ):
         """
         Initialize the edge orchestrator.
 
@@ -47,7 +49,9 @@ class EdgeOrchestrator(Agent):
         self.uplink_vehicle_data: dict[int, dict[int, VehiclePayload]] = {}
 
         # Downlink data arrived at the base stations from the controllers
-        self.downlink_response_at_basestations: dict[int, dict[int, VehicleResponse]] = {}
+        self.downlink_response_at_basestations: dict[
+            int, dict[int, VehicleResponse]
+        ] = {}
 
         self.sim_model = None
 
@@ -107,9 +111,11 @@ class EdgeOrchestrator(Agent):
         Create the models
         """
         model_factory = ModelFactory()
-        self._base_station_finder = model_factory.create_basestation_finder(self._base_stations,
-                                                                            self._base_station_links,
-                                                                            model_data[C_BASE_STATION_FINDER])
+        self._base_station_finder = model_factory.create_basestation_finder(
+            self._base_stations,
+            self._base_station_links,
+            model_data[C_BASE_STATION_FINDER],
+        )
 
     def uplink_stage(self) -> None:
         """
@@ -151,15 +157,21 @@ class EdgeOrchestrator(Agent):
         self.uplink_vehicle_data.clear()
         for vehicle_id, vehicle_data in self.data_at_vehicles.items():
             # Find the base station for the vehicle
-            base_station_ids = self._base_station_finder.select_n_base_stations_for_vehicle(vehicle_id, 1)
+            base_station_ids = (
+                self._base_station_finder.select_n_base_stations_for_vehicle(
+                    vehicle_id, 1
+                )
+            )
             base_station_id = base_station_ids[0]
 
             if base_station_id not in self.uplink_vehicle_data:
                 self.uplink_vehicle_data[base_station_id] = {}
             self.uplink_vehicle_data[base_station_id][vehicle_id] = vehicle_data
 
-            logger.debug(f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time " +
-                         f"{self.sim_model.current_time}")
+            logger.debug(
+                f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time "
+                + f"{self.sim_model.current_time}"
+            )
 
     def _send_data_to_basestations(self) -> None:
         """
@@ -189,7 +201,9 @@ class EdgeOrchestrator(Agent):
         logger.debug(f"Collecting data from base stations")
         self.downlink_response_at_basestations.clear()
         for base_station_id, base_station in self._base_stations.items():
-            self.downlink_response_at_basestations[base_station_id] = base_station.downlink_vehicle_data
+            self.downlink_response_at_basestations[
+                base_station_id
+            ] = base_station.downlink_vehicle_data
             # Consume the wireless network bandwidth in the base station.
             base_station.use_wireless_for_downlink()
 
@@ -198,7 +212,10 @@ class EdgeOrchestrator(Agent):
         Send data to the vehicles.
         """
         logger.debug(f"Sending data to vehicles")
-        for base_station_id, base_station_data in self.downlink_response_at_basestations.items():
+        for (
+            base_station_id,
+            base_station_data,
+        ) in self.downlink_response_at_basestations.items():
             for vehicle_id, veh_data in base_station_data.items():
                 if vehicle_id not in self._vehicles:
                     logger.error(f"Vehicle {vehicle_id} not found in the network.")

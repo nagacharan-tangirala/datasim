@@ -10,7 +10,7 @@ class TraceMobilityModel(Agent):
         Initialize the trace mobility model.
         """
         super().__init__(0, None)
-        self._type: str = 'trace'
+        self._type: str = "trace"
 
         self._current_time: int = 0
         self._current_location: list[float] = []
@@ -53,8 +53,11 @@ class TraceMobilityModel(Agent):
         """
         # Check if the current time is in the positions dataframe
         if self._current_time in self._positions[CC_TIME_STEP].values:
-            self._current_location = self._positions[self._positions[CC_TIME_STEP] == self._current_time].iloc[
-                                         0].values[2:]
+            self._current_location = (
+                self._positions[self._positions[CC_TIME_STEP] == self._current_time]
+                .iloc[0]
+                .values[2:]
+            )
         else:
             # If not, then the vehicle is not moving
             self._current_location = self._current_location

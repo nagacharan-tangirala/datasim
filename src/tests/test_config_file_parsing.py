@@ -8,7 +8,7 @@ from src.setup.SSimulationSetup import SimulationSetup
 
 # Get the arguments
 arg_parser = argparse.ArgumentParser()
-arg_parser.add_argument('--config', type=str, required=True)
+arg_parser.add_argument("--config", type=str, required=True)
 args = arg_parser.parse_args()
 
 # Create simulation setup object.
@@ -17,4 +17,4 @@ simulation_setup = SimulationSetup(args.config)
 # Test 1 - Read the config file.
 simulation_setup.read_input_file()
 
-print('Test passed - Able to read the simulation input data.')
+print("Test passed - Able to read the simulation input data.")

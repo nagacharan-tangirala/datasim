@@ -3,9 +3,17 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
-from src.application.payload import VehiclePayload, BaseStationPayload, BaseStationResponse, VehicleResponse
+from src.application.payload import (
+    VehiclePayload,
+    BaseStationPayload,
+    BaseStationResponse,
+    VehicleResponse,
+)
 from src.core.constants import C_MOBILITY_MODEL, C_POSITION, C_DATA_PROCESSOR
-from src.core.custom_exceptions import WrongActivationTimeError, WrongDeactivationTimeError
+from src.core.custom_exceptions import (
+    WrongActivationTimeError,
+    WrongDeactivationTimeError,
+)
 from src.device.activation_settings import ActivationSettings
 from src.device.computing_hardware import ComputingHardware
 from src.device.network_hardware import NetworkHardware
@@ -15,14 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 class BaseStation(Agent):
-    def __init__(self,
-                 base_station_id,
-                 base_station_position: ndarray[float],
-                 computing_hardware: ComputingHardware,
-                 wireless_hardware: NetworkHardware,
-                 wired_hardware: NetworkHardware,
-                 activation_settings: ActivationSettings,
-                 base_station_models_data: dict):
+    def __init__(
+        self,
+        base_station_id,
+        base_station_position: ndarray[float],
+        computing_hardware: ComputingHardware,
+        wireless_hardware: NetworkHardware,
+        wired_hardware: NetworkHardware,
+        activation_settings: ActivationSettings,
+        base_station_models_data: dict,
+    ):
         """
         Initialize the base station.
 
@@ -73,37 +83,37 @@ class BaseStation(Agent):
 
     @property
     def location(self) -> ndarray[float]:
-        """ Get the location of the base station. """
+        """Get the location of the base station."""
         return self._location
 
     @property
     def start_time(self) -> int:
-        """ Get the start time. """
+        """Get the start time."""
         return self._activation_settings.start_time
 
     @property
     def end_time(self) -> int:
-        """ Get the end time. """
+        """Get the end time."""
         return self._activation_settings.end_time
 
     @property
     def uplink_payload(self) -> BaseStationPayload:
-        """ Get the uplink payload. """
+        """Get the uplink payload."""
         return self._uplink_payload
 
     @property
     def downlink_response(self) -> BaseStationResponse:
-        """ Get the downlink response. """
+        """Get the downlink response."""
         return self._downlink_response
 
     @downlink_response.setter
     def downlink_response(self, response: BaseStationResponse) -> None:
-        """ Set the downlink response. """
+        """Set the downlink response."""
         self._downlink_response = response
 
     @property
     def downlink_vehicle_data(self) -> dict[int, VehicleResponse]:
-        """ Get the downlink vehicle data. """
+        """Get the downlink vehicle data."""
         return self._downlink_vehicle_data
 
     def activate_base_station(self, time_step: int) -> None:
@@ -111,33 +121,45 @@ class BaseStation(Agent):
         Activate the base station.
         """
         if self._activation_settings.start_time != time_step:
-            raise WrongActivationTimeError(self._activation_settings.start_time, time_step)
+            raise WrongActivationTimeError(
+                self._activation_settings.start_time, time_step
+            )
 
     def deactivate_base_station(self, time_step: int) -> None:
         """
         Deactivate the base station.
         """
         if self._activation_settings.end_time != time_step:
-            raise WrongDeactivationTimeError(self._activation_settings.end_time, time_step)
+            raise WrongDeactivationTimeError(
+                self._activation_settings.end_time, time_step
+            )
 
     def set_uplink_vehicle_data(self, incoming_data: dict[int, VehiclePayload]) -> None:
         """
         Set the incoming data for the base station.
         """
         self._uplink_vehicle_data = incoming_data
-        logger.debug(f"Vehicles at base station {self.unique_id} are "
-                     f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.sim_model.current_time}.")
+        logger.debug(
+            f"Vehicles at base station {self.unique_id} are "
+            f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.sim_model.current_time}."
+        )
 
     def _create_models(self, base_station_models_data: dict) -> None:
         """
         Create the models for the base station.
         """
         model_factory = ModelFactory()
-        self._mobility_model = model_factory.create_mobility_model(base_station_models_data[C_MOBILITY_MODEL])
-        self._base_station_data_processor = model_factory.create_base_station_data_processor(
-            base_station_models_data[C_DATA_PROCESSOR])
-        self.base_station_app_runner = model_factory.create_basestation_app_runner(self.unique_id,
-                                                                                   self._computing_hardware)
+        self._mobility_model = model_factory.create_mobility_model(
+            base_station_models_data[C_MOBILITY_MODEL]
+        )
+        self._base_station_data_processor = (
+            model_factory.create_base_station_data_processor(
+                base_station_models_data[C_DATA_PROCESSOR]
+            )
+        )
+        self.base_station_app_runner = model_factory.create_basestation_app_runner(
+            self.unique_id, self._computing_hardware
+        )
 
     def use_wired_for_uplink(self) -> None:
         """
@@ -149,7 +171,9 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the downlink direction.
         """
-        self._wired_hardware.consume_capacity(sum(self._downlink_response.downlink_data))
+        self._wired_hardware.consume_capacity(
+            sum(self._downlink_response.downlink_data)
+        )
 
     def use_wireless_for_uplink(self) -> None:
         """
@@ -161,25 +185,38 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the downlink direction.
         """
-        self._wireless_hardware.consume_capacity(sum(self._downlink_response.downlink_data))
+        self._wireless_hardware.consume_capacity(
+            sum(self._downlink_response.downlink_data)
+        )
 
     def uplink_stage(self) -> None:
         """
         Uplink stage of the base station. Create data to be sent to the central controller.
         This is the third step in the overall simulation.
         """
-        logger.debug(f"Uplink stage for base station {self.unique_id} at time {self.sim_model.current_time}.")
+        logger.debug(
+            f"Uplink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
+        )
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
         # Create base station payload if the base station has received data from the vehicles.
-        self._uplink_payload = self.base_station_app_runner.generate_basestation_payload(self.sim_model.current_time,
-                                                                                         self._uplink_vehicle_data)
+        self._uplink_payload = (
+            self.base_station_app_runner.generate_basestation_payload(
+                self.sim_model.current_time, self._uplink_vehicle_data
+            )
+        )
 
         # Use the data processor to process the data.
-        self._uplink_payload = self._base_station_data_processor.simplify_base_station_data(self._uplink_payload)
-        logger.debug(f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}.")
+        self._uplink_payload = (
+            self._base_station_data_processor.simplify_base_station_data(
+                self._uplink_payload
+            )
+        )
+        logger.debug(
+            f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}."
+        )
 
     def downlink_stage(self) -> None:
         """
@@ -188,7 +225,9 @@ class BaseStation(Agent):
         # Clear the uplink vehicle data as the transfer is complete.
         self._uplink_vehicle_data.clear()
 
-        logger.debug(f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}.")
+        logger.debug(
+            f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
+        )
         # Use the base station app runner to process the data.
         self.base_station_app_runner.process_result(self._downlink_response)
 
@@ -200,12 +239,16 @@ class BaseStation(Agent):
                 continue
 
             # Create the downlink vehicle response.
-            self._downlink_vehicle_data[vehicle_id] = VehicleResponse(destination=vehicle_id,
-                                                                      status=True,
-                                                                      timestamp=self.sim_model.current_time,
-                                                                      downlink_data=
-                                                                      self._downlink_response.downlink_data[
-                                                                          vehicle_index_in_data])
+            self._downlink_vehicle_data[vehicle_id] = VehicleResponse(
+                destination=vehicle_id,
+                status=True,
+                timestamp=self.sim_model.current_time,
+                downlink_data=self._downlink_response.downlink_data[
+                    vehicle_index_in_data
+                ],
+            )
 
-            logger.debug(f"Downlink response for vehicle {vehicle_id} is {self._downlink_vehicle_data[vehicle_id]}.")
+            logger.debug(
+                f"Downlink response for vehicle {vehicle_id} is {self._downlink_vehicle_data[vehicle_id]}."
+            )
             vehicle_index_in_data += 1

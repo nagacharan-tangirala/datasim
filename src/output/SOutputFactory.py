@@ -28,6 +28,6 @@ class OutputFactory:
         if output_type == "csv":
             return OutputCSV(params)
         # elif output_type == "sql":
-            # return OutputSQL(params)
+        # return OutputSQL(params)
         else:
             return None

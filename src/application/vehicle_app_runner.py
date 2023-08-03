@@ -8,9 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class VehicleAppRunner:
-    def __init__(self, device_id: int,
-                 application_settings: list[ApplicationSettings],
-                 hardware_settings: ComputingHardware):
+    def __init__(
+        self,
+        device_id: int,
+        application_settings: list[ApplicationSettings],
+        hardware_settings: ComputingHardware,
+    ):
         """
         Initialize the vehicle application runner model.
         """
@@ -20,14 +23,16 @@ class VehicleAppRunner:
 
     @property
     def device_id(self) -> int:
-        """ Get the device id. """
+        """Get the device id."""
         return self._device_id
 
     def generate_vehicle_payload(self, current_time: int) -> VehiclePayload:
         """
         Generate data request by running the applications.
         """
-        logger.debug(f"Generating vehicle payload for device {self._device_id} at time {current_time}")
+        logger.debug(
+            f"Generating vehicle payload for device {self._device_id} at time {current_time}"
+        )
         # Collect the hardware requirements for the applications
         payload_request: VehiclePayload = VehiclePayload()
         payload_request.timestamp = current_time
@@ -53,4 +58,6 @@ class VehicleAppRunner:
         """
         # Applications are not interested in the response. They just want to know if the data was sent or not.
         if response.status:
-            logger.debug(f"Data transfer from vehicle {self._device_id} at time {response.timestamp} was successful.")
+            logger.debug(
+                f"Data transfer from vehicle {self._device_id} at time {response.timestamp} was successful."
+            )
