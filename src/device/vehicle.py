@@ -90,7 +90,7 @@ class Vehicle(Agent):
         model_factory = ModelFactory()
 
         self._mobility_model = model_factory.create_mobility_model(
-            model_data[constants.MOBILITY_MODEL]
+            model_data[constants.MOBILITY]
         )
 
         self._data_composer = model_factory.create_vehicle_data_composer(

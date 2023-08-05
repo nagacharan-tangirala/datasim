@@ -55,9 +55,7 @@ class CentralController(Agent):
 
         self.processed_base_station_data: dict[int, BaseStationPayload] = {}
 
-        controller_models[constants.MOBILITY_MODEL][
-            constants.POSITION
-        ] = controller_position
+        controller_models[constants.MOBILITY][constants.POSITION] = controller_position
         self._create_models(controller_models)
 
     @property
@@ -108,7 +106,7 @@ class CentralController(Agent):
         """
         model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
-            controller_models[constants.MOBILITY_MODEL]
+            controller_models[constants.MOBILITY]
         )
 
         self._controller_collector = model_factory.create_controller_collector(

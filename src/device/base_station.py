@@ -75,7 +75,7 @@ class BaseStation(Agent):
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        base_station_models_data[constants.MOBILITY_MODEL][
+        base_station_models_data[constants.MOBILITY][
             constants.POSITION
         ] = base_station_position
         self._create_models(base_station_models_data)
@@ -151,7 +151,7 @@ class BaseStation(Agent):
         """
         model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
-            base_station_models_data[constants.MOBILITY_MODEL]
+            base_station_models_data[constants.MOBILITY]
         )
 
         self._data_composer = model_factory.create_base_station_data_composer(
