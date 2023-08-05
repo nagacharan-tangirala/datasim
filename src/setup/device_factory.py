@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 class DeviceFactory:
     def __init__(
         self,
-        applications_data: dict,
         vehicle_activations_data: DataFrame,
         base_station_activations_data: DataFrame,
         controller_activations_data: DataFrame,
@@ -29,17 +28,14 @@ class DeviceFactory:
         Initialize the device factory object.
         """
         # Store the activations data
-        self._vehicle_activations_data: DataFrame = vehicle_activations_data
-        self._base_station_activations_data: DataFrame = base_station_activations_data
-        self._controller_activations_data: DataFrame = controller_activations_data
+        self._veh_activations: DataFrame = vehicle_activations_data
+        self._bs_activations: DataFrame = base_station_activations_data
+        self._controller_activations: DataFrame = controller_activations_data
 
         # Create the dictionaries to store the devices in the simulation
         self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}
         self._controllers: dict[int, CentralController] = {}
-
-        self._applications: list[ApplicationSettings] = []
-        self._create_applications(applications_data)
 
     @property
     def vehicles(self) -> dict[int, Vehicle]:
@@ -69,16 +65,6 @@ class DeviceFactory:
         Create the networking hardware.
         """
         return NetworkHardware(networking_hardware)
-
-    def _create_applications(self, application_data: dict) -> None:
-        """
-        Create the applications.
-        """
-        logger.debug("Creating the applications.")
-        self._applications = [
-            ApplicationSettings(application)
-            for application in application_data.values()
-        ]
 
     def create_vehicles(
         self, vehicle_trace_data: DataFrame, vehicle_models: dict
