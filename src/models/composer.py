@@ -44,7 +44,7 @@ class VehicleDataComposer:
         data_payloads = []
         for data_source in self._data_sources:
             data_payload = DataPayload()
-            data_payload.type = data_source.type
+            data_payload.type = data_source.data_type
 
             data_payload.data_size = data_source.data_size * (
                 self._previous_time - current_time

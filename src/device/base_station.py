@@ -166,7 +166,7 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._wired_hardware.consume_capacity(sum(self._uplink_payload.uplink_data))
+        self._wired_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
 
     def use_wired_for_downlink(self) -> None:
         """
@@ -180,7 +180,7 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._wireless_hardware.consume_capacity(sum(self._uplink_payload.uplink_data))
+        self._wireless_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
 
     def use_wireless_for_downlink(self) -> None:
         """
