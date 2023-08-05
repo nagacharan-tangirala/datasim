@@ -27,12 +27,12 @@ WIRED = "wired"
 WIRELESS = "wireless"
 
 # Model data keys
-MOBILITY_MODEL = "mobility_model"
+MOBILITY = "mobility"
 DATA_SOURCE = "data_source"
 DATA_COMPOSER = "composer"
 DATA_SIMPLIFIER = "simplifier"
 
-CONTROLLER_COLLECTOR = "CONTROLLER_collector"
+CONTROLLER_COLLECTOR = "collector"
 
 POSITION = "position"
 MODEL_NAME = "name"
