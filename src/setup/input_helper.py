@@ -8,8 +8,7 @@ import src.core.common_constants as cc
 import src.core.constants as constants
 from src.core.exceptions import *
 from src.core.logger_config import LoggerConfig
-from src.setup.csv_data_reader import CSVDataReader
-from src.setup.parquet_data_reader import ParquetDataReader
+from src.setup.file_reader import CSVDataReader, ParquetDataReader
 
 logger = logging.getLogger(__name__)
 

@@ -8,10 +8,9 @@ from src.core.exceptions import UnsupportedInputFormatError
 from src.device.sim_model import SimModel
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
-from src.setup.csv_data_reader import CSVDataReader
 from src.setup.device_factory import DeviceFactory
+from src.setup.file_reader import ParquetDataReader, CSVDataReader
 from src.setup.input_helper import SimulationInputHelper
-from src.setup.parquet_data_reader import ParquetDataReader
 
 logger = logging.getLogger(__name__)
 
