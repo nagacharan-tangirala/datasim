@@ -4,7 +4,7 @@ from typing import Any
 from pandas import DataFrame, concat
 from pyarrow.parquet import ParquetFile
 
-from src.core.common_constants import CC_PARQUET, CC_TIME_STEP
+from src.core.common_constants import PARQUET, TIME_STEP
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class ParquetDataReader:
         self._total_row_groups: int = self._input_file_reader.num_row_groups
 
         self._row_group_idx: int = 0
-        self._type = CC_PARQUET
+        self._type = PARQUET
 
     @property
     def input_file(self) -> str:
@@ -58,7 +58,7 @@ class ParquetDataReader:
 
             # Set the column dtypes and get the maximum timestamp in the current chunk.
             temp_data_df = temp_data_df.astype(self._column_dtypes)
-            max_timestamp = temp_data_df[CC_TIME_STEP].max()
+            max_timestamp = temp_data_df[TIME_STEP].max()
 
             logger.debug(f"Maximum timestamp in the streamed data is {max_timestamp}.")
 
@@ -69,7 +69,7 @@ class ParquetDataReader:
                 self._row_group_idx += 1
             else:
                 # Add the data until the timestamp to the dataframe. Do not increment the row group index.
-                temp_data_df = temp_data_df[temp_data_df[CC_TIME_STEP] < timestamp]
+                temp_data_df = temp_data_df[temp_data_df[TIME_STEP] < timestamp]
                 data_df = concat([data_df, temp_data_df], ignore_index=True)
                 break
 

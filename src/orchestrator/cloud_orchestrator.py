@@ -3,9 +3,9 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.application.payload import BaseStationPayload, BaseStationResponse
 from src.device.base_station import BaseStation
-from src.device.central_controller import CentralController
+from src.device.controller import CentralController
+from src.device.payload import BaseStationPayload, BaseStationResponse
 from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)

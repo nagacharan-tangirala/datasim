@@ -2,16 +2,16 @@ import logging
 
 from pandas import DataFrame
 
-from src.core.common_constants import *
-from src.core.constants import *
-from src.core.custom_exceptions import UnsupportedInputFormatError
-from src.device.device_model import DeviceModel
+import src.core.common_constants as cc
+import src.core.constants as constants
+from src.core.exceptions import UnsupportedInputFormatError
+from src.device.sim_model import SimModel
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
 from src.setup.csv_data_reader import CSVDataReader
 from src.setup.device_factory import DeviceFactory
+from src.setup.input_helper import SimulationInputHelper
 from src.setup.parquet_data_reader import ParquetDataReader
-from src.setup.simulation_helper import SimulationHelper
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class Simulation:
         self._controllers: dict = {}
 
         # Create objects to store device models
-        self._device_model: DeviceModel | None = None
+        self._simulation_model: SimModel | None = None
 
         # Create objects to store channel models
         self.edge_orchestrator: EdgeOrchestrator | None = None
@@ -43,7 +43,7 @@ class Simulation:
         self.current_time: int = -1
         self.output_dir: str = ""
         self.data_stream_interval: int = -1
-        self.simulation_helper: SimulationHelper | None = None
+        self.simulation_helper: SimulationInputHelper | None = None
 
         # Store the activation data
         self._vehicle_activations_data: DataFrame = DataFrame()
@@ -73,7 +73,7 @@ class Simulation:
         self._create_orchestrators()
 
         logger.info("Creating device model.")
-        self._create_device_model()
+        self._create_simulation_model()
 
         logger.info("Initializing simulation.")
 
@@ -82,7 +82,7 @@ class Simulation:
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        self.simulation_helper = SimulationHelper(self.config_file)
+        self.simulation_helper = SimulationInputHelper(self.config_file)
         self.simulation_helper.read_config_file()
 
     def _perform_initial_setup(self) -> None:
@@ -111,11 +111,13 @@ class Simulation:
         # Get the simulation parameters
         simulation_data = self.simulation_helper.simulation_data
 
-        self.start_time: int = simulation_data[C_SIMULATION_START_TIME]
-        self.end_time: int = simulation_data[C_SIMULATION_END_TIME]
-        self.time_step: int = simulation_data[C_SIMULATION_TIME_STEP]
-        self.output_dir: str = simulation_data[C_OUTPUT_LOCATION]
-        self.data_stream_interval: int = simulation_data[C_DATA_STREAMING_INTERVAL]
+        self.start_time: int = simulation_data[constants.SIMULATION_START_TIME]
+        self.end_time: int = simulation_data[constants.SIMULATION_END_TIME]
+        self.time_step: int = simulation_data[constants.SIMULATION_TIME_STEP]
+        self.output_dir: str = simulation_data[constants.OUTPUT_LOCATION]
+        self.data_stream_interval: int = simulation_data[
+            constants.DATA_STREAMING_INTERVAL
+        ]
 
         self.current_time: int = self.start_time
 
@@ -132,13 +134,13 @@ class Simulation:
         Read the activation input data.
         """
         self._vehicle_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_VEHICLE_ACTIVATIONS_FILE]
+            self.simulation_helper.file_readers[cc.VEHICLE_ACTIVATIONS_FILE]
         )
         self._base_station_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_BASE_STATION_ACTIVATIONS_FILE]
+            self.simulation_helper.file_readers[cc.BASE_STATION_ACTIVATIONS_FILE]
         )
         self._controller_activations_data = self._read_file(
-            self.simulation_helper.file_readers[CC_CONTROLLER_ACTIVATIONS_FILE]
+            self.simulation_helper.file_readers[cc.CONTROLLER_ACTIVATIONS_FILE]
         )
 
     def _read_file(
@@ -160,10 +162,10 @@ class Simulation:
         if data_reader is None:
             return DataFrame()
 
-        if data_reader.type == CC_CSV:
+        if data_reader.type == cc.CSV:
             logger.debug(f"Reading the entire data from {data_reader.input_file} file.")
             return data_reader.read_all_data()
-        elif data_reader.type == CC_PARQUET:
+        elif data_reader.type == cc.PARQUET:
             logger.debug(
                 f"Reading partial data from {data_reader.input_file} file until timestamp {self.data_stream_interval}."
             )
@@ -178,7 +180,6 @@ class Simulation:
         # Create the device factory object.
         logger.debug("Creating the device factory.")
         self._device_factory = DeviceFactory(
-            self.simulation_helper.application_data,
             self._vehicle_activations_data,
             self._base_station_activations_data,
             self._controller_activations_data,
@@ -212,19 +213,23 @@ class Simulation:
         self.edge_orchestrator = EdgeOrchestrator(
             self.v2v_links_data,
             self.v2b_links_data,
-            self.simulation_helper.orchestrator_models_data[C_EDGE_ORCHESTRATOR],
+            self.simulation_helper.orchestrator_models_data[
+                constants.EDGE_ORCHESTRATOR
+            ],
         )
 
         self.cloud_orchestrator = CloudOrchestrator(
             self.b2c_links_data,
-            self.simulation_helper.orchestrator_models_data[C_CLOUD_ORCHESTRATOR],
+            self.simulation_helper.orchestrator_models_data[
+                constants.CLOUD_ORCHESTRATOR
+            ],
         )
 
-    def _create_device_model(self) -> None:
+    def _create_simulation_model(self) -> None:
         """
         Create the device model.
         """
-        self._device_model = DeviceModel(
+        self._simulation_model = SimModel(
             self._vehicles,
             self._base_stations,
             self._controllers,
@@ -247,22 +252,22 @@ class Simulation:
         Read the input data for the first time.
         """
         self.vehicle_trace_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE]
+            self.simulation_helper.file_readers[cc.VEHICLE_TRACE_FILE]
         )
         self.v2v_links_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_V2V_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.V2V_LINKS_FILE]
         )
         self.base_stations_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE]
+            self.simulation_helper.file_readers[cc.BASE_STATIONS_FILE]
         )
         self.v2b_links_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_V2B_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.V2B_LINKS_FILE]
         )
         self.controller_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_CONTROLLERS_FILE]
+            self.simulation_helper.file_readers[cc.CONTROLLERS_FILE]
         )
         self.b2c_links_data = self._read_first_chunk(
-            self.simulation_helper.file_readers[CC_B2C_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.B2C_LINKS_FILE]
         )
 
     def _read_first_chunk(
@@ -282,9 +287,9 @@ class Simulation:
         DataFrame
             The input data.
         """
-        if data_reader.type == CC_CSV:
+        if data_reader.type == cc.CSV:
             return data_reader.read_all_data()
-        elif data_reader.type == CC_PARQUET:
+        elif data_reader.type == cc.PARQUET:
             return data_reader.read_data_until_timestamp(
                 self.current_time + self.data_stream_interval
             )
@@ -300,21 +305,21 @@ class Simulation:
                 self.vehicle_trace_data, self.simulation_helper.vehicle_models_data
             )
             updated_vehicles = self._device_factory.vehicles
-            self._device_model.update_vehicles(updated_vehicles)
+            self._simulation_model.update_vehicles(updated_vehicles)
 
         if not self.base_stations_data.empty:
             self._device_factory.create_new_base_stations(
                 self.base_stations_data, self.simulation_helper.base_station_models_data
             )
             updated_base_stations = self._device_factory.base_stations
-            self._device_model.update_base_stations(updated_base_stations)
+            self._simulation_model.update_base_stations(updated_base_stations)
 
         if not self.controller_data.empty:
             self._device_factory.create_new_controllers(
                 self.controller_data, self.simulation_helper.controller_models_data
             )
             updated_controllers = self._device_factory.controllers
-            self._device_model.update_controllers(updated_controllers)
+            self._simulation_model.update_controllers(updated_controllers)
 
     def _update_orchestrators_with_new_data(self) -> None:
         """
@@ -334,22 +339,22 @@ class Simulation:
         Refresh the input data until the next streaming interval.
         """
         self.vehicle_trace_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_VEHICLE_TRACE_FILE]
+            self.simulation_helper.file_readers[cc.VEHICLE_TRACE_FILE]
         )
         self.v2v_links_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_V2V_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.V2V_LINKS_FILE]
         )
         self.base_stations_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_BASE_STATIONS_FILE]
+            self.simulation_helper.file_readers[cc.BASE_STATIONS_FILE]
         )
         self.v2b_links_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_V2B_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.V2B_LINKS_FILE]
         )
         self.controller_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_CONTROLLERS_FILE]
+            self.simulation_helper.file_readers[cc.CONTROLLERS_FILE]
         )
         self.b2c_links_data = self._read_next_chunk(
-            self.simulation_helper.file_readers[CC_B2C_LINKS_FILE]
+            self.simulation_helper.file_readers[cc.B2C_LINKS_FILE]
         )
 
     def _read_next_chunk(
@@ -368,9 +373,9 @@ class Simulation:
         DataFrame
             The input data.
         """
-        if data_reader.type == CC_CSV:
+        if data_reader.type == cc.CSV:
             return DataFrame()
-        elif data_reader.type == CC_PARQUET:
+        elif data_reader.type == cc.PARQUET:
             return data_reader.read_data_until_timestamp(
                 self.current_time + self.data_stream_interval
             )
@@ -382,7 +387,7 @@ class Simulation:
         Run the simulation.
         """
         logger.info("Performing final setup.")
-        self._device_model.perform_final_setup()
+        self._simulation_model.perform_final_setup()
 
         logger.info("Starting the simulation.")
         while self.current_time <= self.end_time:
@@ -392,8 +397,8 @@ class Simulation:
         """
         Step the simulation.
         """
-        self._device_model.current_time = self.current_time
-        self._device_model.step()
+        self._simulation_model.current_time = self.current_time
+        self._simulation_model.step()
 
         # Update the time.
         self.current_time += self.time_step

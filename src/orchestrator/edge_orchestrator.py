@@ -3,11 +3,11 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.application.payload import VehiclePayload, VehicleResponse
-from src.core.constants import C_BASE_STATION_FINDER
+from src.core.constants import BASE_STATION_FINDER
 from src.device.base_station import BaseStation
+from src.device.payload import VehiclePayload, VehicleResponse
 from src.device.vehicle import Vehicle
-from src.models.finder.base_station_finder import BaseStationFinder
+from src.models.bs_finder import NearestNBaseStationFinder
 from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class EdgeOrchestrator(Agent):
         self._vehicle_links: DataFrame = vehicle_links_df
         self._base_station_links: DataFrame = base_station_links_df
 
-        self._base_station_finder: BaseStationFinder | None = None
+        self._base_station_finder: NearestNBaseStationFinder | None = None
 
         # Uplink data generated at the vehicles
         self.data_at_vehicles: dict[int, VehiclePayload] = {}
@@ -114,7 +114,7 @@ class EdgeOrchestrator(Agent):
         self._base_station_finder = model_factory.create_basestation_finder(
             self._base_stations,
             self._base_station_links,
-            model_data[C_BASE_STATION_FINDER],
+            model_data[BASE_STATION_FINDER],
         )
 
     def uplink_stage(self) -> None:

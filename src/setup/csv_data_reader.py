@@ -3,7 +3,7 @@ from typing import Any
 
 from pandas import DataFrame, read_csv
 
-from src.core.common_constants import CC_CSV
+from src.core.common_constants import CSV
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class CSVDataReader:
         self._column_names: list[str] = column_names
         self._column_dtypes: dict[str, Any] = column_dtypes
 
-        self._type = CC_CSV
+        self._type = CSV
 
     @property
     def input_file(self) -> str:
