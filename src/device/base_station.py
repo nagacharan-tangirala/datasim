@@ -3,20 +3,19 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
-from src.application.payload import (
+import src.core.constants as constants
+from src.core.exceptions import (
+    WrongActivationTimeError,
+    WrongDeactivationTimeError,
+)
+from src.device.activation import ActivationSettings
+from src.device.hardware import ComputingHardware, NetworkHardware
+from src.device.payload import (
     VehiclePayload,
     BaseStationPayload,
     BaseStationResponse,
     VehicleResponse,
 )
-from src.core.constants import C_MOBILITY_MODEL, C_POSITION, C_DATA_PROCESSOR
-from src.core.custom_exceptions import (
-    WrongActivationTimeError,
-    WrongDeactivationTimeError,
-)
-from src.device.activation_settings import ActivationSettings
-from src.device.computing_hardware import ComputingHardware
-from src.device.network_hardware import NetworkHardware
 from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
@@ -76,7 +75,9 @@ class BaseStation(Agent):
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        base_station_models_data[C_MOBILITY_MODEL][C_POSITION] = base_station_position
+        base_station_models_data[constants.MOBILITY_MODEL][
+            constants.POSITION
+        ] = base_station_position
         self._create_models(base_station_models_data)
 
         logger.debug(f"Base station {self.unique_id} created.")
@@ -140,7 +141,7 @@ class BaseStation(Agent):
         """
         self._uplink_vehicle_data = incoming_data
         logger.debug(
-            f"Vehicles at base station {self.unique_id} are "
+            f"Vehicles near base station {self.unique_id} are "
             f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.sim_model.current_time}."
         )
 
@@ -150,15 +151,15 @@ class BaseStation(Agent):
         """
         model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
-            base_station_models_data[C_MOBILITY_MODEL]
+            base_station_models_data[constants.MOBILITY_MODEL]
         )
-        self._base_station_data_processor = (
-            model_factory.create_base_station_data_processor(
-                base_station_models_data[C_DATA_PROCESSOR]
-            )
+
+        self._data_composer = model_factory.create_base_station_data_composer(
+            base_station_models_data[constants.DATA_COMPOSER]
         )
-        self.base_station_app_runner = model_factory.create_basestation_app_runner(
-            self.unique_id, self._computing_hardware
+
+        self._data_simplifier = model_factory.create_base_station_data_simplifier(
+            base_station_models_data[constants.DATA_SIMPLIFIER]
         )
 
     def use_wired_for_uplink(self) -> None:
@@ -201,19 +202,14 @@ class BaseStation(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
+        logger.debug(f"Generating base station payload for {self.unique_id}.")
         # Create base station payload if the base station has received data from the vehicles.
-        self._uplink_payload = (
-            self.base_station_app_runner.generate_basestation_payload(
-                self.sim_model.current_time, self._uplink_vehicle_data
-            )
+        self._uplink_payload = self._data_composer.compose_basestation_payload(
+            self.sim_model.current_time, self._uplink_vehicle_data
         )
 
         # Use the data processor to process the data.
-        self._uplink_payload = (
-            self._base_station_data_processor.simplify_base_station_data(
-                self._uplink_payload
-            )
-        )
+        self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
         logger.debug(
             f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}."
         )
@@ -228,8 +224,6 @@ class BaseStation(Agent):
         logger.debug(
             f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
         )
-        # Use the base station app runner to process the data.
-        self.base_station_app_runner.process_result(self._downlink_response)
 
         # Create the downlink vehicle response.
         vehicle_index_in_data = 0
