@@ -1,78 +1,73 @@
 # Input file names
-CC_VEHICLE_TRACE_FILE = "vehicle_traces"
-CC_VEHICLE_ACTIVATIONS_FILE = "vehicle_activations"
-CC_V2V_LINKS_FILE = "v2v_links"
-CC_BASE_STATIONS_FILE = "base_stations"
-CC_BASE_STATION_ACTIVATIONS_FILE = "base_station_activations"
-CC_V2B_LINKS_FILE = "v2b_links"
-CC_CONTROLLERS_FILE = "controllers"
-CC_CONTROLLER_ACTIVATIONS_FILE = "controller_activations"
-CC_B2C_LINKS_FILE = "b2c_links"
+VEHICLE_TRACE_FILE: str = "vehicle_traces"
+VEHICLE_ACTIVATIONS_FILE: str = "vehicle_activations"
+V2V_LINKS_FILE: str = "v2v_links"
+BASE_STATIONS_FILE: str = "base_stations"
+BASE_STATION_ACTIVATIONS_FILE: str = "base_station_activations"
+V2B_LINKS_FILE: str = "v2b_links"
+CONTROLLERS_FILE: str = "controllers"
+CONTROLLER_ACTIVATIONS_FILE: str = "controller_activations"
+B2C_LINKS_FILE: str = "b2c_links"
 
 # Main columns in the input files
-CC_VEHICLE_ID = "vehicle_id"
-CC_TIME_STEP = "time_step"
-CC_X = "x"
-CC_Y = "y"
-CC_NEIGHBOURS = "neighbours"
-CC_DISTANCES = "distances"
-CC_BASE_STATIONS = "base_stations"
-CC_BASE_STATION_ID = "base_station_id"
-CC_CONTROLLER_ID = "controller_id"
-CC_START_TIME = "start_time"
-CC_END_TIME = "end_time"
-CC_LINK_ID = "link_id"
+VEHICLE_ID: str = "vehicle_id"
+TIME_STEP: str = "time_step"
+X: str = "x"
+Y: str = "y"
+NEIGHBOURS: str = "neighbours"
+DISTANCES: str = "distances"
+BASE_STATIONS: str = "base_stations"
+BASE_STATION_ID: str = "base_station_id"
+CONTROLLER_ID: str = "controller_id"
+START_TIME: str = "start_time"
+END_TIME: str = "end_time"
+LINK_ID: str = "link_id"
 
 # Column names and data types for the input files
-CC_VEHICLE_TRACE_COLUMN_NAMES = [CC_TIME_STEP, CC_VEHICLE_ID, CC_X, CC_Y]
-CC_VEHICLE_TRACE_COLUMN_DTYPES = {
-    CC_TIME_STEP: float,
-    CC_VEHICLE_ID: int,
-    CC_X: float,
-    CC_Y: float,
+VEHICLE_TRACE_COLUMN_NAMES: list[str] = [TIME_STEP, VEHICLE_ID, X, Y]
+VEHICLE_TRACE_COLUMN_DTYPES: dict[str, type] = {
+    TIME_STEP: float,
+    VEHICLE_ID: int,
+    X: float,
+    Y: float,
 }
 
-CC_V2V_LINKS_COLUMN_NAMES = [CC_VEHICLE_ID, CC_TIME_STEP, CC_NEIGHBOURS, CC_DISTANCES]
-CC_V2V_LINKS_COLUMN_DTYPES = {
-    CC_VEHICLE_ID: int,
-    CC_TIME_STEP: int,
-    CC_NEIGHBOURS: str,
-    CC_DISTANCES: str,
+V2V_LINKS_COLUMN_NAMES: list[str] = [VEHICLE_ID, TIME_STEP, NEIGHBOURS, DISTANCES]
+V2V_LINKS_COLUMN_DTYPES: dict[str, type] = {
+    VEHICLE_ID: int,
+    TIME_STEP: int,
+    NEIGHBOURS: str,
+    DISTANCES: str,
 }
 
-CC_BASE_STATION_COLUMN_NAMES = [CC_BASE_STATION_ID, CC_X, CC_Y]
-CC_BASE_STATION_COLUMN_DTYPES = {CC_BASE_STATION_ID: int, CC_X: float, CC_Y: float}
+BASE_STATION_COLUMN_NAMES: list[str] = [BASE_STATION_ID, X, Y]
+BASE_STATION_COLUMN_DTYPES: dict[str, type] = {BASE_STATION_ID: int, X: float, Y: float}
 
-CC_CONTROLLERS_COLUMN_NAMES = [CC_CONTROLLER_ID, CC_X, CC_Y]
-CC_CONTROLLERS_COLUMN_DTYPES = {CC_CONTROLLER_ID: int, CC_X: float, CC_Y: float}
+CONTROLLERS_COLUMN_NAMES: list[str] = [CONTROLLER_ID, X, Y]
+CONTROLLERS_COLUMN_DTYPES: dict[str, type] = {CONTROLLER_ID: int, X: float, Y: float}
 
-CC_V2B_LINKS_COLUMN_NAMES = [
-    CC_VEHICLE_ID,
-    CC_TIME_STEP,
-    CC_BASE_STATIONS,
-    CC_DISTANCES,
-]
-CC_V2B_LINKS_COLUMN_DTYPES = {
-    CC_VEHICLE_ID: int,
-    CC_TIME_STEP: int,
-    CC_BASE_STATIONS: str,
-    CC_DISTANCES: str,
+V2B_LINKS_COLUMN_NAMES: list[str] = [VEHICLE_ID, TIME_STEP, BASE_STATIONS, DISTANCES]
+V2B_LINKS_COLUMN_DTYPES: dict[str, type] = {
+    VEHICLE_ID: int,
+    TIME_STEP: int,
+    BASE_STATIONS: str,
+    DISTANCES: str,
 }
 
-CC_B2C_LINKS_COLUMN_NAMES = [CC_LINK_ID, CC_BASE_STATION_ID, CC_CONTROLLER_ID]
-CC_B2C_LINKS_COLUMN_DTYPES = {
-    CC_LINK_ID: int,
-    CC_BASE_STATION_ID: int,
-    CC_CONTROLLER_ID: int,
+B2C_LINKS_COLUMN_NAMES: list[str] = [LINK_ID, BASE_STATION_ID, CONTROLLER_ID]
+B2C_LINKS_COLUMN_DTYPES: dict[str, type] = {
+    LINK_ID: int,
+    BASE_STATION_ID: int,
+    CONTROLLER_ID: int,
 }
 
-CC_ACTIVATION_TIMES_COLUMN_NAMES = [CC_VEHICLE_ID, CC_START_TIME, CC_END_TIME]
-CC_ACTIVATION_TIMES_COLUMN_DTYPES = {
-    CC_VEHICLE_ID: int,
-    CC_START_TIME: str,
-    CC_END_TIME: str,
+ACTIVATION_TIMES_COLUMN_NAMES: list[str] = [VEHICLE_ID, START_TIME, END_TIME]
+ACTIVATION_TIMES_COLUMN_DTYPES: dict[str, type] = {
+    VEHICLE_ID: int,
+    START_TIME: str,
+    END_TIME: str,
 }
 
 # File extensions
-CC_PARQUET: str = "parquet"
-CC_CSV: str = "csv"
+PARQUET: str = "parquet"
+CSV: str = "csv"
