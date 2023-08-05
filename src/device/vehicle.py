@@ -3,13 +3,11 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.application.application_settings import ApplicationSettings
-from src.application.payload import VehiclePayload, VehicleResponse
-from src.core.constants import *
-from src.core.custom_exceptions import WrongActivationTimeError
-from src.device.activation_settings import ActivationSettings
-from src.device.computing_hardware import ComputingHardware
-from src.device.network_hardware import NetworkHardware
+import src.core.constants as constants
+from src.core.exceptions import WrongActivationTimeError
+from src.device.activation import ActivationSettings
+from src.device.hardware import *
+from src.device.payload import VehiclePayload, VehicleResponse
 from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
@@ -22,7 +20,6 @@ class Vehicle(Agent):
         computing_hardware: ComputingHardware,
         wireless_hardware: NetworkHardware,
         activation_settings: ActivationSettings,
-        application_settings: list[ApplicationSettings],
         vehicle_models: dict,
     ) -> None:
         """
@@ -38,8 +35,6 @@ class Vehicle(Agent):
             The wireless hardware of the vehicle.
         activation_settings : ActivationSettings
             The activation settings of the vehicle.
-        application_settings : list[ApplicationSettings]
-            The application settings of the vehicle.
         vehicle_models : dict
             The model data of the vehicle.
         """
@@ -52,9 +47,8 @@ class Vehicle(Agent):
         self._downlink_response: VehicleResponse | None = None
 
         self._computing_hardware: ComputingHardware = computing_hardware
-        self._networking_hardware: NetworkHardware = wireless_hardware
+        self._network_hardware: NetworkHardware = wireless_hardware
         self._activation_settings: ActivationSettings = activation_settings
-        self._application_settings: list[ApplicationSettings] = application_settings
 
         self._create_models(vehicle_models)
 
@@ -94,16 +88,17 @@ class Vehicle(Agent):
         """
         logger.debug(f"Creating models for vehicle {self.unique_id}")
         model_factory = ModelFactory()
+
         self._mobility_model = model_factory.create_mobility_model(
-            model_data[C_MOBILITY_MODEL]
+            model_data[constants.MOBILITY_MODEL]
         )
-        self._vehicle_data_processor = model_factory.create_vehicle_data_processor(
-            model_data[C_DATA_PROCESSOR]
+
+        self._data_composer = model_factory.create_vehicle_data_composer(
+            model_data[constants.DATA_COMPOSER]
         )
-        self._vehicle_app_runner = model_factory.create_vehicle_app_runner(
-            self.unique_id,
-            self._application_settings,
-            computing_hardware=self._computing_hardware,
+
+        self._data_simplifier = model_factory.create_vehicle_data_simplifier(
+            model_data[constants.DATA_SIMPLIFIER]
         )
 
     def update_mobility_data(self, mobility_data: DataFrame | list[float]) -> None:
@@ -133,6 +128,7 @@ class Vehicle(Agent):
             raise WrongActivationTimeError(
                 time_step, self._activation_settings.start_time
             )
+
         self._activation_settings.active = True
 
     def deactivate_vehicle(self, time_step: int) -> None:
@@ -143,21 +139,20 @@ class Vehicle(Agent):
             logger.warning(
                 f"Deactivating vehicle {self.unique_id} at unexpected time {time_step}"
             )
+
         self._activation_settings.active = False
 
     def use_network_for_uplink(self) -> None:
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._networking_hardware.consume_capacity(self._uplink_payload.uplink_data)
+        self._network_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
 
     def use_network_for_downlink(self) -> None:
         """
         Use the network hardware to transfer data in the downlink direction.
         """
-        self._networking_hardware.consume_capacity(
-            self._downlink_response.downlink_data
-        )
+        self._network_hardware.consume_capacity(self._downlink_response.downlink_data)
 
     def uplink_stage(self) -> None:
         """
@@ -166,23 +161,24 @@ class Vehicle(Agent):
         logger.debug(
             f"Uplink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
         )
+
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
+
         self._location = self._mobility_model.current_location
         logger.debug(f"Position updated: {self._location}")
 
-        # Generate data from the applications
-        self._uplink_payload = self._vehicle_app_runner.generate_vehicle_payload(
+        logger.debug(f"Generating vehicle payload for vehicle {self.unique_id}")
+
+        # Compose the data using the data composer
+        self._uplink_payload = self._data_composer.compose_vehicle_payload(
             self.sim_model.current_time
         )
+        self._uplink_payload.source = self.unique_id
 
-        # Simplify the data using the data processor
-        self._uplink_payload = self._vehicle_data_processor.simplify_vehicle_data(
-            self._uplink_payload
-        )
-
-        logger.debug(f"Payload generated: {self._uplink_payload}")
+        logger.debug(f"Simplifying vehicle payload for vehicle {self.unique_id}")
+        self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
 
     def downlink_stage(self) -> None:
         """
@@ -191,5 +187,3 @@ class Vehicle(Agent):
         logger.debug(
             f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
         )
-        # Process the data from the applications
-        self._vehicle_app_runner.process_result(self._downlink_response)
