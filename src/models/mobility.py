@@ -1,7 +1,48 @@
 from mesa import Agent
 from pandas import DataFrame, concat
 
-from src.core.common_constants import CC_TIME_STEP
+import src.core.common_constants as cc
+
+__all__ = ["StaticMobilityModel", "TraceMobilityModel"]
+
+
+class StaticMobilityModel(Agent):
+    def __init__(self, position: list[float]):
+        """
+        Initialize the static mobility model.
+
+        Parameters
+        ----------
+        position : DataFrame
+            DataFrame of positions.
+        """
+        super().__init__(0, None)
+        self._type = "static"
+        self._current_location = position
+
+    @property
+    def type(self) -> str:
+        """Get the type of the mobility model."""
+        return self._type
+
+    @property
+    def current_location(self) -> list[float]:
+        """Get the current location."""
+        return self._current_location
+
+    def step(self) -> None:
+        pass
+
+    def update_position(self, new_position: list[float]) -> None:
+        """
+        Update the position.
+
+        Parameters
+        ----------
+        new_position : DataFrame
+            The new positions.
+        """
+        self._current_location = new_position
 
 
 class TraceMobilityModel(Agent):
@@ -52,9 +93,9 @@ class TraceMobilityModel(Agent):
         Step through the model.
         """
         # Check if the current time is in the positions dataframe
-        if self._current_time in self._positions[CC_TIME_STEP].values:
+        if self._current_time in self._positions[cc.TIME_STEP].values:
             self._current_location = (
-                self._positions[self._positions[CC_TIME_STEP] == self._current_time]
+                self._positions[self._positions[cc.TIME_STEP] == self._current_time]
                 .iloc[0]
                 .values[2:]
             )
