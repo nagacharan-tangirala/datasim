@@ -2,10 +2,10 @@ import logging
 
 from mesa import Model
 
-from src.core.constants import *
-from src.core.ordered_multistage_scheduler import OrderedMultiStageScheduler, TypeStage
+import src.core.constants as constants
+from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
 from src.device.base_station import BaseStation
-from src.device.central_controller import CentralController
+from src.device.controller import CentralController
 from src.device.vehicle import Vehicle
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
@@ -13,7 +13,7 @@ from src.orchestrator.edge_orchestrator import EdgeOrchestrator
 logger = logging.getLogger(__name__)
 
 
-class DeviceModel(Model):
+class SimModel(Model):
     def __init__(
         self,
         vehicles: dict[int, Vehicle],
@@ -25,7 +25,7 @@ class DeviceModel(Model):
         end_time: int,
     ):
         """
-        Initialize the device model.
+        Initialize the simulation model.
         """
         super().__init__()
         self._vehicles: dict[int, Vehicle] = vehicles
@@ -36,22 +36,22 @@ class DeviceModel(Model):
         self._cloud_orchestrator: CloudOrchestrator = cloud_orchestrator
 
         self._agents_by_type: dict[str, list] = {
-            C_VEHICLES: self._vehicles,
-            C_BASE_STATIONS: self._base_stations,
-            C_CONTROLLERS: self._controllers,
-            C_EDGE_ORCHESTRATOR: [self._edge_orchestrator],
-            C_CLOUD_ORCHESTRATOR: [self._cloud_orchestrator],
+            constants.VEHICLES: self._vehicles,
+            constants.BASE_STATIONS: self._base_stations,
+            constants.CONTROLLERS: self._controllers,
+            constants.EDGE_ORCHESTRATOR: [self._edge_orchestrator],
+            constants.CLOUD_ORCHESTRATOR: [self._cloud_orchestrator],
         }
 
-        self._device_activation_times: dict[str, dict[int, list[int]]] = {
-            C_VEHICLES: {},
-            C_BASE_STATIONS: {},
-            C_CONTROLLERS: {},
+        self._activation_times: dict[str, dict[int, list[int]]] = {
+            constants.VEHICLES: {},
+            constants.BASE_STATIONS: {},
+            constants.CONTROLLERS: {},
         }
-        self._device_deactivation_times: dict[str, dict[int, list[int]]] = {
-            C_VEHICLES: {},
-            C_BASE_STATIONS: {},
-            C_CONTROLLERS: {},
+        self._deactivation_times: dict[str, dict[int, list[int]]] = {
+            constants.VEHICLES: {},
+            constants.BASE_STATIONS: {},
+            constants.CONTROLLERS: {},
         }
 
         self._start_time: int = start_time
@@ -88,20 +88,24 @@ class DeviceModel(Model):
         logger.debug("Extracting activation and deactivation times for vehicles.")
         for vehicle_id, vehicle in self._vehicles.items():
             start_time, end_time = vehicle.start_time, vehicle.end_time
-            self._save_activation_time(start_time, vehicle_id, C_VEHICLES)
-            self._save_deactivation_time(end_time, vehicle_id, C_VEHICLES)
+            self._save_activation_time(start_time, vehicle_id, constants.VEHICLES)
+            self._save_deactivation_time(end_time, vehicle_id, constants.VEHICLES)
 
         logger.debug("Extracting activation and deactivation times for base stations.")
         for base_station_id, base_station in self._base_stations.items():
             start_time, end_time = base_station.start_time, base_station.end_time
-            self._save_activation_time(start_time, base_station_id, C_BASE_STATIONS)
-            self._save_deactivation_time(end_time, base_station_id, C_BASE_STATIONS)
+            self._save_activation_time(
+                start_time, base_station_id, constants.BASE_STATIONS
+            )
+            self._save_deactivation_time(
+                end_time, base_station_id, constants.BASE_STATIONS
+            )
 
         logger.debug("Extracting activation and deactivation times for controllers.")
         for controller_id, controller in self._controllers.items():
             start_time, end_time = controller.start_time, controller.end_time
-            self._save_activation_time(start_time, controller_id, C_CONTROLLERS)
-            self._save_deactivation_time(end_time, controller_id, C_CONTROLLERS)
+            self._save_activation_time(start_time, controller_id, constants.CONTROLLERS)
+            self._save_deactivation_time(end_time, controller_id, constants.CONTROLLERS)
 
     def _initialize_scheduler(self) -> None:
         """
@@ -190,10 +194,10 @@ class DeviceModel(Model):
         if time_stamp < self._start_time:
             time_stamp = self._start_time
 
-        if time_stamp not in self._device_activation_times[device_type]:
-            self._device_activation_times[device_type][time_stamp] = [device_id]
+        if time_stamp not in self._activation_times[device_type]:
+            self._activation_times[device_type][time_stamp] = [device_id]
         else:
-            self._device_activation_times[device_type][time_stamp].append(device_id)
+            self._activation_times[device_type][time_stamp].append(device_id)
 
     def _save_deactivation_time(
         self, time_stamp: int, device_id: int, device_type: str
@@ -204,10 +208,10 @@ class DeviceModel(Model):
         if time_stamp > self._end_time:
             time_stamp = self._end_time
 
-        if time_stamp not in self._device_deactivation_times[device_type]:
-            self._device_deactivation_times[device_type][time_stamp] = [device_id]
+        if time_stamp not in self._deactivation_times[device_type]:
+            self._deactivation_times[device_type][time_stamp] = [device_id]
         else:
-            self._device_deactivation_times[device_type][time_stamp].append(device_id)
+            self._deactivation_times[device_type][time_stamp].append(device_id)
 
     def step(self) -> None:
         """
@@ -274,29 +278,30 @@ class DeviceModel(Model):
         """
         If the start or end time of a device is equal to the current time step, activate or deactivate the device.
         """
-        if self._current_time in self._device_activation_times[C_VEHICLES]:
+        if self._current_time in self._activation_times[constants.VEHICLES]:
             self._activate_vehicles()
-        if self._current_time in self._device_deactivation_times[C_VEHICLES]:
+        if self._current_time in self._deactivation_times[constants.VEHICLES]:
             self._deactivate_vehicles()
-        if self._current_time in self._device_activation_times[C_BASE_STATIONS]:
+        if self._current_time in self._activation_times[constants.BASE_STATIONS]:
             self._activate_base_stations()
-        if self._current_time in self._device_deactivation_times[C_BASE_STATIONS]:
+        if self._current_time in self._deactivation_times[constants.BASE_STATIONS]:
             self._deactivate_base_stations()
-        if self._current_time in self._device_activation_times[C_CONTROLLERS]:
+        if self._current_time in self._activation_times[constants.CONTROLLERS]:
             self._activate_controllers()
-        if self._current_time in self._device_deactivation_times[C_CONTROLLERS]:
+        if self._current_time in self._deactivation_times[constants.CONTROLLERS]:
             self._deactivate_controllers()
 
     def _activate_vehicles(self) -> None:
         """
         Activate the vehicles in the current time step.
         """
-        vehicles_to_activate = self._device_activation_times[C_VEHICLES][
+        vehicles_to_activate = self._activation_times[constants.VEHICLES][
             self._current_time
         ]
         logger.debug(
             f"Activating vehicles {vehicles_to_activate} at time {self._current_time}"
         )
+
         for vehicle_id in vehicles_to_activate:
             vehicle = self._vehicles[vehicle_id]
             vehicle.activate_vehicle(self._current_time)
@@ -310,12 +315,13 @@ class DeviceModel(Model):
         """
         Deactivate the vehicles in the current time step.
         """
-        vehicles_to_deactivate = self._device_deactivation_times[C_VEHICLES][
+        vehicles_to_deactivate = self._deactivation_times[constants.VEHICLES][
             self._current_time
         ]
         logger.debug(
             f"Deactivating vehicles {vehicles_to_deactivate} at time {self._current_time}"
         )
+
         for vehicle_id in vehicles_to_deactivate:
             vehicle = self._vehicles[vehicle_id]
             vehicle.deactivate_vehicle(self._current_time)
@@ -329,12 +335,13 @@ class DeviceModel(Model):
         """
         Activate the base stations in the current time step.
         """
-        base_stations_to_activate = self._device_activation_times[C_BASE_STATIONS][
+        base_stations_to_activate = self._activation_times[constants.BASE_STATIONS][
             self._current_time
         ]
         logger.debug(
             f"Activating base stations {base_stations_to_activate} at time {self._current_time}"
         )
+
         for base_station_id in base_stations_to_activate:
             base_station = self._base_stations[base_station_id]
             base_station.activate_base_station(self._current_time)
@@ -349,12 +356,13 @@ class DeviceModel(Model):
         """
         Deactivate the base stations in the current time step.
         """
-        base_stations_to_deactivate = self._device_activation_times[C_BASE_STATIONS][
+        base_stations_to_deactivate = self._activation_times[constants.BASE_STATIONS][
             self._current_time
         ]
         logger.debug(
             f"Deactivating base stations {base_stations_to_deactivate} at time {self._current_time}"
         )
+
         for base_station_id in base_stations_to_deactivate:
             base_station = self._base_stations[base_station_id]
             base_station.deactivate_base_station(self._current_time)
@@ -369,12 +377,13 @@ class DeviceModel(Model):
         """
         Activate the controllers in the current time step.
         """
-        controllers_to_activate = self._device_activation_times[C_CONTROLLERS][
+        controllers_to_activate = self._activation_times[constants.CONTROLLERS][
             self._current_time
         ]
         logger.debug(
             f"Activating controllers {controllers_to_activate} at time {self._current_time}"
         )
+
         for controller_id in controllers_to_activate:
             controller = self._controllers[controller_id]
             controller.activate_controller(self._current_time)
@@ -388,12 +397,13 @@ class DeviceModel(Model):
         """
         Deactivate the controllers in the current time step.
         """
-        controllers_to_deactivate = self._device_activation_times[C_CONTROLLERS][
+        controllers_to_deactivate = self._activation_times[constants.CONTROLLERS][
             self._current_time
         ]
         logger.debug(
             f"Deactivating controllers {controllers_to_deactivate} at time {self._current_time}"
         )
+
         for controller_id in controllers_to_deactivate:
             controller = self._controllers[controller_id]
             controller.deactivate_controller(self._current_time)
