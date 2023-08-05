@@ -1,15 +1,10 @@
 from mesa import Agent
 from pandas import DataFrame
 
-from src.core.common_constants import (
-    CC_VEHICLE_ID,
-    CC_BASE_STATIONS,
-    CC_DISTANCES,
-    CC_TIME_STEP,
-)
+import src.core.common_constants as cc
 
 
-class BaseStationFinder(Agent):
+class NearestNBaseStationFinder(Agent):
     def __init__(self, base_stations: dict, tower_links_df: DataFrame):
         """
         Initialize the nearest tower look up model.
@@ -38,7 +33,7 @@ class BaseStationFinder(Agent):
         """
         # Filter the tower links df to only include the current time step
         self._filtered_base_station_links_df = self._base_station_links_df[
-            self._base_station_links_df[CC_TIME_STEP] == self._current_time
+            self._base_station_links_df[cc.TIME_STEP] == self._current_time
         ]
 
     def select_n_base_stations_for_vehicle(self, vehicle_id: int, n: int) -> list[int]:
@@ -47,15 +42,15 @@ class BaseStationFinder(Agent):
         """
         # Get the base stations for the vehicle.
         vehicle_base_stations = self._filtered_base_station_links_df[
-            self._filtered_base_station_links_df[CC_VEHICLE_ID] == vehicle_id
+            self._filtered_base_station_links_df[cc.VEHICLE_ID] == vehicle_id
         ]
 
         # Create a dictionary of base stations and their distances from the vehicle base stations df.
         tower_distances = {
             tower_id: distance
             for tower_id, distance in zip(
-                [int(x) for x in vehicle_base_stations[CC_BASE_STATIONS]],
-                [float(x) for x in vehicle_base_stations[CC_DISTANCES]],
+                [int(x) for x in vehicle_base_stations[cc.BASE_STATIONS]],
+                [float(x) for x in vehicle_base_stations[cc.DISTANCES]],
             )
         }
 
