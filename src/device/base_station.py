@@ -195,6 +195,10 @@ class BaseStation(Agent):
         Uplink stage of the base station. Create data to be sent to the central controller.
         This is the third step in the overall simulation.
         """
+        # Clear the downlink response.
+        self._downlink_response = None
+        self._downlink_vehicle_data.clear()
+
         logger.debug(
             f"Uplink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
         )
