@@ -404,4 +404,5 @@ class Simulation:
 
         # Refresh the simulation data if the current time is a multiple of the data stream interval.
         if self.current_time % self.data_stream_interval == 0:
+            logger.info(f"Refreshing simulation data at time {self.current_time}.")
             self._refresh_simulation_data()

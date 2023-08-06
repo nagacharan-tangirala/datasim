@@ -176,9 +176,9 @@ class Vehicle(Agent):
             self.sim_model.current_time
         )
         self._uplink_payload.source = self.unique_id
-
-        logger.debug(f"Simplifying vehicle payload for vehicle {self.unique_id}")
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
+
+        logger.debug(f"Vehicle payload generated: {self._uplink_payload}")
 
     def downlink_stage(self) -> None:
         """
