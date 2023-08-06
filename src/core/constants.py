@@ -6,15 +6,19 @@ BASE_STATIONS = "base_stations"
 CONTROLLERS = "controllers"
 EDGE_ORCHESTRATOR = "edge_orchestrator"
 CLOUD_ORCHESTRATOR = "cloud_orchestrator"
+OUTPUT_SETTINGS = "output_settings"
 
 # Simulation parameters keys in the input json file
 SIMULATION_START_TIME = "start_time"
 SIMULATION_END_TIME = "end_time"
 SIMULATION_TIME_STEP = "time_step"
 DATA_STREAMING_INTERVAL = "data_streaming_interval"
-OUTPUT_TYPE = "output_type"
+
+# Logging settings keys in the input json file
 LOGGING_LEVEL = "logging_level"
 LOG_FILE = "log_file"
+LOG_LOCATION = "log_location"
+OUTPUT_TYPE = "output_type"
 OUTPUT_LOCATION = "output_location"
 
 # Vehicle data keys

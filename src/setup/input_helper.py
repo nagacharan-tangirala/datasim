@@ -34,6 +34,7 @@ class SimulationInputHelper:
         self.controller_models_data: dict = {}
 
         self.simulation_data: dict = {}
+        self.output_data: dict = {}
         self.orchestrator_models_data: dict = {}
 
     def read_config_file(self) -> None:
@@ -50,6 +51,10 @@ class SimulationInputHelper:
         # Read simulation settings.
         logger.debug("Storing the simulation settings.")
         self.simulation_data = self.config_data[constants.SIMULATION_SETTINGS]
+
+        # Read the output settings.
+        logger.debug("Storing the output settings.")
+        self.output_data = self.config_data[constants.OUTPUT_SETTINGS]
 
         # Read the channel models.
         logger.debug("Storing the edge and cloud orchestrator models.")
@@ -72,25 +77,31 @@ class SimulationInputHelper:
         """
         # Create output directory.
         logger.debug("Creating the output directory.")
-        self._create_output_dir(self.simulation_data[constants.OUTPUT_LOCATION])
+        self._create_output_dir(
+            self.config_data[constants.OUTPUT_SETTINGS][constants.OUTPUT_LOCATION]
+        )
 
     def create_loggers(self) -> None:
         """
         Create the loggers.
         """
+        output_data = self.config_data[constants.OUTPUT_SETTINGS]
         logging_level = "INFO"
-        if constants.LOGGING_LEVEL in self.config_data[constants.SIMULATION_SETTINGS]:
-            logging_level = str(
-                self.config_data[constants.SIMULATION_SETTINGS][constants.LOGGING_LEVEL]
-            ).upper()
+        if constants.LOGGING_LEVEL in output_data:
+            logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
 
         logging_filename = "simulation.log"
-        if constants.LOG_FILE in self.config_data[constants.SIMULATION_SETTINGS]:
-            logging_filename = self.config_data[constants.SIMULATION_SETTINGS][
-                constants.LOG_FILE
-            ]
+        if constants.LOG_FILE in output_data:
+            logging_filename = output_data[constants.LOG_FILE]
 
-        logging_file = join(self.project_path, logging_filename)
+        logging_location = self.project_path
+        if constants.LOG_LOCATION in output_data:
+            logging_location = join(
+                logging_location,
+                output_data[constants.LOG_LOCATION],
+            )
+
+        logging_file = join(logging_location, logging_filename)
         if not exists(dirname(logging_file)):
             makedirs(dirname(logging_file))
 
