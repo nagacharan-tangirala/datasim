@@ -105,6 +105,7 @@ class EdgeOrchestrator(Agent):
         Update the V2B links.
         """
         self._base_station_links = v2b_links
+        self._base_station_finder.update_base_station_links(v2b_links)
 
     def _create_models(self, model_data: dict):
         """
@@ -162,6 +163,13 @@ class EdgeOrchestrator(Agent):
                     vehicle_id, 1
                 )
             )
+
+            if len(base_station_ids) == 0:
+                logger.debug(
+                    f"No base station found for vehicle {vehicle_id} at time "
+                    + f"{self.sim_model.current_time}"
+                )
+
             base_station_id = base_station_ids[0]
 
             if base_station_id not in self.uplink_vehicle_data:
