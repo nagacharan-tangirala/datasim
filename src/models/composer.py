@@ -47,11 +47,11 @@ class VehicleDataComposer:
             data_payload.type = data_source.data_type
 
             data_payload.data_size = data_source.data_size * (
-                self._previous_time - current_time
+                current_time - self._previous_time
             )
 
             data_payload.data_counts = data_source.data_counts * (
-                self._previous_time - current_time
+                current_time - self._previous_time
             )
 
             data_payloads.append(data_payload)
@@ -63,6 +63,8 @@ class VehicleDataComposer:
             [data.data_size for data in data_payloads]
         )
         vehicle_payload.uplink_payload = data_payloads
+
+        assert vehicle_payload.uplink_data_size > 0, "Uplink data size is negative."
 
         self._previous_time = current_time
         return vehicle_payload
