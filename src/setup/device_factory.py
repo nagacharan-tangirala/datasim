@@ -318,9 +318,14 @@ class DeviceFactory:
             selected_vehicle_models = vehicle_models[vehicle_type_choice].copy()
 
             # Create the activation settings.
-            this_activation_settings = self._veh_activations[
+            this_activation_data: Series = self._veh_activations[
                 self._veh_activations[cc.VEHICLE_ID] == vehicle_id
-            ].iloc[0]
+            ]
+
+            this_activation_settings = ActivationSettings(
+                this_activation_data[cc.START_TIME].values,
+                this_activation_data[cc.END_TIME].values,
+            )
 
             # Create the vehicle and update the trace data.
             self._vehicles[vehicle_id] = self._create_vehicle(
