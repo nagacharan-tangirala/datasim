@@ -36,6 +36,12 @@ class NearestNBaseStationFinder(Agent):
             self._base_station_links_df[cc.TIME_STEP] == self._current_time
         ]
 
+    def update_base_station_links(self, tower_links_df: DataFrame) -> None:
+        """
+        Update the base station links.
+        """
+        self._base_station_links_df = tower_links_df
+
     def select_n_base_stations_for_vehicle(self, vehicle_id: int, n: int) -> list[int]:
         """
         Select base stations for the vehicle.
