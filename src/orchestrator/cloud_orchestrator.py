@@ -49,37 +49,71 @@ class CloudOrchestrator(Agent):
 
     def active_controller_count(self) -> int:
         """
-        Get the active controller count.
+        Get the active controller count in the cloud orchestrator.
+
+        Returns
+        -------
+        int
+            The active controller count.
         """
         return len(self._controllers)
 
     def add_controller(self, controller: CentralController) -> None:
         """
-        Add a new controller.
+        Add a new controller to the cloud orchestrator.
+
+        Parameters
+        ----------
+        controller : CentralController
+            The controller to add.
         """
         self._controllers[controller.unique_id] = controller
 
     def remove_controller(self, controller_id: int) -> None:
         """
-        Remove the controller.
+        Remove the controller from the cloud orchestrator.
+
+        Parameters
+        ----------
+        controller_id : int
+            The id of the controller to remove.
         """
         self._controllers.pop(controller_id)
 
     def add_base_station(self, base_station: BaseStation) -> None:
         """
-        Add a new base station.
+        Add a new base station to the cloud orchestrator.
+
+        Parameters
+        ----------
+        base_station : BaseStation
+            The base station to add to the cloud orchestrator.
         """
         self._base_stations[base_station.unique_id] = base_station
 
     def remove_base_station(self, base_station_id: int) -> None:
         """
-        Remove the base station.
+        Remove the base station from the cloud orchestrator.
+
+        Parameters
+        ----------
+        base_station_id : int
+            The id of the base station to remove.
         """
         self._base_stations.pop(base_station_id)
 
     def update_b2c_links(self, b2c_links: DataFrame) -> None:
         """
         Update the B2B links.
+
+        Parameters
+        ----------
+        b2c_links : DataFrame
+            The new B2C links.
+
+        Returns
+        -------
+        None
         """
         self._controller_links_df = b2c_links
 
@@ -92,6 +126,11 @@ class CloudOrchestrator(Agent):
     def total_data_at_controllers(self) -> float:
         """
         Get the total data at the controllers.
+
+        Returns
+        -------
+        float
+            The total data at the controllers.
         """
         total_data: float = 0.0
         for controller_id, controller in self._controllers.items():
@@ -100,16 +139,26 @@ class CloudOrchestrator(Agent):
 
     def visible_vehicles_at_controllers(self) -> int:
         """
-        Get the total number of vehicles visible at the controllers.
+        Get the total number of vehicles visible to the controllers.
+
+        Returns
+        -------
+        int
+            The total number of vehicles.
         """
         total_vehicles: int = 0
         for controller_id, controller in self._controllers.items():
             total_vehicles += len(controller.visible_vehicles)
         return total_vehicles
 
-    def get_data_sizes_by_type(self) -> dict:
+    def get_data_sizes_by_type(self) -> dict[str, float]:
         """
-        Get the data types and sizes at the controllers.
+        Get the data sizes of each type at the controllers.
+
+        Returns
+        -------
+        dict[str, float]
+            The data types and sizes.
         """
         data_types_sizes: dict = {}
         for controller_id, controller in self._controllers.items():
@@ -121,9 +170,14 @@ class CloudOrchestrator(Agent):
 
         return data_types_sizes
 
-    def get_data_counts_by_type(self) -> dict:
+    def get_data_counts_by_type(self) -> dict[str, int]:
         """
-        Get the data types and counts at the controllers.
+        Get the data counts by type at the controllers.
+
+        Returns
+        -------
+        dict[str, int]
+            The data counts by type.
         """
         data_types_counts: dict = {}
         for controller_id, controller in self._controllers.items():
@@ -144,6 +198,7 @@ class CloudOrchestrator(Agent):
     def uplink_stage(self) -> None:
         """
         Step through the orchestration process for the uplink stage.
+
         This is the second step in the overall simulation.
         """
         logger.debug(f"Uplink stage at time {self.sim_model.current_time}.")
