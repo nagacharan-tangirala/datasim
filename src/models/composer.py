@@ -39,6 +39,10 @@ class VehicleDataComposer:
         ----------
         data_source_params : dict
             The data source parameters from the config file.
+
+        Returns
+        -------
+        None
         """
         for params in data_source_params:
             data_source = DataSource()
@@ -53,9 +57,9 @@ class VehicleDataComposer:
             if data_source.side_link:
                 self._side_links_sources.append(data_source)
 
-    def compose_vehicle_payload(self, current_time: int) -> VehiclePayload:
+    def compose_uplink_payload(self, current_time: int) -> VehiclePayload:
         """
-        Compose vehicle payload using all the data sources.
+        Compose uplink payload using all the data sources.
 
         Parameters
         ----------
@@ -65,16 +69,16 @@ class VehicleDataComposer:
         Returns
         -------
         VehiclePayload
-            The vehicle payload composed using all the data sources.
+            The uplink payload.
         """
-        vehicle_payload = self.compose_payload_with_sources(
+        uplink_payload = self.compose_payload_with_sources(
             current_time, self._all_data_sources
         )
-        return vehicle_payload
+        return uplink_payload
 
-    def compose_vehicle_side_link_payload(self, current_time: int):
+    def compose_sidelink_payload(self, current_time: int):
         """
-        Compose vehicle payload using the side link data sources.
+        Compose sidelink payload using all the side link data sources.
 
         Parameters
         ----------
@@ -84,12 +88,12 @@ class VehicleDataComposer:
         Returns
         -------
         VehiclePayload
-            The vehicle payload composed using the side link data sources.
+            The sidelink payload.
         """
-        vehicle_payload = self.compose_payload_with_sources(
+        sidelink_payload = self.compose_payload_with_sources(
             current_time, self._side_links_sources
         )
-        return vehicle_payload
+        return sidelink_payload
 
     def compose_payload_with_sources(
         self, current_time: int, data_sources: list[DataSource]
