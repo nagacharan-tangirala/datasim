@@ -88,6 +88,21 @@ class CentralController(Agent):
         """Get the downlink response."""
         return self._downlink_response
 
+    @property
+    def total_data_received(self) -> float:
+        """Get the total data received."""
+        return self._controller_collector.total_data_size
+
+    @property
+    def visible_vehicles(self) -> list[int]:
+        """Get the visible vehicles."""
+        return self._controller_collector.all_vehicles
+
+    @property
+    def data_types_sizes(self) -> dict[str, float]:
+        """Get the data types and sizes."""
+        return self._controller_collector.data_types_sizes
+
     def activate_controller(self, time_step: int) -> None:
         """
         Activate the controller.
@@ -142,7 +157,6 @@ class CentralController(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        self._controller_collector.current_time = self.sim_model.current_time
         self._controller_collector.collect_data(self._received_data)
 
         # Create base station response.
