@@ -70,6 +70,9 @@ class Simulation:
         logger.info("Creating edge and cloud orchestrators.")
         self._create_orchestrators()
 
+        logger.info("Creating output writers.")
+        self._create_output_writers()
+
         logger.info("Creating device model.")
         self._create_simulation_model()
 
@@ -219,9 +222,18 @@ class Simulation:
             ],
         )
 
+    def _create_output_writers(self) -> None:
+        """
+        Create the output writers.
+        """
+        output_writer_factory = OutputWriterFactory(self.sim_input_helper.output_dir)
+        self._model_output_writer = output_writer_factory.create_model_output_writer(
+            self.sim_input_helper.output_data[constants.OUTPUT_TYPE]
+        )
+
     def _create_simulation_model(self) -> None:
         """
-        Create the device model.
+        Create the main simulation model.
         """
         self._simulation_model = SimModel(
             self._vehicles,
