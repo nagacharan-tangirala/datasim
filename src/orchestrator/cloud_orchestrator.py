@@ -88,6 +88,39 @@ class CloudOrchestrator(Agent):
         """
         Prepare the base station controller mapping.
         """
+        pass
+
+    def total_data_at_controllers(self) -> float:
+        """
+        Get the total data at the controllers.
+        """
+        total_data: float = 0.0
+        for controller_id, controller in self._controllers.items():
+            total_data += controller.total_data_received
+        return total_data
+
+    def visible_vehicles_at_controllers(self) -> int:
+        """
+        Get the total number of vehicles visible at the controllers.
+        """
+        total_vehicles: int = 0
+        for controller_id, controller in self._controllers.items():
+            total_vehicles += len(controller.visible_vehicles)
+        return total_vehicles
+
+    def get_data_types_sizes_at_controllers(self) -> dict:
+        """
+        Get the data types and sizes at the controllers.
+        """
+        data_types_sizes: dict = {}
+        for controller_id, controller in self._controllers.items():
+            type_sizes = controller.data_types_sizes
+            for data_type, size in type_sizes.items():
+                if data_type not in data_types_sizes:
+                    data_types_sizes[data_type] = 0.0
+                data_types_sizes[data_type] += size
+
+        return data_types_sizes
 
     def _create_models(self, model_data: dict):
         """
