@@ -164,9 +164,8 @@ class EdgeOrchestrator(Agent):
                 )
             )
 
-            base_station_id = base_station_ids[0]
-
             # Update the vehicle with the selected base station
+            base_station_id = base_station_ids[0]
             self._vehicles[vehicle_id].selected_bs = base_station_id
 
             if base_station_id not in self.uplink_vehicle_data:
