@@ -1,4 +1,5 @@
 import logging.config
+from datetime import datetime
 
 
 class LoggerConfig:
@@ -20,8 +21,9 @@ class LoggerConfig:
         """
         # Check if the log file already exists
         if self._log_file:
-            # self._log_file = self._log_file.replace('.log', '_%s.log' % datetime.now().strftime('%Y%m%d_%H%M%S'))
-            # Clear the contents.
+            self._log_file = self._log_file.replace(
+                ".log", "_%s.log" % datetime.now().strftime("%Y%m%d_%H%M%S")
+            )
             with open(self._log_file, "w") as f:
                 f.write("")
 
