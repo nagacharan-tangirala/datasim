@@ -37,12 +37,19 @@ class SimulationInputHelper:
         self.output_data: dict = {}
         self.orchestrator_models_data: dict = {}
 
+        self._output_dir: str = ""
+
     def read_config_file(self) -> None:
         """
         Read the config file.
         """
         with open(self.config_file, "r") as f:
             self.config_data = toml.load(f)
+
+    @property
+    def output_dir(self) -> str:
+        """Get the output directory."""
+        return self._output_dir
 
     def read_simulation_and_model_settings(self) -> None:
         """
@@ -77,9 +84,7 @@ class SimulationInputHelper:
         """
         # Create output directory.
         logger.debug("Creating the output directory.")
-        self._create_output_dir(
-            self.config_data[constants.OUTPUT_SETTINGS][constants.OUTPUT_LOCATION]
-        )
+        self._create_output_dir(self.output_data[constants.OUTPUT_LOCATION])
 
     def create_loggers(self) -> None:
         """
@@ -246,7 +251,7 @@ class SimulationInputHelper:
         """
         self.file_readers[file_key] = None
 
-    def _create_output_dir(self, output_dir: str) -> str:
+    def _create_output_dir(self, output_dir: str) -> None:
         """
         Create the output directory if it does not exist.
 
@@ -255,9 +260,8 @@ class SimulationInputHelper:
         output_dir : str
             The relative path to the output directory.
         """
-        output_dir = join(self.project_path, output_dir)
+        self._output_dir = join(self.project_path, output_dir)
         if not exists(output_dir):
             makedirs(output_dir)
 
-        logger.debug("Output directory: %s", output_dir)
-        return output_dir
+        logger.debug("Output directory: %s", self._output_dir)
