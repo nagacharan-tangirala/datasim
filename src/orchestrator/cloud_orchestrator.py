@@ -6,7 +6,6 @@ from pandas import DataFrame
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
 from src.device.payload import BaseStationPayload, BaseStationResponse
-from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +125,7 @@ class CloudOrchestrator(Agent):
         """
         Create the models
         """
-        model_factory = ModelFactory()
+        pass
 
     def uplink_stage(self) -> None:
         """
