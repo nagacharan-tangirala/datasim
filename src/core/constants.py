@@ -35,17 +35,20 @@ MOBILITY = "mobility"
 DATA_SOURCE = "data_source"
 DATA_COMPOSER = "composer"
 DATA_SIMPLIFIER = "simplifier"
-
 CONTROLLER_COLLECTOR = "collector"
+BASE_STATION_FINDER = "base_station_finder"
 
+# Model parameter keys
 POSITION = "position"
 MODEL_NAME = "name"
-
 DATA_SIZE = "data_size"
 DATA_COUNTS = "data_counts"
 DATA_SOURCE_TYPE = "data_type"
-
 RETENTION_FACTOR = "retention_factor"
 COMPRESSION_FACTOR = "compression_factor"
 
-BASE_STATION_FINDER = "base_station_finder"
+# Progress bar keys
+PROGRES_BAR_TITLE = "Simulation Progress"
+PROGRESS_BAR_UNIT = " steps"
+PROGRESS_BAR_COLOUR = "#11c26c"
+PROGRESS_BAR_WIDTH = 150

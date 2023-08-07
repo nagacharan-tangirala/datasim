@@ -1,6 +1,7 @@
 import logging
 
 from pandas import DataFrame
+from tqdm import tqdm
 
 import src.core.common_constants as cc
 import src.core.constants as constants
@@ -51,6 +52,9 @@ class Simulation:
         self._vehicle_activations_data: DataFrame = DataFrame()
         self._base_station_activations_data: DataFrame = DataFrame()
         self._controller_activations_data: DataFrame = DataFrame()
+
+        # Progress bar
+        self._progress_bar: tqdm | None = None
 
     def setup_simulation(self) -> None:
         """
@@ -249,6 +253,19 @@ class Simulation:
             self.end_time,
         )
 
+    def _create_progress_bar(self) -> None:
+        """
+        Create the progress bar.
+        """
+        self._progress_bar = tqdm(
+            total=self.end_time,
+            desc=constants.PROGRES_BAR_TITLE,
+            ncols=constants.PROGRESS_BAR_WIDTH,
+            unit=constants.PROGRESS_BAR_UNIT,
+            position=0,
+            colour=constants.PROGRESS_BAR_COLOUR,
+        )
+
     def _refresh_simulation_data(self) -> None:
         """
         Refresh the simulation data by reading the next chunk of data.
@@ -401,8 +418,12 @@ class Simulation:
         logger.info("Performing final setup.")
         self._simulation_model.perform_final_setup()
 
+        logger.debug("Creating the progress bar.")
+        self._create_progress_bar()
+
         logger.info("Starting the simulation.")
         while self.current_time < self.end_time:
+            self._progress_bar.update(self.time_step)
             self.step()
 
         logger.info("Simulation completed.")
