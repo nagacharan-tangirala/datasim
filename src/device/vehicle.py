@@ -50,6 +50,9 @@ class Vehicle(Agent):
         self._network_hardware: NetworkHardware = wireless_hardware
         self._activation_settings: ActivationSettings = activation_settings
 
+        self.selected_bs: int = -1
+        self._previous_bs: int = -1
+
         self._create_models(vehicle_models)
 
     @property
@@ -81,6 +84,11 @@ class Vehicle(Agent):
     def location(self) -> list[float, float]:
         """Get the location of the vehicle."""
         return self._location
+
+    @property
+    def handover_count(self) -> int:
+        """Check if the vehicle is in a handover."""
+        return 1 if self._previous_bs != self.selected_bs else 0
 
     def _create_models(self, model_data: dict) -> None:
         """
@@ -163,6 +171,9 @@ class Vehicle(Agent):
         logger.debug(
             f"Uplink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
         )
+
+        # Update the previous base station
+        self._previous_bs = self.selected_bs
 
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.sim_model.current_time
