@@ -205,10 +205,12 @@ class EdgeOrchestrator(Agent):
         """
         logger.debug(f"Collecting data from base stations")
         self.downlink_response_at_basestations.clear()
+
         for base_station_id, base_station in self._base_stations.items():
             self.downlink_response_at_basestations[
                 base_station_id
             ] = base_station.downlink_vehicle_data
+
             # Consume the wireless network bandwidth in the base station.
             base_station.use_wireless_for_downlink()
 
@@ -225,6 +227,7 @@ class EdgeOrchestrator(Agent):
                 if vehicle_id not in self._vehicles:
                     logger.error(f"Vehicle {vehicle_id} not found in the network.")
                     continue
+
                 self._vehicles[vehicle_id].downlink_response = veh_data
                 # Consume the network bandwidth in the vehicle.
                 self._vehicles[vehicle_id].use_network_for_downlink()
