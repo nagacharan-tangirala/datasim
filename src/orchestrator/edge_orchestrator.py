@@ -164,13 +164,10 @@ class EdgeOrchestrator(Agent):
                 )
             )
 
-            if len(base_station_ids) == 0:
-                logger.debug(
-                    f"No base station found for vehicle {vehicle_id} at time "
-                    + f"{self.sim_model.current_time}"
-                )
-
             base_station_id = base_station_ids[0]
+
+            # Update the vehicle with the selected base station
+            self._vehicles[vehicle_id].selected_bs = base_station_id
 
             if base_station_id not in self.uplink_vehicle_data:
                 self.uplink_vehicle_data[base_station_id] = {}
