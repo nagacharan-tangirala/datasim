@@ -8,6 +8,7 @@ from src.core.exceptions import UnsupportedInputFormatError
 from src.device.sim_model import SimModel
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
+from src.output.writer_factory import OutputWriterFactory
 from src.setup.device_factory import DeviceFactory
 from src.setup.file_reader import ParquetDataReader, CSVDataReader
 from src.setup.input_helper import SimulationInputHelper
@@ -22,28 +23,31 @@ class Simulation:
         """
         self.config_file: str = config_file
 
-        # Create the dictionaries to store the devices in the simulation
         self._device_factory: DeviceFactory | None = None
+
+        # Devices in the simulation
         self._vehicles: dict = {}
         self._base_stations: dict = {}
         self._controllers: dict = {}
 
-        # Create objects to store device models
+        # Main simulation model
         self._simulation_model: SimModel | None = None
 
-        # Create objects to store channel models
+        # Orchestrators
         self.edge_orchestrator: EdgeOrchestrator | None = None
         self.cloud_orchestrator: CloudOrchestrator | None = None
 
-        # Define the simulation parameters
+        # Simulation parameters
         self.start_time: int = -1
         self.end_time: int = -1
         self.time_step: int = -1
         self.current_time: int = -1
         self.data_stream_interval: int = -1
+
+        # Helper to read input data
         self.sim_input_helper: SimulationInputHelper | None = None
 
-        # Store the activation data
+        # Activation data
         self._vehicle_activations_data: DataFrame = DataFrame()
         self._base_station_activations_data: DataFrame = DataFrame()
         self._controller_activations_data: DataFrame = DataFrame()
@@ -247,7 +251,7 @@ class Simulation:
 
     def _refresh_simulation_data(self) -> None:
         """
-        Refresh the simulation.
+        Refresh the simulation data by reading the next chunk of data.
         """
         self._stream_next_input_data()
         self._update_devices_with_new_data()
@@ -280,8 +284,8 @@ class Simulation:
         self, data_reader: CSVDataReader | ParquetDataReader
     ) -> DataFrame:
         """
-        Read the first chunk of the input data. CSVs are read completely while parquet files are read partially.
-        This method is called only once.
+        Read the first chunk of the input data. CSVs are read completely while parquet
+        files are read partially.
 
         Parameters
         ----------
@@ -304,7 +308,7 @@ class Simulation:
 
     def _update_devices_with_new_data(self) -> None:
         """
-        Update the devices.
+        Update the devices with the newly streamed data.
         """
         if not self.vehicle_trace_data.empty:
             self._device_factory.create_new_vehicles(
@@ -331,7 +335,7 @@ class Simulation:
 
     def _update_orchestrators_with_new_data(self) -> None:
         """
-        Update the cloud and edge orchestrators.
+        Update the cloud and edge orchestrators with the newly streamed data.
         """
         if not self.v2v_links_data.empty:
             self.edge_orchestrator.update_v2v_links(self.v2v_links_data)
