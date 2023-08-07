@@ -81,6 +81,9 @@ class SimModel(Model):
         logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
 
+        logger.debug("Create data collector.")
+        self._create_data_collector()
+
     def save_device_activation_times(self) -> None:
         """
         Extract the activation and deactivation times of the devices.
@@ -184,6 +187,20 @@ class SimModel(Model):
         self.schedule.add(self._cloud_orchestrator)
         self._edge_orchestrator.sim_model = self
         self._cloud_orchestrator.sim_model = self
+
+    def _create_data_collector(self) -> None:
+        """
+        Create the data collector.
+        """
+        self.data_collector = DataCollector(
+            model_reporters={
+                "active_vehicles": self._edge_orchestrator.active_vehicle_count,
+                "active_base_stations": self._edge_orchestrator.active_base_station_count,
+                "total_data": self._cloud_orchestrator.total_data_at_controllers,
+                "visible_vehicles": self._cloud_orchestrator.visible_vehicles_at_controllers,
+                "data_types_sizes": self._cloud_orchestrator.get_data_types_sizes_at_controllers,
+            },
+        )
 
     def _save_activation_time(
         self, time_stamp: int, device_id: int, device_type: str
