@@ -99,9 +99,14 @@ class CentralController(Agent):
         return self._controller_collector.all_vehicles
 
     @property
-    def data_types_sizes(self) -> dict[str, float]:
+    def data_sizes_by_type(self) -> dict[str, float]:
         """Get the data types and sizes."""
-        return self._controller_collector.data_types_sizes
+        return self._controller_collector.data_sizes_by_type
+
+    @property
+    def data_counts_by_type(self) -> dict[str, int]:
+        """Get the data types and count."""
+        return self._controller_collector.data_counts_by_type
 
     def activate_controller(self, time_step: int) -> None:
         """

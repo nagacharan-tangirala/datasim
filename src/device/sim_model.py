@@ -198,7 +198,8 @@ class SimModel(Model):
                 "active_base_stations": self._edge_orchestrator.active_base_station_count,
                 "total_data": self._cloud_orchestrator.total_data_at_controllers,
                 "visible_vehicles": self._cloud_orchestrator.visible_vehicles_at_controllers,
-                "data_types_sizes": self._cloud_orchestrator.get_data_types_sizes_at_controllers,
+                "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
+                "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
             },
         )
 

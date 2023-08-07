@@ -9,7 +9,8 @@ class ControllerCollector:
         self._total_data_size: float = 0.0
         self._all_vehicles: list[int] = []
 
-        self._data_types_sizes: dict[str, float] = {}
+        self._data_sizes_by_type: dict[str, float] = {}
+        self._data_counts_by_type: dict[str, int] = {}
 
     @property
     def total_data_size(self) -> float:
@@ -22,9 +23,14 @@ class ControllerCollector:
         return self._all_vehicles
 
     @property
-    def data_types_sizes(self) -> dict[str, float]:
+    def data_sizes_by_type(self) -> dict[str, float]:
         """Get the data types and their sizes."""
-        return self._data_types_sizes
+        return self._data_sizes_by_type
+
+    @property
+    def data_counts_by_type(self) -> dict[str, int]:
+        """Get the data types and their counts."""
+        return self._data_counts_by_type
 
     def collect_data(self, incoming_data: dict[int, BaseStationPayload]):
         """
@@ -33,8 +39,9 @@ class ControllerCollector:
         # Collect the statistics of the incoming data
         self._total_data_size = 0.0
         self._all_vehicles: list[int] = []
-        self._data_types_sizes = {}
 
+        self._data_sizes_by_type = {}
+        self._data_counts_by_type = {}
         for base_station_id, base_station_payload in incoming_data.items():
             # Calculate total data size and the list of all vehicles
             self._total_data_size += base_station_payload.uplink_data_size
@@ -44,8 +51,15 @@ class ControllerCollector:
                 # Collect the types and their sizes
                 for data_payload in vehicle_payload.uplink_payload:
                     data_type = data_payload.type
-                    data_size = data_payload.data_size
 
-                    if data_type not in self._data_types_sizes:
-                        self._data_types_sizes[data_type] = 0
-                    self._data_types_sizes[data_type] += data_size
+                    # Store data size by type
+                    data_size = data_payload.data_size
+                    if data_type not in self._data_sizes_by_type:
+                        self._data_sizes_by_type[data_type] = 0
+                    self._data_sizes_by_type[data_type] += data_size
+
+                    # Store data count by type
+                    data_count: int = data_payload.count
+                    if data_type not in self._data_counts_by_type:
+                        self._data_counts_by_type[data_type] = 0
+                    self._data_counts_by_type[data_type] += data_count

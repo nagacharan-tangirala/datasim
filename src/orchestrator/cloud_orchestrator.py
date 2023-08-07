@@ -107,19 +107,33 @@ class CloudOrchestrator(Agent):
             total_vehicles += len(controller.visible_vehicles)
         return total_vehicles
 
-    def get_data_types_sizes_at_controllers(self) -> dict:
+    def get_data_sizes_by_type(self) -> dict:
         """
         Get the data types and sizes at the controllers.
         """
         data_types_sizes: dict = {}
         for controller_id, controller in self._controllers.items():
-            type_sizes = controller.data_types_sizes
+            type_sizes = controller.data_sizes_by_type
             for data_type, size in type_sizes.items():
                 if data_type not in data_types_sizes:
                     data_types_sizes[data_type] = 0.0
                 data_types_sizes[data_type] += size
 
         return data_types_sizes
+
+    def get_data_counts_by_type(self) -> dict:
+        """
+        Get the data types and counts at the controllers.
+        """
+        data_types_counts: dict = {}
+        for controller_id, controller in self._controllers.items():
+            type_counts = controller.data_counts_by_type
+            for data_type, count in type_counts.items():
+                if data_type not in data_types_counts:
+                    data_types_counts[data_type] = 0
+                data_types_counts[data_type] += count
+
+        return data_types_counts
 
     def _create_models(self, model_data: dict):
         """
