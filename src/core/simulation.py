@@ -412,3 +412,17 @@ class Simulation:
         if self.current_time % self.data_stream_interval == 0:
             logger.info(f"Refreshing simulation data at time {self.current_time}.")
             self._refresh_simulation_data()
+
+    def save_data(self, output_data: list[DataFrame]):
+        """
+        Save the data to the output directory.
+
+        Parameters
+        ----------
+        list[DataFrame]
+            The list of data frames to save.
+        """
+        # Save the data.
+        logger.debug("Saving the data.")
+        for data in output_data:
+            self._model_output_writer.write_output(data)
