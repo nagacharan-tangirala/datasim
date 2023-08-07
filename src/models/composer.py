@@ -48,7 +48,7 @@ class VehicleDataComposer:
 
             # Calculate the number of units generated in the time interval
             data_counts = data_source.data_counts * (current_time - self.previous_time)
-            data_payload.data_counts = data_counts
+            data_payload.count = int(data_counts)
 
             # Calculate the data size and add to the payload
             data_payload.data_size = data_source.data_size * data_counts
