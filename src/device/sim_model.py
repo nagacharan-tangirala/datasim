@@ -246,6 +246,9 @@ class SimModel(Model):
             f"Active controllers: {self._cloud_orchestrator.active_controller_count()}"
         )
 
+        # Collect data from the previous time step
+        self.data_collector.collect(self)
+
         # Refresh active devices at the current time step
         self._refresh_active_devices()
 
