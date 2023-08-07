@@ -11,14 +11,22 @@ class DataSource:
     data_type: str = ""
     data_size: float = 0.0
     data_counts: float = 0.0
+    data_priority: int = 0
+    data_link: bool = False
 
 
 class VehicleDataComposer:
     def __init__(self, data_source_params: dict[dict]):
         """
         Initialize the data composer.
+
+        Parameters
+        ----------
+        data_source_params : dict[dict]
+            The data source parameters from the config file.
         """
-        self._data_sources: list[DataSource] = []
+        self._all_data_sources: list[DataSource] = []
+        self._side_links_sources: list[DataSource] = []
 
         self.previous_time: int = 0
         self._create_data_sources(data_source_params[constants.DATA_SOURCE])
@@ -26,6 +34,11 @@ class VehicleDataComposer:
     def _create_data_sources(self, data_source_params: dict) -> None:
         """
         Create the data sources.
+
+        Parameters
+        ----------
+        data_source_params : dict
+            The data source parameters from the config file.
         """
         for params in data_source_params:
             data_source = DataSource()
@@ -33,16 +46,72 @@ class VehicleDataComposer:
             data_source.data_type = params[constants.DATA_SOURCE_TYPE]
             data_source.data_counts = params[constants.DATA_COUNTS]
             data_source.data_size = params[constants.DATA_SIZE]
+            data_source.data_priority = params[constants.DATA_PRIORITY]
+            data_source.side_link = params[constants.DATA_SIDE_LINK]
 
-            self._data_sources.append(data_source)
+            self._all_data_sources.append(data_source)
+            if data_source.side_link:
+                self._side_links_sources.append(data_source)
 
     def compose_vehicle_payload(self, current_time: int) -> VehiclePayload:
         """
-        Generate data request by running the applications.
+        Compose vehicle payload using all the data sources.
+
+        Parameters
+        ----------
+        current_time : int
+            The current time.
+
+        Returns
+        -------
+        VehiclePayload
+            The vehicle payload composed using all the data sources.
+        """
+        vehicle_payload = self.compose_payload_with_sources(
+            current_time, self._all_data_sources
+        )
+        return vehicle_payload
+
+    def compose_vehicle_side_link_payload(self, current_time: int):
+        """
+        Compose vehicle payload using the side link data sources.
+
+        Parameters
+        ----------
+        current_time : int
+            The current time.
+
+        Returns
+        -------
+        VehiclePayload
+            The vehicle payload composed using the side link data sources.
+        """
+        vehicle_payload = self.compose_payload_with_sources(
+            current_time, self._side_links_sources
+        )
+        return vehicle_payload
+
+    def compose_payload_with_sources(
+        self, current_time: int, data_sources: list[DataSource]
+    ) -> VehiclePayload:
+        """
+        Compose vehicle payload using the data sources.
+
+        Parameters
+        ----------
+        current_time : int
+            The current time.
+        data_sources : list[DataSource]
+            The data sources.
+
+        Returns
+        -------
+        VehiclePayload
+            The vehicle payload.
         """
         # Collect data from all the data sources and create data payload
         data_payloads = []
-        for data_source in self._data_sources:
+        for data_source in data_sources:
             data_payload = DataPayload()
             data_payload.type = data_source.data_type
 

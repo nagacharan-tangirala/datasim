@@ -44,6 +44,8 @@ MODEL_NAME = "name"
 DATA_SIZE = "data_size"
 DATA_COUNTS = "data_counts"
 DATA_SOURCE_TYPE = "data_type"
+DATA_SIDE_LINK = "side_link"
+DATA_PRIORITY = "priority"
 RETENTION_FACTOR = "retention_factor"
 COMPRESSION_FACTOR = "compression_factor"
 
