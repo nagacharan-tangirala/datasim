@@ -389,6 +389,15 @@ class Simulation:
         while self.current_time < self.end_time:
             self.step()
 
+        logger.info("Simulation completed.")
+        model_level_data = (
+            self._simulation_model.data_collector.get_model_vars_dataframe()
+        )
+
+        # Save the data
+        logger.info("Saving the data.")
+        self.save_data([model_level_data])
+
     def step(self) -> None:
         """
         Step the simulation.
