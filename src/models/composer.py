@@ -46,14 +46,12 @@ class VehicleDataComposer:
             data_payload = DataPayload()
             data_payload.type = data_source.data_type
 
-            data_payload.data_size = data_source.data_size * (
-                current_time - self.previous_time
-            )
+            # Calculate the number of units generated in the time interval
+            data_counts = data_source.data_counts * (current_time - self.previous_time)
+            data_payload.data_counts = data_counts
 
-            data_payload.data_counts = data_source.data_counts * (
-                current_time - self.previous_time
-            )
-
+            # Calculate the data size and add to the payload
+            data_payload.data_size = data_source.data_size * data_counts
             data_payloads.append(data_payload)
 
         # Create the vehicle payload
