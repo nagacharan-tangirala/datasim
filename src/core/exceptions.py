@@ -19,6 +19,17 @@ class UnsupportedInputFormatError(Exception):
         return f"The input file '{self.file_name}' has unsupported format."
 
 
+class UnsupportedOutputFormatError(Exception):
+    """The output format is not supported."""
+
+    def __init__(self, output_format: str, message: str = ""):
+        super().__init__(message)
+        self.output_format = output_format
+
+    def __str__(self):
+        return f"The output format '{self.output_format}' is not supported."
+
+
 class WrongActivationTimeError(Exception):
     """The activation time is wrong."""
 
