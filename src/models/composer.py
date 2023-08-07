@@ -20,7 +20,7 @@ class VehicleDataComposer:
         """
         self._data_sources: list[DataSource] = []
 
-        self._previous_time: int = 0
+        self.previous_time: int = 0
         self._create_data_sources(data_source_params[constants.DATA_SOURCE])
 
     def _create_data_sources(self, data_source_params: dict) -> None:
@@ -47,11 +47,11 @@ class VehicleDataComposer:
             data_payload.type = data_source.data_type
 
             data_payload.data_size = data_source.data_size * (
-                current_time - self._previous_time
+                current_time - self.previous_time
             )
 
             data_payload.data_counts = data_source.data_counts * (
-                current_time - self._previous_time
+                current_time - self.previous_time
             )
 
             data_payloads.append(data_payload)
@@ -64,9 +64,9 @@ class VehicleDataComposer:
         )
         vehicle_payload.uplink_payload = data_payloads
 
-        assert vehicle_payload.uplink_data_size > 0, "Uplink data size is negative."
+        assert vehicle_payload.uplink_data_size >= 0, "Uplink data size is negative."
 
-        self._previous_time = current_time
+        self.previous_time = current_time
         return vehicle_payload
 
 

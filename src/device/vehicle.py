@@ -129,6 +129,8 @@ class Vehicle(Agent):
                 time_step, self._activation_settings.start_time
             )
 
+        # Set previous time for data composer
+        self._data_composer.previous_time = time_step
         self._activation_settings.active = True
 
     def deactivate_vehicle(self, time_step: int) -> None:
