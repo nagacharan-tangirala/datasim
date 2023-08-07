@@ -1,6 +1,6 @@
 import logging
 
-from mesa import Model
+from mesa import Model, DataCollector
 
 import src.core.constants as constants
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
@@ -235,7 +235,6 @@ class SimModel(Model):
         Prepare a dictionary with time step as the key and the respective vehicles to activate in that time step.
         """
         logger.info(f"Running step {self._current_time}")
-        logger.debug(f"Current time: {self._current_time}")
         logger.debug(
             f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}"
         )
