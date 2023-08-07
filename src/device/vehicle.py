@@ -44,6 +44,7 @@ class Vehicle(Agent):
         self.sim_model = None
 
         self._uplink_payload: VehiclePayload | None = None
+        self._sidelink_payload: VehiclePayload | None = None
         self._downlink_response: VehicleResponse | None = None
 
         self._computing_hardware: ComputingHardware = computing_hardware
@@ -185,11 +186,16 @@ class Vehicle(Agent):
         logger.debug(f"Generating vehicle payload for vehicle {self.unique_id}")
 
         # Compose the data using the data composer
-        self._uplink_payload = self._data_composer.compose_vehicle_payload(
+        self._uplink_payload = self._data_composer.compose_uplink_payload(
             self.sim_model.current_time
         )
         self._uplink_payload.source = self.unique_id
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
+
+        # Compose the side link payload
+        self._sidelink_payload = self._data_composer.compose_sidelink_payload(
+            self.sim_model.current_time
+        )
 
         logger.debug(f"Vehicle payload generated: {self._uplink_payload}")
 
