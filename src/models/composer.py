@@ -13,7 +13,7 @@ class DataSource:
     data_size: float = 0.0
     data_counts: float = 0.0
     data_priority: int = 0
-    data_link: bool = False
+    side_link: str = "no"
 
 
 class VehicleDataComposer:
@@ -55,7 +55,7 @@ class VehicleDataComposer:
             data_source.side_link = params[constants.DATA_SIDE_LINK]
 
             self._all_data_sources.append(data_source)
-            if data_source.side_link:
+            if data_source.side_link == "yes":
                 self._side_links_sources.append(data_source)
 
     def compose_uplink_payload(self, current_time: int) -> VehiclePayload:
@@ -94,6 +94,7 @@ class VehicleDataComposer:
         sidelink_payload = self.compose_payload_with_sources(
             current_time, self._side_links_sources
         )
+        self.previous_time = current_time
         return sidelink_payload
 
     def compose_payload_with_sources(
@@ -137,8 +138,6 @@ class VehicleDataComposer:
         vehicle_payload.data_payload_list = data_payloads
 
         assert vehicle_payload.total_data_size >= 0, "Uplink data size is negative."
-
-        self.previous_time = current_time
         return vehicle_payload
 
 
