@@ -15,9 +15,9 @@ class LoggerConfig:
         self._log_file = log_file
         self._log_level = log_level
 
-    def setup_logger_config(self):
+    def setup_logger_config(self) -> None:
         """
-        Setup the default logger configuration.
+        Configure the logger.
         """
         # Check if the log file already exists
         if self._log_file:
