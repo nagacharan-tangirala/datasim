@@ -21,6 +21,8 @@ class DeviceFactory:
         vehicle_activations_data: DataFrame,
         base_station_activations_data: DataFrame,
         controller_activations_data: DataFrame,
+        sim_start_time: int,
+        sim_end_time: int,
     ):
         """
         Initialize the device factory object.

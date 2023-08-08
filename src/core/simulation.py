@@ -195,6 +195,8 @@ class Simulation:
             self._vehicle_activations_data,
             self._base_station_activations_data,
             self._controller_activations_data,
+            self.start_time,
+            self.end_time,
         )
 
         # Create a device factory object and create the participants
