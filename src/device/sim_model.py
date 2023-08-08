@@ -91,25 +91,36 @@ class SimModel(Model):
         """
         logger.debug("Extracting activation and deactivation times for vehicles.")
         for vehicle_id, vehicle in self._vehicles.items():
-            start_time, end_time = vehicle.start_time, vehicle.end_time
-            self._save_activation_time(start_time, vehicle_id, constants.VEHICLES)
-            self._save_deactivation_time(end_time, vehicle_id, constants.VEHICLES)
+            start_times = vehicle.get_activation_times()
+            end_times = vehicle.get_deactivation_times()
+            logger.debug(
+                f"Vehicle {vehicle_id} has activation times {start_times} and deactivation times {end_times}."
+            )
+            self._save_activation_data(
+                start_times, end_times, vehicle_id, constants.VEHICLES
+            )
 
         logger.debug("Extracting activation and deactivation times for base stations.")
         for base_station_id, base_station in self._base_stations.items():
-            start_time, end_time = base_station.start_time, base_station.end_time
-            self._save_activation_time(
-                start_time, base_station_id, constants.BASE_STATIONS
+            start_times = base_station.get_activation_times()
+            end_times = base_station.get_deactivation_times()
+            logger.debug(
+                f"Base station {base_station_id} has activation times {start_times} and deactivation times {end_times}."
             )
-            self._save_deactivation_time(
-                end_time, base_station_id, constants.BASE_STATIONS
+            self._save_activation_data(
+                start_times, end_times, base_station_id, constants.BASE_STATIONS
             )
 
         logger.debug("Extracting activation and deactivation times for controllers.")
         for controller_id, controller in self._controllers.items():
-            start_time, end_time = controller.start_time, controller.end_time
-            self._save_activation_time(start_time, controller_id, constants.CONTROLLERS)
-            self._save_deactivation_time(end_time, controller_id, constants.CONTROLLERS)
+            start_times = controller.get_activation_times()
+            end_times = controller.get_deactivation_times()
+            logger.debug(
+                f"Controller {controller_id} has activation times {start_times} and deactivation times {end_times}."
+            )
+            self._save_activation_data(
+                start_times, end_times, controller_id, constants.CONTROLLERS
+            )
 
     def _initialize_scheduler(self) -> None:
         """
