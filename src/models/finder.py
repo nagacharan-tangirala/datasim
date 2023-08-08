@@ -109,11 +109,6 @@ class TraceVehicleNeighbourFinder(Agent):
             self._filtered_v2v_links_df[cc.VEHICLE_ID] == vehicle_id
         ]
 
-        # Remove the vehicle itself from the list of neighbours.
-        neighbour_vehicles = neighbour_vehicles[
-            neighbour_vehicles[cc.NEIGHBOURS] != vehicle_id
-        ]
-
         # If there are no neighbours, return an empty list.
         if neighbour_vehicles.empty:
             return []
