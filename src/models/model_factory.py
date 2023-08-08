@@ -153,8 +153,41 @@ class ModelFactory:
         match model_data[constants.MODEL_NAME]:
             case "nearest":
                 logger.debug(f"Creating nearest base station finder.")
-                return NearestNBaseStationFinder(base_stations, base_station_links_df)
+                return NearestNBaseStationFinder(base_station_links_df)
             case _:
                 raise ModelTypeNotImplementedError(
                     constants.BASE_STATION_FINDER, model_data[constants.MODEL_NAME]
+                )
+
+    @staticmethod
+    def create_vehicle_data_collector(
+        vehicle_data_collector_data: dict,
+    ) -> VehicleCollector:
+        """
+        Create the vehicle data collector model.
+        """
+        match vehicle_data_collector_data[constants.MODEL_NAME]:
+            case "simple":
+                return VehicleCollector()
+            case _:
+                raise ModelTypeNotImplementedError(
+                    constants.DATA_COLLECTOR,
+                    vehicle_data_collector_data[constants.MODEL_NAME],
+                )
+
+    @staticmethod
+    def create_vehicle_neighbour_finder(
+        v2v_links: DataFrame,
+        vehicle_neighbour_finder_data: dict,
+    ) -> TraceVehicleNeighbourFinder:
+        """
+        Create the vehicle neighbour finder model.
+        """
+        match vehicle_neighbour_finder_data[constants.MODEL_NAME]:
+            case "trace":
+                return TraceVehicleNeighbourFinder(v2v_links)
+            case _:
+                raise ModelTypeNotImplementedError(
+                    constants.NEIGHBOUR_FINDER,
+                    vehicle_neighbour_finder_data[constants.MODEL_NAME],
                 )
