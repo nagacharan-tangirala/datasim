@@ -172,7 +172,12 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._wireless_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
+        # Find the data size of the uplink data
+        uplink_data_size = 0.0
+        for vehicle_payload in self._uplink_vehicle_data.values():
+            uplink_data_size += vehicle_payload.total_data_size
+
+        self._wireless_hardware.consume_capacity(uplink_data_size)
 
     def use_wireless_for_downlink(self) -> None:
         """
