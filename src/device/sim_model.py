@@ -257,11 +257,14 @@ class SimModel(Model):
         # Collect data from the previous time step
         self.data_collector.collect(self)
 
-        # Refresh active devices at the current time step
-        self._refresh_active_devices()
+        # Activate the devices, if any
+        self._do_device_activations()
 
         # Step through the schedule object
         self.schedule.step()
+
+        # Deactivate the devices, if any
+        self._do_device_deactivations()
 
     def update_vehicles(self, vehicles: dict[int, Vehicle]) -> None:
         """
