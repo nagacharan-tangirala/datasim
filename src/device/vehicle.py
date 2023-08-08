@@ -1,10 +1,10 @@
 import logging
 
 from mesa import Agent
+from numpy import ndarray
 from pandas import DataFrame
 
 import src.core.constants as constants
-from src.core.exceptions import WrongActivationTimeError
 from src.device.activation import ActivationSettings
 from src.device.hardware import *
 from src.device.payload import VehiclePayload, VehicleResponse
@@ -60,16 +60,6 @@ class Vehicle(Agent):
         self._create_models(vehicle_models)
 
     @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        return self._activation_settings.start_time
-
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        return self._activation_settings.end_time
-
-    @property
     def uplink_payload(self) -> VehiclePayload:
         """Get the uplink payload."""
         return self._uplink_payload
@@ -93,6 +83,18 @@ class Vehicle(Agent):
     def handover_count(self) -> int:
         """Check if the vehicle is in a handover."""
         return 1 if self._previous_bs != self.selected_bs else 0
+
+    def get_activation_times(self) -> ndarray[int]:
+        """
+        Get the activation times of the vehicle.
+        """
+        return self._activation_settings.enable_times
+
+    def get_deactivation_times(self) -> ndarray[int]:
+        """
+        Get the deactivation times of the vehicle.
+        """
+        return self._activation_settings.disable_times
 
     def _create_models(self, model_data: dict) -> None:
         """

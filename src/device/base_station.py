@@ -88,16 +88,6 @@ class BaseStation(Agent):
         return self._location
 
     @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        return self._activation_settings.start_time
-
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        return self._activation_settings.end_time
-
-    @property
     def uplink_payload(self) -> BaseStationPayload:
         """Get the uplink payload."""
         return self._uplink_payload
@@ -117,23 +107,29 @@ class BaseStation(Agent):
         """Get the downlink vehicle data."""
         return self._downlink_vehicle_data
 
+    def get_activation_times(self) -> ndarray[int]:
+        """
+        Get the activation times of the vehicle.
+        """
+        return self._activation_settings.enable_times
+
+    def get_deactivation_times(self) -> ndarray[int]:
+        """
+        Get the deactivation times of the vehicle.
+        """
+        return self._activation_settings.disable_times
+
     def activate_base_station(self, time_step: int) -> None:
         """
         Activate the base station.
         """
-        if self._activation_settings.start_time != time_step:
-            raise WrongActivationTimeError(
-                self._activation_settings.start_time, time_step
-            )
+        pass
 
     def deactivate_base_station(self, time_step: int) -> None:
         """
         Deactivate the base station.
         """
-        if self._activation_settings.end_time != time_step:
-            raise WrongDeactivationTimeError(
-                self._activation_settings.end_time, time_step
-            )
+        pass
 
     def set_uplink_vehicle_data(self, incoming_data: dict[int, VehiclePayload]) -> None:
         """
