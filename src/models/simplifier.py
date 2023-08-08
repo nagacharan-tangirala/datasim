@@ -1,6 +1,8 @@
 import src.core.constants as constants
 from src.device.payload import VehiclePayload, BaseStationPayload
 
+__all__ = ["VehicleDataSimplifier", "BaseStationDataSimplifier"]
+
 
 class VehicleDataSimplifier:
     def __init__(self, model_data: dict):
@@ -15,12 +17,12 @@ class VehicleDataSimplifier:
         Simplify the vehicle data.
         """
         # Simplify the data.
-        for idx in range(len(veh_payload.uplink_payload)):
-            veh_payload.uplink_payload[idx].data_size = (
-                veh_payload.uplink_payload[idx].data_size * self._compression_ratio
+        for idx in range(len(veh_payload.data_payload_list)):
+            veh_payload.data_payload_list[idx].data_size = (
+                veh_payload.data_payload_list[idx].data_size * self._compression_ratio
             )
-            veh_payload.uplink_payload[idx].count = (
-                veh_payload.uplink_payload[idx].count * self._compression_ratio
+            veh_payload.data_payload_list[idx].count = (
+                veh_payload.data_payload_list[idx].count * self._compression_ratio
             )
 
         return veh_payload
