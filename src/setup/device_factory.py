@@ -32,6 +32,10 @@ class DeviceFactory:
         self._bs_activations: DataFrame = base_station_activations_data
         self._controller_activations: DataFrame = controller_activations_data
 
+        # Store the simulation start and end times
+        self._sim_start_time: int = sim_start_time
+        self._sim_end_time: int = sim_end_time
+
         # Create the dictionaries to store the devices in the simulation
         self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}
@@ -107,6 +111,8 @@ class DeviceFactory:
             this_activation_settings = ActivationSettings(
                 this_activation_data[cc.START_TIME].values,
                 this_activation_data[cc.END_TIME].values,
+                self._sim_start_time,
+                self._sim_end_time,
             )
 
             # Create the vehicle.
@@ -218,7 +224,13 @@ class DeviceFactory:
         )
 
         # Create activation settings from the activation data.
-        this_activation_settings = ActivationSettings(asarray([]), asarray([]))
+        this_activation_settings = ActivationSettings(
+            asarray([]),
+            asarray([]),
+            self._sim_start_time,
+            self._sim_end_time,
+            is_always_on=True,
+        )
 
         # Create the base station.
         return BaseStation(
@@ -277,7 +289,13 @@ class DeviceFactory:
         )
 
         # Create activation settings from the activation data.
-        this_activation_settings = ActivationSettings(asarray([]), asarray([]))
+        this_activation_settings = ActivationSettings(
+            asarray([]),
+            asarray([]),
+            self._sim_start_time,
+            self._sim_end_time,
+            is_always_on=True,
+        )
 
         # Create the controller.
         return CentralController(
@@ -327,6 +345,8 @@ class DeviceFactory:
             this_activation_settings = ActivationSettings(
                 this_activation_data[cc.START_TIME].values,
                 this_activation_data[cc.END_TIME].values,
+                self._sim_start_time,
+                self._sim_end_time,
             )
 
             # Create the vehicle and update the trace data.
