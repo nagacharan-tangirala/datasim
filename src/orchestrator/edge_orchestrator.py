@@ -3,11 +3,11 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.core.constants import BASE_STATION_FINDER
+from src.core.constants import BASE_STATION_FINDER, NEIGHBOUR_FINDER
 from src.device.base_station import BaseStation
 from src.device.payload import VehiclePayload, VehicleResponse
 from src.device.vehicle import Vehicle
-from src.models.bs_finder import NearestNBaseStationFinder
+from src.models.finder import NearestNBaseStationFinder
 from src.models.model_factory import ModelFactory
 
 logger = logging.getLogger(__name__)

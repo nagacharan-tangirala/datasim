@@ -3,6 +3,7 @@ import logging
 import src.core.constants as constants
 from src.device.payload import *
 
+__all__ = ["VehicleDataComposer", "BaseStationDataComposer", "ControllerDataComposer"]
 logger = logging.getLogger(__name__)
 
 
@@ -130,12 +131,12 @@ class VehicleDataComposer:
         # Create the vehicle payload
         vehicle_payload = VehiclePayload()
         vehicle_payload.timestamp = current_time
-        vehicle_payload.uplink_data_size = sum(
+        vehicle_payload.total_data_size = sum(
             [data.data_size for data in data_payloads]
         )
-        vehicle_payload.uplink_payload = data_payloads
+        vehicle_payload.data_payload_list = data_payloads
 
-        assert vehicle_payload.uplink_data_size >= 0, "Uplink data size is negative."
+        assert vehicle_payload.total_data_size >= 0, "Uplink data size is negative."
 
         self.previous_time = current_time
         return vehicle_payload
@@ -159,7 +160,7 @@ class BaseStationDataComposer:
         base_station_payload.timestamp = current_time
 
         for vehicle_id, vehicle_payload in incoming_data.items():
-            base_station_payload.uplink_data_size += vehicle_payload.uplink_data_size
+            base_station_payload.uplink_data_size += vehicle_payload.total_data_size
             base_station_payload.sources.append(vehicle_id)
 
             # Collect the uplink and downlink data

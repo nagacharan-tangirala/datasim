@@ -35,8 +35,9 @@ MOBILITY = "mobility"
 DATA_SOURCE = "data_source"
 DATA_COMPOSER = "composer"
 DATA_SIMPLIFIER = "simplifier"
-CONTROLLER_COLLECTOR = "collector"
+DATA_COLLECTOR = "collector"
 BASE_STATION_FINDER = "base_station_finder"
+NEIGHBOUR_FINDER = "neighbour_finder"
 
 # Model parameter keys
 POSITION = "position"

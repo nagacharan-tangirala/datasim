@@ -130,7 +130,7 @@ class CentralController(Agent):
         )
 
         self._controller_collector = model_factory.create_controller_collector(
-            controller_models[constants.CONTROLLER_COLLECTOR]
+            controller_models[constants.DATA_COLLECTOR]
         )
 
         self._data_composer = model_factory.create_controller_data_composer(

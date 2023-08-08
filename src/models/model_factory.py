@@ -4,13 +4,9 @@ from pandas import DataFrame
 
 import src.core.constants as constants
 from src.core.exceptions import ModelTypeNotImplementedError
-from src.models.bs_finder import NearestNBaseStationFinder
-from src.models.collector import ControllerCollector
-from src.models.composer import (
-    VehicleDataComposer,
-    BaseStationDataComposer,
-    ControllerDataComposer,
-)
+from src.models.collector import ControllerCollector, VehicleCollector
+from src.models.composer import *
+from src.models.finder import *
 from src.models.mobility import *
 from src.models.simplifier import *
 
@@ -139,13 +135,13 @@ class ModelFactory:
                 return ControllerCollector()
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.CONTROLLER_COLLECTOR,
+                    constants.DATA_COLLECTOR,
                     controller_collector_data[constants.MODEL_NAME],
                 )
 
     @staticmethod
     def create_basestation_finder(
-        base_stations: dict, base_station_links_df: DataFrame, model_data: dict
+        base_station_links_df: DataFrame, model_data: dict
     ) -> NearestNBaseStationFinder:
         """
         Create the base station finder.
