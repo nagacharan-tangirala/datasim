@@ -305,20 +305,25 @@ class SimModel(Model):
             if controller_id not in self._controllers:
                 self._controllers[controller_id] = controller
 
-    def _refresh_active_devices(self) -> None:
+    def _do_device_activations(self) -> None:
         """
-        If the start or end time of a device is equal to the current time step, activate or deactivate the device.
+        Activate the devices in the current time step.
         """
         if self._current_time in self._activation_times[constants.VEHICLES]:
             self._activate_vehicles()
-        if self._current_time in self._deactivation_times[constants.VEHICLES]:
-            self._deactivate_vehicles()
         if self._current_time in self._activation_times[constants.BASE_STATIONS]:
             self._activate_base_stations()
-        if self._current_time in self._deactivation_times[constants.BASE_STATIONS]:
-            self._deactivate_base_stations()
         if self._current_time in self._activation_times[constants.CONTROLLERS]:
             self._activate_controllers()
+
+    def _do_device_deactivations(self) -> None:
+        """
+        Deactivate the devices in the current time step.
+        """
+        if self._current_time in self._deactivation_times[constants.VEHICLES]:
+            self._deactivate_vehicles()
+        if self._current_time in self._deactivation_times[constants.BASE_STATIONS]:
+            self._deactivate_base_stations()
         if self._current_time in self._deactivation_times[constants.CONTROLLERS]:
             self._deactivate_controllers()
 
