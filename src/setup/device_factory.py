@@ -190,12 +190,12 @@ class DeviceFactory:
                 base_station_id, base_station_position, base_station_models_data
             )
 
-    @staticmethod
     def _create_base_station(
+        self,
         base_station_id: int,
-        base_station_position: list[float],
+        base_station_position: ndarray[float],
         base_station_models_data: dict,
-    ):
+    ) -> BaseStation:
         """
         Create a base station from the given parameters.
 
@@ -207,6 +207,11 @@ class DeviceFactory:
             The position of the base station.
         base_station_models_data : dict
             The model data of the base station.
+
+        Returns
+        -------
+        BaseStation
+            The created base station.
         """
         # Create the computing hardware.
         computing_hardware = DeviceFactory._create_computing_hardware(
@@ -255,18 +260,17 @@ class DeviceFactory:
         # Create the controllers.
         for controller_id in controller_list:
             # Get the controller position.
-            controller_position: list[float, float] = controller_data[
+            controller_position: ndarray[float] = controller_data[
                 controller_data[cc.CONTROLLER_ID] == controller_id
-            ][[cc.X, cc.Y]].values.tolist()
+            ][[cc.X, cc.Y]]
 
             # Create the controller.
             self._controllers[controller_id] = self._create_controller(
                 controller_id, controller_position, controller_models_data
             )
 
-    @staticmethod
     def _create_controller(
-        controller_id, position, controller_models_data
+        self, controller_id, position: ndarray[float], controller_models_data
     ) -> CentralController:
         """
         Create a controller from the given parameters.
@@ -275,7 +279,7 @@ class DeviceFactory:
         ----------
         controller_id : int
             The ID of the controller.
-        position : list[float]
+        position : ndarray[float]
             The position of the controller.
         """
         # Create the computing hardware.
@@ -332,10 +336,8 @@ class DeviceFactory:
                 continue
 
             # Randomly select the type of the vehicle and get the respective model set.
-            vehicle_type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[
-                0
-            ]
-            selected_vehicle_models = vehicle_models[vehicle_type_choice].copy()
+            type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[0]
+            selected_vehicle_models = vehicle_models[type_choice].copy()
 
             # Create the activation settings.
             this_activation_data: Series = self._veh_activations[
@@ -372,9 +374,9 @@ class DeviceFactory:
                 continue
 
             # Get the base station position.
-            base_station_position: list[float, float] = base_station_data[
+            base_station_position: ndarray[float] = base_station_data[
                 base_station_data[cc.BASE_STATION_ID] == base_station_data
-            ][[cc.X, cc.Y]].values.tolist()
+            ][[cc.X, cc.Y]]
 
             # Create the base station.
             self._base_stations[base_station_id] = self._create_base_station(
@@ -392,12 +394,10 @@ class DeviceFactory:
 
         for controller_id in controller_list:
             if controller_id in self._controllers:
-                # TODO: Update the controller if there is any requirement to do so.
-                #  Currently, there is no requirement. All the controller data is static in the simulation.
                 continue
 
             # Get the controller position.
-            controller_position: list[float, float] = controller_data[
+            controller_position: ndarray[float] = controller_data[
                 controller_data[cc.CONTROLLER_ID] == controller_id
             ][[cc.X, cc.Y]].values.tolist()
 

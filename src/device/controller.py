@@ -1,7 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray
+from numpy import ndarray, empty
 from pandas import Series
 
 import src.core.constants as constants
@@ -44,7 +44,7 @@ class CentralController(Agent):
         super().__init__(controller_id, None)
 
         self.sim_model = None
-        self._location: ndarray[float] = []
+        self._location: ndarray[float] = empty(0)
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._networking_hardware: NetworkHardware = wireless_hardware

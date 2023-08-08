@@ -1,6 +1,7 @@
 import logging
 
 from mesa import Model, DataCollector
+from numpy import ndarray
 
 import src.core.constants as constants
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
