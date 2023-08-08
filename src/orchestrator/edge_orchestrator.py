@@ -248,10 +248,7 @@ class EdgeOrchestrator(Agent):
             base_station_data,
         ) in self.downlink_response_at_basestations.items():
             for vehicle_id, veh_data in base_station_data.items():
-                if vehicle_id not in self._vehicles:
-                    logger.error(f"Vehicle {vehicle_id} not found in the network.")
-                    continue
-
+                assert vehicle_id in self._vehicles, f"Vehicle {vehicle_id} not found"
                 self._vehicles[vehicle_id].downlink_response = veh_data
                 # Consume the network bandwidth in the vehicle.
                 self._vehicles[vehicle_id].use_network_for_downlink()
@@ -268,9 +265,9 @@ class EdgeOrchestrator(Agent):
                 continue
 
             for neighbour_id in neighbour_ids:
-                if neighbour_id not in self._vehicles:
-                    logger.error(f"Vehicle {neighbour_id} not found in the network.")
-                    continue
+                assert (
+                    neighbour_id in self._vehicles
+                ), f"Vehicle {neighbour_id} missing."
 
                 # Send the data to the neighbour
                 self._vehicles[neighbour_id].sidelink_payload = vehicle_data
