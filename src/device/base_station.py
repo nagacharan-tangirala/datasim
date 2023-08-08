@@ -4,10 +4,6 @@ from mesa import Agent
 from numpy import ndarray
 
 import src.core.constants as constants
-from src.core.exceptions import (
-    WrongActivationTimeError,
-    WrongDeactivationTimeError,
-)
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (

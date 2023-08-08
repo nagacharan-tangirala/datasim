@@ -123,7 +123,7 @@ class CloudOrchestrator(Agent):
         """
         pass
 
-    def total_data_at_controllers(self) -> float:
+    def get_total_data_at_controllers(self) -> float:
         """
         Get the total data at the controllers.
 
@@ -137,7 +137,7 @@ class CloudOrchestrator(Agent):
             total_data += controller.total_data_received
         return total_data
 
-    def visible_vehicles_at_controllers(self) -> int:
+    def get_visible_vehicles_at_controllers(self) -> int:
         """
         Get the total number of vehicles visible to the controllers.
 
