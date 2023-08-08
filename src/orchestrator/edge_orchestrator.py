@@ -57,9 +57,16 @@ class EdgeOrchestrator(Agent):
         ] = {}
 
         self.sim_model = None
+        self._total_side_link_data: float = 0
 
         # Create the models
         self._create_models(model_data)
+
+    def get_total_sidelink_data_size(self) -> float:
+        """
+        Get the total sidelink data size.
+        """
+        return self._total_side_link_data
 
     def active_vehicle_count(self) -> int:
         """
@@ -134,6 +141,8 @@ class EdgeOrchestrator(Agent):
         # Step through the models.
         self._base_station_finder.current_time = self.sim_model.current_time
         self._base_station_finder.step()
+        self._neighbour_finder.current_time = self.sim_model.current_time
+        self._neighbour_finder.step()
 
         # Collect sidelink data from the vehicles
         self._collect_sidelink_vehicle_data()
@@ -257,6 +266,7 @@ class EdgeOrchestrator(Agent):
         """
         Transmit the sidelink data.
         """
+        self._total_side_link_data = 0.0
         for vehicle_id, vehicle_data in self.sidelink_data_at_vehicles.items():
             this_vehicle = self._vehicles[vehicle_id]
             neighbour_ids = self._neighbour_finder.find_vehicles(vehicle_id)
@@ -276,3 +286,4 @@ class EdgeOrchestrator(Agent):
                 self._vehicles[neighbour_id].use_network_for_sidelink(
                     vehicle_data.total_data_size
                 )
+                self._total_side_link_data += vehicle_data.total_data_size
