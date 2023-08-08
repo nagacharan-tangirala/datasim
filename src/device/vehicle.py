@@ -44,8 +44,11 @@ class Vehicle(Agent):
         self.sim_model = None
 
         self._uplink_payload: VehiclePayload | None = None
-        self._sidelink_payload: VehiclePayload | None = None
+        self.sidelink_payload: VehiclePayload | None = None
         self._downlink_response: VehicleResponse | None = None
+
+        # Received data from other vehicles
+        self.sidelink_received_data: dict[int, VehiclePayload] = {}
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._network_hardware: NetworkHardware = wireless_hardware
@@ -110,6 +113,10 @@ class Vehicle(Agent):
             model_data[constants.DATA_SIMPLIFIER]
         )
 
+        self._data_collector = model_factory.create_vehicle_data_collector(
+            model_data[constants.DATA_COLLECTOR]
+        )
+
     def update_mobility_data(self, mobility_data: DataFrame | list[float]) -> None:
         """
         Update the mobility data depending on the mobility model.
@@ -157,7 +164,13 @@ class Vehicle(Agent):
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._network_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
+        self._network_hardware.consume_capacity(self._uplink_payload.total_data_size)
+
+    def use_network_for_sidelink(self, data_size: float) -> None:
+        """
+        Use the network hardware to transfer data in the sidelink direction.
+        """
+        self._network_hardware.consume_capacity(data_size)
 
     def use_network_for_downlink(self) -> None:
         """
@@ -179,10 +192,9 @@ class Vehicle(Agent):
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
-
         self._location = self._mobility_model.current_location
-        logger.debug(f"Position updated: {self._location}")
 
+        logger.debug(f"Position updated: {self._location}")
         logger.debug(f"Generating vehicle payload for vehicle {self.unique_id}")
 
         # Compose the data using the data composer
@@ -193,7 +205,7 @@ class Vehicle(Agent):
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
 
         # Compose the side link payload
-        self._sidelink_payload = self._data_composer.compose_sidelink_payload(
+        self.sidelink_payload = self._data_composer.compose_sidelink_payload(
             self.sim_model.current_time
         )
 
@@ -206,3 +218,5 @@ class Vehicle(Agent):
         logger.debug(
             f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
         )
+
+        self._data_collector.collect_data(self.sidelink_received_data)

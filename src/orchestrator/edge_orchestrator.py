@@ -43,10 +43,13 @@ class EdgeOrchestrator(Agent):
         self._base_station_finder: NearestNBaseStationFinder | None = None
 
         # Uplink data generated at the vehicles
-        self.data_at_vehicles: dict[int, VehiclePayload] = {}
+        self.uplink_data_at_vehicles: dict[int, VehiclePayload] = {}
+
+        # Sidelink data generated at the vehicles
+        self.sidelink_data_at_vehicles: dict[int, VehiclePayload] = {}
 
         # Uplink vehicle data along with the target base stations
-        self.uplink_vehicle_data: dict[int, dict[int, VehiclePayload]] = {}
+        self.all_vehicles_uplink_data: dict[int, dict[int, VehiclePayload]] = {}
 
         # Downlink data arrived at the base stations from the controllers
         self.downlink_response_at_basestations: dict[
@@ -113,9 +116,13 @@ class EdgeOrchestrator(Agent):
         """
         model_factory = ModelFactory()
         self._base_station_finder = model_factory.create_basestation_finder(
-            self._base_stations,
             self._base_station_links,
             model_data[BASE_STATION_FINDER],
+        )
+
+        self._neighbour_finder = model_factory.create_vehicle_neighbour_finder(
+            self._vehicle_links,
+            model_data[NEIGHBOUR_FINDER],
         )
 
     def uplink_stage(self) -> None:
@@ -128,8 +135,11 @@ class EdgeOrchestrator(Agent):
         self._base_station_finder.current_time = self.sim_model.current_time
         self._base_station_finder.step()
 
-        # Collect data from each vehicle
-        self._collect_data_from_vehicles()
+        # Collect sidelink data from the vehicles
+        self._collect_sidelink_vehicle_data()
+
+        # Collect uplink data from each vehicle
+        self._collect_uplink_vehicle_data()
 
         # Find target base stations
         self._assign_target_basestations()
@@ -137,15 +147,30 @@ class EdgeOrchestrator(Agent):
         # Send data to base stations
         self._send_data_to_basestations()
 
-    def _collect_data_from_vehicles(self):
+        # Send sidelink data to other vehicles
+        self._transmit_sidelink_data()
+
+    def _collect_sidelink_vehicle_data(self) -> None:
         """
-        Send data from the vehicles to the base stations.
+        Collect the sidelink data from the vehicles.
         """
-        logger.debug(f"Collecting data from vehicles")
-        self.data_at_vehicles.clear()
+        logger.debug(f"Collecting sidelink data from vehicles")
+        self.sidelink_data_at_vehicles.clear()
 
         for vehicle_id, vehicle in self._vehicles.items():
-            self.data_at_vehicles[vehicle_id] = vehicle.uplink_payload
+            self.sidelink_data_at_vehicles[vehicle_id] = vehicle.sidelink_payload
+            # Consume the network bandwidth in the vehicle.
+            vehicle.use_network_for_sidelink(vehicle.sidelink_payload.total_data_size)
+
+    def _collect_uplink_vehicle_data(self) -> None:
+        """
+        Collect the uplink data from the vehicles.
+        """
+        logger.debug(f"Collecting uplink data from vehicles")
+        self.uplink_data_at_vehicles.clear()
+
+        for vehicle_id, vehicle in self._vehicles.items():
+            self.uplink_data_at_vehicles[vehicle_id] = vehicle.uplink_payload
             # Consume the network bandwidth in the vehicle.
             vehicle.use_network_for_uplink()
 
@@ -155,8 +180,8 @@ class EdgeOrchestrator(Agent):
         """
         logger.debug(f"Assigning target base stations")
         # Prepare a dictionary with the payloads to send.
-        self.uplink_vehicle_data.clear()
-        for vehicle_id, vehicle_data in self.data_at_vehicles.items():
+        self.all_vehicles_uplink_data.clear()
+        for vehicle_id, vehicle_data in self.uplink_data_at_vehicles.items():
             # Find the base station for the vehicle
             base_station_ids = (
                 self._base_station_finder.select_n_base_stations_for_vehicle(
@@ -168,9 +193,9 @@ class EdgeOrchestrator(Agent):
             base_station_id = base_station_ids[0]
             self._vehicles[vehicle_id].selected_bs = base_station_id
 
-            if base_station_id not in self.uplink_vehicle_data:
-                self.uplink_vehicle_data[base_station_id] = {}
-            self.uplink_vehicle_data[base_station_id][vehicle_id] = vehicle_data
+            if base_station_id not in self.all_vehicles_uplink_data:
+                self.all_vehicles_uplink_data[base_station_id] = {}
+            self.all_vehicles_uplink_data[base_station_id][vehicle_id] = vehicle_data
 
             logger.debug(
                 f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time "
@@ -182,7 +207,7 @@ class EdgeOrchestrator(Agent):
         Send data to the base stations.
         """
         logger.debug(f"Sending data to base stations")
-        for base_station_id, vehicle_data in self.uplink_vehicle_data.items():
+        for base_station_id, vehicle_data in self.all_vehicles_uplink_data.items():
             self._base_stations[base_station_id].set_uplink_vehicle_data(vehicle_data)
             # Consume the wireless network bandwidth in the base station.
             self._base_stations[base_station_id].use_wireless_for_uplink()
@@ -230,3 +255,27 @@ class EdgeOrchestrator(Agent):
                 self._vehicles[vehicle_id].downlink_response = veh_data
                 # Consume the network bandwidth in the vehicle.
                 self._vehicles[vehicle_id].use_network_for_downlink()
+
+    def _transmit_sidelink_data(self):
+        """
+        Transmit the sidelink data.
+        """
+        for vehicle_id, vehicle_data in self.sidelink_data_at_vehicles.items():
+            this_vehicle = self._vehicles[vehicle_id]
+            neighbour_ids = self._neighbour_finder.find_vehicles(vehicle_id)
+
+            if len(neighbour_ids) == 0:
+                continue
+
+            for neighbour_id in neighbour_ids:
+                if neighbour_id not in self._vehicles:
+                    logger.error(f"Vehicle {neighbour_id} not found in the network.")
+                    continue
+
+                # Send the data to the neighbour
+                self._vehicles[neighbour_id].sidelink_payload = vehicle_data
+                # Consume the network bandwidth in both vehicles.
+                this_vehicle.use_network_for_sidelink(vehicle_data.total_data_size)
+                self._vehicles[neighbour_id].use_network_for_sidelink(
+                    vehicle_data.total_data_size
+                )
