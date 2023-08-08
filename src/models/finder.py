@@ -1,9 +1,13 @@
+import logging
+
 from mesa import Agent
 from pandas import DataFrame
 
 import src.core.common_constants as cc
 
 __all__ = ["NearestNBaseStationFinder", "TraceVehicleNeighbourFinder"]
+
+logger = logging.getLogger(__name__)
 
 
 class NearestNBaseStationFinder(Agent):
@@ -37,10 +41,14 @@ class NearestNBaseStationFinder(Agent):
         Select base stations for the vehicle.
         """
         # Get the base stations for the vehicle.
+        logger.debug(f"Looking up base stations for vehicle {vehicle_id}")
         vehicle_base_stations = self._filtered_base_station_links_df[
             self._filtered_base_station_links_df[cc.VEHICLE_ID] == vehicle_id
         ]
 
+        logger.debug(
+            f"Vehicle {vehicle_id} base stations: {vehicle_base_stations[cc.BASE_STATIONS].iloc[0]}"
+        )
         # Create a dictionary of base stations and their distances from the vehicle base stations df.
         tower_distances = {
             tower_id: distance
@@ -117,8 +125,8 @@ class TraceVehicleNeighbourFinder(Agent):
         neighbour_distances = {
             veh_id: distance
             for veh_id, distance in zip(
-                [int(x) for x in neighbour_vehicles[cc.BASE_STATIONS]],
-                [float(x) for x in neighbour_vehicles[cc.DISTANCES]],
+                [int(x) for x in neighbour_vehicles[cc.NEIGHBOURS].iloc[0].split(" ")],
+                [float(x) for x in neighbour_vehicles[cc.DISTANCES].iloc[0].split(" ")],
             )
         }
 
