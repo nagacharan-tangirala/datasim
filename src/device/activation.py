@@ -65,7 +65,7 @@ class ActivationSettings:
                 self.enable_times = array([self._sim_start_time])
                 self.disable_times = array([self._sim_end_time])
             else:
-                logger.exception(f"Activation settings are empty.")
+                logger.warning(f"Activation settings are empty.")
 
     def get_start_times(self) -> ndarray[int]:
         """
