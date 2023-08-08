@@ -208,40 +208,36 @@ class SimModel(Model):
             model_reporters={
                 "active_vehicles": self._edge_orchestrator.active_vehicle_count,
                 "active_base_stations": self._edge_orchestrator.active_base_station_count,
-                "total_data": self._cloud_orchestrator.total_data_at_controllers,
-                "visible_vehicles": self._cloud_orchestrator.visible_vehicles_at_controllers,
+                "total_data": self._cloud_orchestrator.get_total_data_at_controllers,
+                "visible_vehicles": self._cloud_orchestrator.get_visible_vehicles_at_controllers,
+                "side_link_data": self._edge_orchestrator.get_total_sidelink_data_size,
                 "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
                 "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
             },
         )
 
-    def _save_activation_time(
-        self, time_stamp: int, device_id: int, device_type: str
+    def _save_activation_data(
+        self,
+        activate_time: ndarray[int],
+        deactivate_time: ndarray[int],
+        device_id: int,
+        device_type: str,
     ) -> None:
         """
         Update the activation time of the device.
         """
-        if time_stamp < self._start_time:
-            time_stamp = self._start_time
+        for i in range(len(activate_time)):
+            start_time_stamp = activate_time[i]
+            if start_time_stamp not in self._activation_times[device_type]:
+                self._activation_times[device_type][start_time_stamp] = {device_id}
+            else:
+                self._activation_times[device_type][start_time_stamp].add(device_id)
 
-        if time_stamp not in self._activation_times[device_type]:
-            self._activation_times[device_type][time_stamp] = {device_id}
-        else:
-            self._activation_times[device_type][time_stamp].add(device_id)
-
-    def _save_deactivation_time(
-        self, time_stamp: int, device_id: int, device_type: str
-    ) -> None:
-        """
-        Update the deactivation time of the device.
-        """
-        if time_stamp > self._end_time:
-            time_stamp = self._end_time
-
-        if time_stamp not in self._deactivation_times[device_type]:
-            self._deactivation_times[device_type][time_stamp] = {device_id}
-        else:
-            self._deactivation_times[device_type][time_stamp].add(device_id)
+            end_time_stamp = deactivate_time[i]
+            if end_time_stamp not in self._deactivation_times[device_type]:
+                self._deactivation_times[device_type][end_time_stamp] = {device_id}
+            else:
+                self._deactivation_times[device_type][end_time_stamp].add(device_id)
 
     def step(self) -> None:
         """
