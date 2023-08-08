@@ -1,42 +1,80 @@
-from numpy import ndarray
+import logging
+
+from numpy import ndarray, array
+
+logger = logging.getLogger(__name__)
 
 
 class ActivationSettings:
     def __init__(
-        self, activate_times: ndarray, disable_times: ndarray, active: bool = False
+        self,
+        enable_times: ndarray[int],
+        disable_times: ndarray[int],
+        sim_start_time: int,
+        sim_end_time: int,
+        is_always_on: bool = False,
     ):
         """
         Initialize the activation settings.
         """
-        self._activate_times: ndarray[int] = [int(x) for x in activate_times]
-        self._disable_times: ndarray[int] = [int(x) for x in disable_times]
-        self._index: int = 0
-        self._active = active
+        self.enable_times: ndarray[int] = array([int(x) for x in enable_times])
+        self.disable_times: ndarray[int] = array([int(x) for x in disable_times])
 
-    @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        if self._index >= len(self._activate_times):
-            return 0
-        return self._activate_times[self._index]
+        self._sim_start_time: int = sim_start_time
+        self._sim_end_time: int = sim_end_time
 
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        if self._index >= len(self._activate_times):
-            # Return a very large number to ensure that the device is never deactivated
-            return 100000000
-        return self._disable_times[self._index]
+        self._is_always_on: bool = is_always_on
+        self._retain_valid_times()
 
-    @property
-    def active(self) -> bool:
-        """Get the active state."""
-        return self._active
+    def _retain_valid_times(self):
+        """
+        Retain only valid times.
+        """
+        # Loop through both enable and disable times
+        for i in range(len(self.enable_times)):
+            enable_time = self.enable_times[i]
+            disable_time = self.disable_times[i]
 
-    @active.setter
-    def active(self, active: bool) -> None:
-        """Set the active state."""
-        self._active = active
-        # Increment the index if the device is deactivated
-        if not active:
-            self._index += 1
+            if enable_time > disable_time:
+                logger.exception(
+                    f"Enable time {enable_time} is greater than disable time {disable_time}."
+                )
+
+            if enable_time > self._sim_end_time:
+                # Remove all the subsequent enable and disable times from the list.
+                self.enable_times = self.enable_times[:i]
+                self.disable_times = self.disable_times[:i]
+                continue
+
+            if disable_time < self._sim_start_time:
+                # Remove all the subsequent enable and disable times from the list.
+                self.enable_times = self.enable_times[:i]
+                self.disable_times = self.disable_times[:i]
+                continue
+
+            if disable_time > self._sim_end_time:
+                # Set the disable time to the simulation end time.
+                self.disable_times[i] = self._sim_end_time
+
+            if enable_time < self._sim_start_time:
+                # Set the enable time to the simulation start time.
+                self.enable_times[i] = self._sim_start_time
+
+        if len(self.enable_times) == 0:
+            if self._is_always_on:
+                self.enable_times = array([self._sim_start_time])
+                self.disable_times = array([self._sim_end_time])
+            else:
+                logger.exception(f"Activation settings are empty.")
+
+    def get_start_times(self) -> ndarray[int]:
+        """
+        Get the start times.
+        """
+        return self.enable_times
+
+    def get_end_times(self) -> ndarray[int]:
+        """
+        Get the end times.
+        """
+        return self.disable_times
