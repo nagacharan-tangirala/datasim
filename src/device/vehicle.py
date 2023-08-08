@@ -142,25 +142,14 @@ class Vehicle(Agent):
         """
         Activate the vehicle if the time step is correct.
         """
-        if time_step != self._activation_settings.start_time:
-            raise WrongActivationTimeError(
-                time_step, self._activation_settings.start_time
-            )
-
         # Set previous time for data composer
         self._data_composer.previous_time = time_step
-        self._activation_settings.active = True
 
     def deactivate_vehicle(self, time_step: int) -> None:
         """
         Deactivate the vehicle if the time step is correct.
         """
-        if time_step != self._activation_settings.end_time:
-            logger.warning(
-                f"Deactivating vehicle {self.unique_id} at unexpected time {time_step}"
-            )
-
-        self._activation_settings.active = False
+        pass
 
     def use_network_for_uplink(self) -> None:
         """
