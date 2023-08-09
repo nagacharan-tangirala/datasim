@@ -36,14 +36,6 @@ class SimModel(Model):
         self._edge_orchestrator: EdgeOrchestrator = edge_orchestrator
         self._cloud_orchestrator: CloudOrchestrator = cloud_orchestrator
 
-        self._agents_by_type: dict[str, list] = {
-            constants.VEHICLES: self._vehicles,
-            constants.BASE_STATIONS: self._base_stations,
-            constants.CONTROLLERS: self._controllers,
-            constants.EDGE_ORCHESTRATOR: [self._edge_orchestrator],
-            constants.CLOUD_ORCHESTRATOR: [self._cloud_orchestrator],
-        }
-
         self._activation_times: dict[str, dict[int, set[int]]] = {
             constants.VEHICLES: {},
             constants.BASE_STATIONS: {},
