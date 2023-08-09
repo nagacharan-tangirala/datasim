@@ -192,10 +192,8 @@ class EdgeOrchestrator(Agent):
         self.all_vehicles_uplink_data.clear()
         for vehicle_id, vehicle_data in self.uplink_data_at_vehicles.items():
             # Find the base station for the vehicle
-            base_station_ids = (
-                self._base_station_finder.select_n_base_stations_for_vehicle(
-                    vehicle_id, 1
-                )
+            base_station_ids = self._base_station_finder.select_n_stations_for_vehicle(
+                vehicle_id, 1
             )
 
             # Update the vehicle with the selected base station
