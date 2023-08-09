@@ -195,10 +195,22 @@ class SimModel(Model):
         """
         Add the orchestrators to the scheduler.
         """
+        self._edge_orchestrator.model = self
+        self._cloud_orchestrator.model = self
+
         self.schedule.add(self._edge_orchestrator)
         self.schedule.add(self._cloud_orchestrator)
-        self._edge_orchestrator.sim_model = self
-        self._cloud_orchestrator.sim_model = self
+
+    def _assign_sim_model_to_devices(self) -> None:
+        """
+        Assign the simulation model to the devices.
+        """
+        for vehicle in self._vehicles.values():
+            vehicle.model = self
+        for base_station in self._base_stations.values():
+            base_station.model = self
+        for controller in self._controllers.values():
+            controller.model = self
 
     def _create_data_collector(self) -> None:
         """
@@ -345,7 +357,6 @@ class SimModel(Model):
             # Add to the schedule and orchestrator and set the mesa model to this
             self.schedule.add(vehicle)
             self._edge_orchestrator.add_vehicle(vehicle)
-            vehicle.sim_model = self
 
     def _deactivate_vehicles(self) -> None:
         """
@@ -365,7 +376,6 @@ class SimModel(Model):
             # Remove from the schedule and orchestrator and set the mesa model to None
             self.schedule.remove(vehicle)
             self._edge_orchestrator.remove_vehicle(vehicle_id)
-            vehicle.sim_model = None
 
     def _activate_base_stations(self) -> None:
         """
@@ -386,7 +396,6 @@ class SimModel(Model):
             self.schedule.add(base_station)
             self._edge_orchestrator.add_base_station(base_station)
             self._cloud_orchestrator.add_base_station(base_station)
-            base_station.sim_model = self
 
     def _deactivate_base_stations(self) -> None:
         """
@@ -407,7 +416,6 @@ class SimModel(Model):
             self.schedule.remove(base_station)
             self._edge_orchestrator.remove_base_station(base_station_id)
             self._cloud_orchestrator.remove_base_station(base_station_id)
-            base_station.sim_model = None
 
     def _activate_controllers(self) -> None:
         """
@@ -427,7 +435,6 @@ class SimModel(Model):
             # Add to the schedule and orchestrator and set the mesa model to this
             self.schedule.add(controller)
             self._cloud_orchestrator.add_controller(controller)
-            controller.sim_model = self
 
     def _deactivate_controllers(self) -> None:
         """
@@ -447,4 +454,3 @@ class SimModel(Model):
             # Remove from the schedule and orchestrator and set the mesa model to None
             self.schedule.remove(controller)
             self._cloud_orchestrator.remove_controller(controller_id)
-            controller.sim_model = None
