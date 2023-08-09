@@ -229,6 +229,7 @@ class SimModel(Model):
                 if b.type != constants.CLOUD_ORCHESTRATOR
                 and b.type != constants.EDGE_ORCHESTRATOR
                 else None,
+                "agent_type": lambda a: a.type,
             },
         )
 
