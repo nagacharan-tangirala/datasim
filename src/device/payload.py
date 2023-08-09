@@ -12,8 +12,8 @@ class DataPayload:
 class VehiclePayload:
     source: int = -1
     timestamp: int = -1
-    uplink_data_size: float = 0.01
-    uplink_payload: list[DataPayload] = field(default_factory=lambda: [])
+    total_data_size: float = 0.01
+    data_payload_list: list[DataPayload] = field(default_factory=lambda: [])
 
 
 @dataclass

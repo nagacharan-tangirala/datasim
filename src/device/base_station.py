@@ -4,10 +4,6 @@ from mesa import Agent
 from numpy import ndarray
 
 import src.core.constants as constants
-from src.core.exceptions import (
-    WrongActivationTimeError,
-    WrongDeactivationTimeError,
-)
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (
@@ -88,16 +84,6 @@ class BaseStation(Agent):
         return self._location
 
     @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        return self._activation_settings.start_time
-
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        return self._activation_settings.end_time
-
-    @property
     def uplink_payload(self) -> BaseStationPayload:
         """Get the uplink payload."""
         return self._uplink_payload
@@ -117,23 +103,29 @@ class BaseStation(Agent):
         """Get the downlink vehicle data."""
         return self._downlink_vehicle_data
 
+    def get_activation_times(self) -> ndarray[int]:
+        """
+        Get the activation times of the vehicle.
+        """
+        return self._activation_settings.enable_times
+
+    def get_deactivation_times(self) -> ndarray[int]:
+        """
+        Get the deactivation times of the vehicle.
+        """
+        return self._activation_settings.disable_times
+
     def activate_base_station(self, time_step: int) -> None:
         """
         Activate the base station.
         """
-        if self._activation_settings.start_time != time_step:
-            raise WrongActivationTimeError(
-                self._activation_settings.start_time, time_step
-            )
+        pass
 
     def deactivate_base_station(self, time_step: int) -> None:
         """
         Deactivate the base station.
         """
-        if self._activation_settings.end_time != time_step:
-            raise WrongDeactivationTimeError(
-                self._activation_settings.end_time, time_step
-            )
+        pass
 
     def set_uplink_vehicle_data(self, incoming_data: dict[int, VehiclePayload]) -> None:
         """
@@ -180,7 +172,12 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._wireless_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
+        # Find the data size of the uplink data
+        uplink_data_size = 0.0
+        for vehicle_payload in self._uplink_vehicle_data.values():
+            uplink_data_size += vehicle_payload.total_data_size
+
+        self._wireless_hardware.consume_capacity(uplink_data_size)
 
     def use_wireless_for_downlink(self) -> None:
         """
@@ -206,7 +203,6 @@ class BaseStation(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        logger.debug(f"Generating base station payload for {self.unique_id}.")
         # Create base station payload if the base station has received data from the vehicles.
         self._uplink_payload = self._data_composer.compose_basestation_payload(
             self.sim_model.current_time, self._uplink_vehicle_data
@@ -214,9 +210,6 @@ class BaseStation(Agent):
 
         # Use the data processor to process the data.
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
-        logger.debug(
-            f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}."
-        )
 
     def downlink_stage(self) -> None:
         """
@@ -244,9 +237,5 @@ class BaseStation(Agent):
                 downlink_data=self._downlink_response.downlink_data[
                     vehicle_index_in_data
                 ],
-            )
-
-            logger.debug(
-                f"Downlink response for vehicle {vehicle_id} is {self._downlink_vehicle_data[vehicle_id]}."
             )
             vehicle_index_in_data += 1

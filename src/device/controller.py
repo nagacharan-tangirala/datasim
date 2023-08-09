@@ -1,7 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray
+from numpy import ndarray, empty
 from pandas import Series
 
 import src.core.constants as constants
@@ -44,7 +44,7 @@ class CentralController(Agent):
         super().__init__(controller_id, None)
 
         self.sim_model = None
-        self._location: ndarray[float] = []
+        self._location: ndarray[float] = empty(0)
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._networking_hardware: NetworkHardware = wireless_hardware
@@ -59,19 +59,9 @@ class CentralController(Agent):
         self._create_models(controller_models)
 
     @property
-    def location(self) -> list[float, float]:
+    def location(self) -> ndarray[float]:
         """Get the location of the base station."""
         return self._location
-
-    @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        return self._activation_settings.start_time
-
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        return self._activation_settings.end_time
 
     @property
     def received_data(self) -> dict[int, BaseStationPayload]:
@@ -108,6 +98,18 @@ class CentralController(Agent):
         """Get the data types and count."""
         return self._controller_collector.data_counts_by_type
 
+    def get_activation_times(self) -> ndarray[int]:
+        """
+        Get the activation times of the vehicle.
+        """
+        return self._activation_settings.enable_times
+
+    def get_deactivation_times(self) -> ndarray[int]:
+        """
+        Get the deactivation times of the vehicle.
+        """
+        return self._activation_settings.disable_times
+
     def activate_controller(self, time_step: int) -> None:
         """
         Activate the controller.
@@ -130,7 +132,7 @@ class CentralController(Agent):
         )
 
         self._controller_collector = model_factory.create_controller_collector(
-            controller_models[constants.CONTROLLER_COLLECTOR]
+            controller_models[constants.DATA_COLLECTOR]
         )
 
         self._data_composer = model_factory.create_controller_data_composer(

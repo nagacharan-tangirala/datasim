@@ -1,6 +1,7 @@
 import logging
 
 from mesa import Model, DataCollector
+from numpy import ndarray
 
 import src.core.constants as constants
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
@@ -90,25 +91,36 @@ class SimModel(Model):
         """
         logger.debug("Extracting activation and deactivation times for vehicles.")
         for vehicle_id, vehicle in self._vehicles.items():
-            start_time, end_time = vehicle.start_time, vehicle.end_time
-            self._save_activation_time(start_time, vehicle_id, constants.VEHICLES)
-            self._save_deactivation_time(end_time, vehicle_id, constants.VEHICLES)
+            start_times = vehicle.get_activation_times()
+            end_times = vehicle.get_deactivation_times()
+            logger.debug(
+                f"Vehicle {vehicle_id} has activation times {start_times} and deactivation times {end_times}."
+            )
+            self._save_activation_data(
+                start_times, end_times, vehicle_id, constants.VEHICLES
+            )
 
         logger.debug("Extracting activation and deactivation times for base stations.")
         for base_station_id, base_station in self._base_stations.items():
-            start_time, end_time = base_station.start_time, base_station.end_time
-            self._save_activation_time(
-                start_time, base_station_id, constants.BASE_STATIONS
+            start_times = base_station.get_activation_times()
+            end_times = base_station.get_deactivation_times()
+            logger.debug(
+                f"Base station {base_station_id} has activation times {start_times} and deactivation times {end_times}."
             )
-            self._save_deactivation_time(
-                end_time, base_station_id, constants.BASE_STATIONS
+            self._save_activation_data(
+                start_times, end_times, base_station_id, constants.BASE_STATIONS
             )
 
         logger.debug("Extracting activation and deactivation times for controllers.")
         for controller_id, controller in self._controllers.items():
-            start_time, end_time = controller.start_time, controller.end_time
-            self._save_activation_time(start_time, controller_id, constants.CONTROLLERS)
-            self._save_deactivation_time(end_time, controller_id, constants.CONTROLLERS)
+            start_times = controller.get_activation_times()
+            end_times = controller.get_deactivation_times()
+            logger.debug(
+                f"Controller {controller_id} has activation times {start_times} and deactivation times {end_times}."
+            )
+            self._save_activation_data(
+                start_times, end_times, controller_id, constants.CONTROLLERS
+            )
 
     def _initialize_scheduler(self) -> None:
         """
@@ -196,40 +208,36 @@ class SimModel(Model):
             model_reporters={
                 "active_vehicles": self._edge_orchestrator.active_vehicle_count,
                 "active_base_stations": self._edge_orchestrator.active_base_station_count,
-                "total_data": self._cloud_orchestrator.total_data_at_controllers,
-                "visible_vehicles": self._cloud_orchestrator.visible_vehicles_at_controllers,
+                "total_data": self._cloud_orchestrator.get_total_data_at_controllers,
+                "visible_vehicles": self._cloud_orchestrator.get_visible_vehicles_at_controllers,
+                "side_link_data": self._edge_orchestrator.get_total_sidelink_data_size,
                 "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
                 "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
             },
         )
 
-    def _save_activation_time(
-        self, time_stamp: int, device_id: int, device_type: str
+    def _save_activation_data(
+        self,
+        activate_time: ndarray[int],
+        deactivate_time: ndarray[int],
+        device_id: int,
+        device_type: str,
     ) -> None:
         """
         Update the activation time of the device.
         """
-        if time_stamp < self._start_time:
-            time_stamp = self._start_time
+        for i in range(len(activate_time)):
+            start_time_stamp = activate_time[i]
+            if start_time_stamp not in self._activation_times[device_type]:
+                self._activation_times[device_type][start_time_stamp] = {device_id}
+            else:
+                self._activation_times[device_type][start_time_stamp].add(device_id)
 
-        if time_stamp not in self._activation_times[device_type]:
-            self._activation_times[device_type][time_stamp] = {device_id}
-        else:
-            self._activation_times[device_type][time_stamp].add(device_id)
-
-    def _save_deactivation_time(
-        self, time_stamp: int, device_id: int, device_type: str
-    ) -> None:
-        """
-        Update the deactivation time of the device.
-        """
-        if time_stamp > self._end_time:
-            time_stamp = self._end_time
-
-        if time_stamp not in self._deactivation_times[device_type]:
-            self._deactivation_times[device_type][time_stamp] = {device_id}
-        else:
-            self._deactivation_times[device_type][time_stamp].add(device_id)
+            end_time_stamp = deactivate_time[i]
+            if end_time_stamp not in self._deactivation_times[device_type]:
+                self._deactivation_times[device_type][end_time_stamp] = {device_id}
+            else:
+                self._deactivation_times[device_type][end_time_stamp].add(device_id)
 
     def step(self) -> None:
         """
@@ -249,11 +257,14 @@ class SimModel(Model):
         # Collect data from the previous time step
         self.data_collector.collect(self)
 
-        # Refresh active devices at the current time step
-        self._refresh_active_devices()
+        # Activate the devices, if any
+        self._do_device_activations()
 
         # Step through the schedule object
         self.schedule.step()
+
+        # Deactivate the devices, if any
+        self._do_device_deactivations()
 
     def update_vehicles(self, vehicles: dict[int, Vehicle]) -> None:
         """
@@ -294,20 +305,25 @@ class SimModel(Model):
             if controller_id not in self._controllers:
                 self._controllers[controller_id] = controller
 
-    def _refresh_active_devices(self) -> None:
+    def _do_device_activations(self) -> None:
         """
-        If the start or end time of a device is equal to the current time step, activate or deactivate the device.
+        Activate the devices in the current time step.
         """
         if self._current_time in self._activation_times[constants.VEHICLES]:
             self._activate_vehicles()
-        if self._current_time in self._deactivation_times[constants.VEHICLES]:
-            self._deactivate_vehicles()
         if self._current_time in self._activation_times[constants.BASE_STATIONS]:
             self._activate_base_stations()
-        if self._current_time in self._deactivation_times[constants.BASE_STATIONS]:
-            self._deactivate_base_stations()
         if self._current_time in self._activation_times[constants.CONTROLLERS]:
             self._activate_controllers()
+
+    def _do_device_deactivations(self) -> None:
+        """
+        Deactivate the devices in the current time step.
+        """
+        if self._current_time in self._deactivation_times[constants.VEHICLES]:
+            self._deactivate_vehicles()
+        if self._current_time in self._deactivation_times[constants.BASE_STATIONS]:
+            self._deactivate_base_stations()
         if self._current_time in self._deactivation_times[constants.CONTROLLERS]:
             self._deactivate_controllers()
 

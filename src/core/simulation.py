@@ -18,9 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 class Simulation:
-    def __init__(self, config_file: str):
+    def __init__(self, config_file: str) -> None:
         """
-        Initialize the simulation object. This class is responsible for setting up and running the simulation.
+        Initialize the simulation object.
+
+        Parameters
+        ----------
+        config_file : str
+            The path to the config file.
         """
         self.config_file: str = config_file
 
@@ -154,12 +159,12 @@ class Simulation:
         self, data_reader: ParquetDataReader | CSVDataReader | None
     ) -> DataFrame:
         """
-        Read the input data.
+        Read the input data from the file.
 
         Parameters
         ----------
         data_reader: FileReader
-            The data reader object.
+            The file reader object.
 
         Returns
         ----------
@@ -190,6 +195,8 @@ class Simulation:
             self._vehicle_activations_data,
             self._base_station_activations_data,
             self._controller_activations_data,
+            self.start_time,
+            self.end_time,
         )
 
         # Create a device factory object and create the participants

@@ -4,13 +4,9 @@ from pandas import DataFrame
 
 import src.core.constants as constants
 from src.core.exceptions import ModelTypeNotImplementedError
-from src.models.bs_finder import NearestNBaseStationFinder
-from src.models.collector import ControllerCollector
-from src.models.composer import (
-    VehicleDataComposer,
-    BaseStationDataComposer,
-    ControllerDataComposer,
-)
+from src.models.collector import ControllerCollector, VehicleCollector
+from src.models.composer import *
+from src.models.finder import *
 from src.models.mobility import *
 from src.models.simplifier import *
 
@@ -139,13 +135,13 @@ class ModelFactory:
                 return ControllerCollector()
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.CONTROLLER_COLLECTOR,
+                    constants.DATA_COLLECTOR,
                     controller_collector_data[constants.MODEL_NAME],
                 )
 
     @staticmethod
     def create_basestation_finder(
-        base_stations: dict, base_station_links_df: DataFrame, model_data: dict
+        base_station_links_df: DataFrame, model_data: dict
     ) -> NearestNBaseStationFinder:
         """
         Create the base station finder.
@@ -153,8 +149,41 @@ class ModelFactory:
         match model_data[constants.MODEL_NAME]:
             case "nearest":
                 logger.debug(f"Creating nearest base station finder.")
-                return NearestNBaseStationFinder(base_stations, base_station_links_df)
+                return NearestNBaseStationFinder(base_station_links_df)
             case _:
                 raise ModelTypeNotImplementedError(
                     constants.BASE_STATION_FINDER, model_data[constants.MODEL_NAME]
+                )
+
+    @staticmethod
+    def create_vehicle_data_collector(
+        vehicle_data_collector_data: dict,
+    ) -> VehicleCollector:
+        """
+        Create the vehicle data collector model.
+        """
+        match vehicle_data_collector_data[constants.MODEL_NAME]:
+            case "simple":
+                return VehicleCollector()
+            case _:
+                raise ModelTypeNotImplementedError(
+                    constants.DATA_COLLECTOR,
+                    vehicle_data_collector_data[constants.MODEL_NAME],
+                )
+
+    @staticmethod
+    def create_vehicle_neighbour_finder(
+        v2v_links: DataFrame,
+        vehicle_neighbour_finder_data: dict,
+    ) -> TraceVehicleNeighbourFinder:
+        """
+        Create the vehicle neighbour finder model.
+        """
+        match vehicle_neighbour_finder_data[constants.MODEL_NAME]:
+            case "trace":
+                return TraceVehicleNeighbourFinder(v2v_links)
+            case _:
+                raise ModelTypeNotImplementedError(
+                    constants.NEIGHBOUR_FINDER,
+                    vehicle_neighbour_finder_data[constants.MODEL_NAME],
                 )

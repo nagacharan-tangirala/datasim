@@ -1,10 +1,10 @@
 import logging
 
 from mesa import Agent
+from numpy import ndarray
 from pandas import DataFrame
 
 import src.core.constants as constants
-from src.core.exceptions import WrongActivationTimeError
 from src.device.activation import ActivationSettings
 from src.device.hardware import *
 from src.device.payload import VehiclePayload, VehicleResponse
@@ -44,7 +44,11 @@ class Vehicle(Agent):
         self.sim_model = None
 
         self._uplink_payload: VehiclePayload | None = None
+        self.sidelink_payload: VehiclePayload | None = None
         self._downlink_response: VehicleResponse | None = None
+
+        # Received data from other vehicles
+        self.sidelink_received_data: dict[int, VehiclePayload] = {}
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._network_hardware: NetworkHardware = wireless_hardware
@@ -54,16 +58,6 @@ class Vehicle(Agent):
         self._previous_bs: int = -1
 
         self._create_models(vehicle_models)
-
-    @property
-    def start_time(self) -> int:
-        """Get the start time."""
-        return self._activation_settings.start_time
-
-    @property
-    def end_time(self) -> int:
-        """Get the end time."""
-        return self._activation_settings.end_time
 
     @property
     def uplink_payload(self) -> VehiclePayload:
@@ -90,6 +84,18 @@ class Vehicle(Agent):
         """Check if the vehicle is in a handover."""
         return 1 if self._previous_bs != self.selected_bs else 0
 
+    def get_activation_times(self) -> ndarray[int]:
+        """
+        Get the activation times of the vehicle.
+        """
+        return self._activation_settings.enable_times
+
+    def get_deactivation_times(self) -> ndarray[int]:
+        """
+        Get the deactivation times of the vehicle.
+        """
+        return self._activation_settings.disable_times
+
     def _create_models(self, model_data: dict) -> None:
         """
         Create the models for this vehicle.
@@ -107,6 +113,10 @@ class Vehicle(Agent):
 
         self._data_simplifier = model_factory.create_vehicle_data_simplifier(
             model_data[constants.DATA_SIMPLIFIER]
+        )
+
+        self._data_collector = model_factory.create_vehicle_data_collector(
+            model_data[constants.DATA_COLLECTOR]
         )
 
     def update_mobility_data(self, mobility_data: DataFrame | list[float]) -> None:
@@ -132,31 +142,26 @@ class Vehicle(Agent):
         """
         Activate the vehicle if the time step is correct.
         """
-        if time_step != self._activation_settings.start_time:
-            raise WrongActivationTimeError(
-                time_step, self._activation_settings.start_time
-            )
-
         # Set previous time for data composer
         self._data_composer.previous_time = time_step
-        self._activation_settings.active = True
 
     def deactivate_vehicle(self, time_step: int) -> None:
         """
         Deactivate the vehicle if the time step is correct.
         """
-        if time_step != self._activation_settings.end_time:
-            logger.warning(
-                f"Deactivating vehicle {self.unique_id} at unexpected time {time_step}"
-            )
-
-        self._activation_settings.active = False
+        pass
 
     def use_network_for_uplink(self) -> None:
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._network_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
+        self._network_hardware.consume_capacity(self._uplink_payload.total_data_size)
+
+    def use_network_for_sidelink(self, data_size: float) -> None:
+        """
+        Use the network hardware to transfer data in the sidelink direction.
+        """
+        self._network_hardware.consume_capacity(data_size)
 
     def use_network_for_downlink(self) -> None:
         """
@@ -178,20 +183,19 @@ class Vehicle(Agent):
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.sim_model.current_time
         self._mobility_model.step()
-
         self._location = self._mobility_model.current_location
-        logger.debug(f"Position updated: {self._location}")
-
-        logger.debug(f"Generating vehicle payload for vehicle {self.unique_id}")
 
         # Compose the data using the data composer
-        self._uplink_payload = self._data_composer.compose_vehicle_payload(
+        self._uplink_payload = self._data_composer.compose_uplink_payload(
             self.sim_model.current_time
         )
         self._uplink_payload.source = self.unique_id
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
 
-        logger.debug(f"Vehicle payload generated: {self._uplink_payload}")
+        # Compose the side link payload
+        self.sidelink_payload = self._data_composer.compose_sidelink_payload(
+            self.sim_model.current_time
+        )
 
     def downlink_stage(self) -> None:
         """
@@ -200,3 +204,5 @@ class Vehicle(Agent):
         logger.debug(
             f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
         )
+
+        self._data_collector.collect_data(self.sidelink_received_data)
