@@ -56,6 +56,8 @@ class CentralController(Agent):
 
         self.processed_base_station_data: dict[int, BaseStationPayload] = {}
 
+        self._vehicles_in_range: int = 0
+
         controller_models[constants.MOBILITY][constants.POSITION] = controller_position
         self._create_models(controller_models)
 
@@ -164,9 +166,9 @@ class CentralController(Agent):
         Step through the central controller for the uplink stage.
         """
         logger.debug(
-            f"Uplink stage for controller {self.unique_id} at time {self.sim_model.current_time}."
+            f"Uplink stage for controller {self.unique_id} at time {self.model.current_time}."
         )
-        self._mobility_model.current_time = self.sim_model.current_time
+        self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
@@ -174,7 +176,7 @@ class CentralController(Agent):
 
         # Create base station response.
         self._downlink_response = self._data_composer.generate_basestation_response(
-            self.sim_model.current_time, self._received_data
+            self.model.current_time, self._received_data
         )
 
     def downlink_stage(self) -> None:
@@ -182,6 +184,6 @@ class CentralController(Agent):
         Step through the central controller for the downlink stage.
         """
         logger.debug(
-            f"Downlink stage for controller {self.unique_id} at time {self.sim_model.current_time}."
+            f"Downlink stage for controller {self.unique_id} at time {self.model.current_time}."
         )
         pass

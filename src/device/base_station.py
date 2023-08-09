@@ -1,7 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray
+from numpy import ndarray, empty
 
 import src.core.constants as constants
 from src.device.activation import ActivationSettings
@@ -76,6 +76,11 @@ class BaseStation(Agent):
             constants.POSITION
         ] = base_station_position
         self._create_models(base_station_models_data)
+
+        # These are the output metrics
+        self._received_veh_data_size: float = 0
+        self._simplified_veh_data_size: float = 0
+        self._vehicles_in_range: int = 0
 
         logger.debug(f"Base station {self.unique_id} created.")
 
@@ -155,7 +160,7 @@ class BaseStation(Agent):
         self._uplink_vehicle_data = incoming_data
         logger.debug(
             f"Vehicles near base station {self.unique_id} are "
-            f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.sim_model.current_time}."
+            f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.model.current_time}."
         )
 
     def _create_models(self, base_station_models_data: dict) -> None:
@@ -218,19 +223,22 @@ class BaseStation(Agent):
         self._downlink_vehicle_data.clear()
 
         logger.debug(
-            f"Uplink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
+            f"Uplink stage for base station {self.unique_id} at time {self.model.current_time}."
         )
-        self._mobility_model.current_time = self.sim_model.current_time
+        self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
         # Create base station payload if the base station has received data from the vehicles.
         self._uplink_payload = self._data_composer.compose_basestation_payload(
-            self.sim_model.current_time, self._uplink_vehicle_data
+            self.model.current_time, self._uplink_vehicle_data
         )
+        self._received_veh_data_size = self._uplink_payload.uplink_data_size
+        self._vehicles_in_range = len(self._uplink_payload.sources)
 
         # Use the data processor to process the data.
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
+        self._simplified_veh_data_size = self._uplink_payload.uplink_data_size
 
     def downlink_stage(self) -> None:
         """
@@ -240,7 +248,7 @@ class BaseStation(Agent):
         self._uplink_vehicle_data.clear()
 
         logger.debug(
-            f"Downlink stage for base station {self.unique_id} at time {self.sim_model.current_time}."
+            f"Downlink stage for base station {self.unique_id} at time {self.model.current_time}."
         )
 
         # Create the downlink vehicle response.
@@ -254,7 +262,7 @@ class BaseStation(Agent):
             self._downlink_vehicle_data[vehicle_id] = VehicleResponse(
                 destination=vehicle_id,
                 status=True,
-                timestamp=self.sim_model.current_time,
+                timestamp=self.model.current_time,
                 downlink_data=self._downlink_response.downlink_data[
                     vehicle_index_in_data
                 ],
