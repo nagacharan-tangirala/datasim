@@ -39,16 +39,17 @@ class Vehicle(Agent):
             The model data of the vehicle.
         """
         super().__init__(vehicle_id, None)
+        self.model = None
 
         self._location: list[float] = []
-        self.sim_model = None
+        self.type: str = constants.VEHICLES
 
         self._uplink_payload: VehiclePayload | None = None
         self.sidelink_payload: VehiclePayload | None = None
-        self._downlink_response: VehicleResponse | None = None
+        self.downlink_response: VehicleResponse | None = None
 
         # Received data from other vehicles
-        self.sidelink_received_data: dict[int, VehiclePayload] = {}
+        self._sidelink_received_data: dict[int, VehiclePayload] = {}
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._network_hardware: NetworkHardware = wireless_hardware
@@ -56,6 +57,8 @@ class Vehicle(Agent):
 
         self.selected_bs: int = -1
         self._previous_bs: int = -1
+        self._total_data_generated: float = 0.0
+        self._vehicles_in_range: int = 0
 
         self._create_models(vehicle_models)
 

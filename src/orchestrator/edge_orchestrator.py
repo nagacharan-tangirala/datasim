@@ -33,6 +33,8 @@ class EdgeOrchestrator(Agent):
             The model data.
         """
         super().__init__(990000, None)
+        self.type: str = constants.EDGE_ORCHESTRATOR
+        self.model = None
 
         self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}

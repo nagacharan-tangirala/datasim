@@ -49,9 +49,10 @@ class BaseStation(Agent):
             The model data of the base station.
         """
         super().__init__(base_station_id, None)
+        self.type: str = constants.BASE_STATIONS
+        self.model = None
 
-        self._location: ndarray[float] = []
-        self.sim_model = None
+        self._location: ndarray[float] = empty(0, dtype=float)
 
         self._wired_hardware: NetworkHardware = wired_hardware
         self._computing_hardware: ComputingHardware = computing_hardware

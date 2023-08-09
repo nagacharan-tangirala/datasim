@@ -23,6 +23,8 @@ class CloudOrchestrator(Agent):
             The model data.
         """
         super().__init__(990001, None)
+        self.type: str = constants.CLOUD_ORCHESTRATOR
+        self.model = None
 
         self._controllers: dict[int, CentralController] = {}
         self._base_stations: dict[int, BaseStation] = {}
