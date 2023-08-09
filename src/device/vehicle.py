@@ -185,9 +185,6 @@ class Vehicle(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        logger.debug(f"Position updated: {self._location}")
-        logger.debug(f"Generating vehicle payload for vehicle {self.unique_id}")
-
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(
             self.sim_model.current_time
@@ -199,8 +196,6 @@ class Vehicle(Agent):
         self.sidelink_payload = self._data_composer.compose_sidelink_payload(
             self.sim_model.current_time
         )
-
-        logger.debug(f"Vehicle payload generated: {self._uplink_payload}")
 
     def downlink_stage(self) -> None:
         """

@@ -203,7 +203,6 @@ class BaseStation(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        logger.debug(f"Generating base station payload for {self.unique_id}.")
         # Create base station payload if the base station has received data from the vehicles.
         self._uplink_payload = self._data_composer.compose_basestation_payload(
             self.sim_model.current_time, self._uplink_vehicle_data
@@ -211,9 +210,6 @@ class BaseStation(Agent):
 
         # Use the data processor to process the data.
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
-        logger.debug(
-            f"Uplink payload for base station {self.unique_id} is {self._uplink_payload}."
-        )
 
     def downlink_stage(self) -> None:
         """
@@ -241,9 +237,5 @@ class BaseStation(Agent):
                 downlink_data=self._downlink_response.downlink_data[
                     vehicle_index_in_data
                 ],
-            )
-
-            logger.debug(
-                f"Downlink response for vehicle {vehicle_id} is {self._downlink_vehicle_data[vehicle_id]}."
             )
             vehicle_index_in_data += 1
