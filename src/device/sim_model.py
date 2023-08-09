@@ -74,6 +74,9 @@ class SimModel(Model):
         logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
 
+        logger.debug("Assign simulation model to all the devices.")
+        self._assign_sim_model_to_devices()
+
         logger.debug("Create data collector.")
         self._create_data_collector()
 
