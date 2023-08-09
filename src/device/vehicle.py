@@ -96,6 +96,17 @@ class Vehicle(Agent):
         """
         return self._activation_settings.disable_times
 
+    def add_sidelink_received_data(self, payload: VehiclePayload) -> None:
+        """
+        Add received data from another vehicle.
+
+        Parameters
+        ----------
+        payload : VehiclePayload
+            The payload of the vehicle.
+        """
+        self._sidelink_received_data[payload.source] = payload
+
     def _create_models(self, model_data: dict) -> None:
         """
         Create the models for this vehicle.
@@ -202,7 +213,8 @@ class Vehicle(Agent):
         Downlink stage for the vehicle.
         """
         logger.debug(
-            f"Downlink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
+            f"Downlink stage for vehicle {self.unique_id} at time {self.model.current_time}"
         )
 
-        self._data_collector.collect_data(self.sidelink_received_data)
+        self._vehicles_in_range = len(self._sidelink_received_data)
+        self._data_collector.collect_data(self._sidelink_received_data)
