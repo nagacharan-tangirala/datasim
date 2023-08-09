@@ -1,6 +1,7 @@
 import src.core.common_constants as cc
 from src.core.exceptions import UnsupportedOutputFormatError
-from src.output.model_data import ModelOutputParquet, ModelOutputCSV
+from src.output.agent_data import *
+from src.output.model_data import *
 
 
 class OutputWriterFactory:
@@ -21,5 +22,19 @@ class OutputWriterFactory:
                 return ModelOutputParquet(self.output_path)
             case cc.CSV:
                 return ModelOutputCSV(self.output_path)
+            case _:
+                raise UnsupportedOutputFormatError(output_type)
+
+    def create_agent_output_writer(
+        self, output_type: str
+    ) -> AgentOutputParquet | AgentOutputCSV:
+        """
+        Create the agent output writer.
+        """
+        match output_type:
+            case cc.PARQUET:
+                return AgentOutputParquet(self.output_path)
+            case cc.CSV:
+                return AgentOutputCSV(self.output_path)
             case _:
                 raise UnsupportedOutputFormatError(output_type)
