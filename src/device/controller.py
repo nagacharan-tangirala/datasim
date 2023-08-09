@@ -44,7 +44,7 @@ class CentralController(Agent):
         super().__init__(controller_id, None)
 
         self.model = None
-        self.type: str = constants.BASE_STATIONS
+        self.type: str = constants.CONTROLLERS
         self._location: ndarray[float] = empty(0)
 
         self._computing_hardware: ComputingHardware = computing_hardware
