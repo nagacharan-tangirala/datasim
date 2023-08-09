@@ -285,6 +285,7 @@ class SimModel(Model):
         for vehicle_id, vehicle in vehicles.items():
             if vehicle_id in self._vehicles:
                 self._vehicles[vehicle_id] = vehicle
+                self._vehicles[vehicle_id].model = self
 
     def update_base_stations(self, base_stations: dict[int, BaseStation]) -> None:
         """
@@ -298,6 +299,7 @@ class SimModel(Model):
         for base_station_id, base_station in base_stations.items():
             if base_station_id not in self._base_stations:
                 self._base_stations[base_station_id] = base_station
+                self._base_stations[base_station_id].model = self
 
     def update_controllers(self, controllers: dict[int, CentralController]) -> None:
         """
@@ -311,6 +313,7 @@ class SimModel(Model):
         for controller_id, controller in controllers.items():
             if controller_id not in self._controllers:
                 self._controllers[controller_id] = controller
+                self._controllers[controller_id].model = self
 
     def _do_device_activations(self) -> None:
         """
