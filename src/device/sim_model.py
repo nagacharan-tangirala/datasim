@@ -221,6 +221,15 @@ class SimModel(Model):
                 "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
                 "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
             },
+            agent_reporters={
+                "vehicle_data": lambda v: v.data_generated_at_device
+                if v.type == constants.VEHICLES
+                else None,
+                "vehicles_in_range": lambda b: b.vehicles_in_range
+                if b.type != constants.CLOUD_ORCHESTRATOR
+                and b.type != constants.EDGE_ORCHESTRATOR
+                else None,
+            },
         )
 
     def _save_activation_data(
