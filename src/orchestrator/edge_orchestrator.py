@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-from src.core.constants import BASE_STATION_FINDER, NEIGHBOUR_FINDER
+import src.core.constants as constants
 from src.device.base_station import BaseStation
 from src.device.payload import VehiclePayload, VehicleResponse
 from src.device.vehicle import Vehicle
@@ -136,12 +136,12 @@ class EdgeOrchestrator(Agent):
         model_factory = ModelFactory()
         self._base_station_finder = model_factory.create_basestation_finder(
             self._base_station_links,
-            model_data[BASE_STATION_FINDER],
+            model_data[constants.BASE_STATION_FINDER],
         )
 
         self._neighbour_finder = model_factory.create_vehicle_neighbour_finder(
             self._vehicle_links,
-            model_data[NEIGHBOUR_FINDER],
+            model_data[constants.NEIGHBOUR_FINDER],
         )
 
     def uplink_stage(self) -> None:
@@ -149,11 +149,11 @@ class EdgeOrchestrator(Agent):
         Step through the orchestration process for the uplink stage.
         This is the second step in the overall simulation.
         """
-        logger.debug(f"Uplink stage at time {self.sim_model.current_time}")
+        logger.debug(f"Uplink stage at time {self.model.current_time}")
         # Step through the models.
-        self._base_station_finder.current_time = self.sim_model.current_time
+        self._base_station_finder.current_time = self.model.current_time
         self._base_station_finder.step()
-        self._neighbour_finder.current_time = self.sim_model.current_time
+        self._neighbour_finder.current_time = self.model.current_time
         self._neighbour_finder.step()
 
         # Collect sidelink data from the vehicles
@@ -189,6 +189,7 @@ class EdgeOrchestrator(Agent):
         """
         logger.debug(f"Collecting uplink data from vehicles")
         self.uplink_data_at_vehicles.clear()
+        self._vehicles_in_range = len(self._vehicles)
 
         for vehicle_id, vehicle in self._vehicles.items():
             self.uplink_data_at_vehicles[vehicle_id] = vehicle.uplink_payload
@@ -218,7 +219,7 @@ class EdgeOrchestrator(Agent):
 
             logger.debug(
                 f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time "
-                + f"{self.sim_model.current_time}"
+                + f"{self.model.current_time}"
             )
 
     def _send_data_to_basestations(self) -> None:
@@ -235,7 +236,7 @@ class EdgeOrchestrator(Agent):
         """
         Step through the orchestration process for the downlink stage.
         """
-        logger.debug(f"Downlink stage at time {self.sim_model.current_time}")
+        logger.debug(f"Downlink stage at time {self.model.current_time}")
         # Collect data from each base station
         self._collect_data_from_basestations()
 
@@ -279,6 +280,7 @@ class EdgeOrchestrator(Agent):
         self._total_side_link_data = 0.0
         for vehicle_id, vehicle_data in self.sidelink_data_at_vehicles.items():
             this_vehicle = self._vehicles[vehicle_id]
+            this_veh_sidelink_payload = this_vehicle.sidelink_payload
             neighbour_ids = self._neighbour_finder.find_vehicles(vehicle_id)
 
             if len(neighbour_ids) == 0:

@@ -3,6 +3,7 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
+import src.core.constants as constants
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
 from src.device.payload import BaseStationPayload, BaseStationResponse
@@ -159,7 +160,7 @@ class CloudOrchestrator(Agent):
         """
         total_vehicles: int = 0
         for controller_id, controller in self._controllers.items():
-            total_vehicles += len(controller.visible_vehicles)
+            total_vehicles += controller.vehicles_in_range
         return total_vehicles
 
     def get_data_sizes_by_type(self) -> dict[str, float]:
@@ -212,7 +213,7 @@ class CloudOrchestrator(Agent):
 
         This is the second step in the overall simulation.
         """
-        logger.debug(f"Uplink stage at time {self.sim_model.current_time}.")
+        logger.debug(f"Uplink stage at time {self.model.current_time}.")
         # Step through the models.
 
         # Collect data from each base station
@@ -267,7 +268,7 @@ class CloudOrchestrator(Agent):
         """
         Step through the orchestration process for the downlink stage.
         """
-        logger.debug(f"Downlink stage at time {self.sim_model.current_time}.")
+        logger.debug(f"Downlink stage at time {self.model.current_time}.")
         # Collect data from each controller
         self._collect_data_from_controllers()
 
