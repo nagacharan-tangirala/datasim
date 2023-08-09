@@ -181,34 +181,38 @@ class Vehicle(Agent):
         """
         Use the network hardware to transfer data in the downlink direction.
         """
-        self._network_hardware.consume_capacity(self._downlink_response.downlink_data)
+        self._network_hardware.consume_capacity(self.downlink_response.downlink_data)
 
     def uplink_stage(self) -> None:
         """
         Downlink stage for the vehicle.
         """
         logger.debug(
-            f"Uplink stage for vehicle {self.unique_id} at time {self.sim_model.current_time}"
+            f"Uplink stage for vehicle {self.unique_id} at time {self.model.current_time}"
         )
 
         # Update the previous base station
         self._previous_bs = self.selected_bs
 
         # Propagate the mobility model and get the current location
-        self._mobility_model.current_time = self.sim_model.current_time
+        self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(
-            self.sim_model.current_time
+            self.model.current_time
         )
         self._uplink_payload.source = self.unique_id
         self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
 
         # Compose the side link payload
         self.sidelink_payload = self._data_composer.compose_sidelink_payload(
-            self.sim_model.current_time
+            self.model.current_time
+        )
+
+        self._total_data_generated = (
+            self._uplink_payload.total_data_size + self.sidelink_payload.total_data_size
         )
 
     def downlink_stage(self) -> None:
