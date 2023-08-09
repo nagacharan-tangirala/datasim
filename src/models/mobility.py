@@ -53,9 +53,22 @@ class TraceMobilityModel(Agent):
         super().__init__(0, None)
         self._type: str = "trace"
 
-        self._current_time: int = 0
+        self.current_time: int = 0
         self._current_location: list[float] = []
-        self._positions: DataFrame = DataFrame()
+        self._positions_df: DataFrame = DataFrame()
+        self._positions: dict = {}
+
+    def _prepare_positions(self) -> None:
+        """
+        Prepare the positions.
+        """
+        self._positions_df[cc.TIME_STEP] = self._positions_df[cc.TIME_STEP].astype(int)
+        self._positions = dict(
+            zip(
+                self._positions_df[cc.TIME_STEP],
+                list(zip(self._positions_df[cc.X], self._positions_df[cc.Y])),
+            )
+        )
 
     @property
     def type(self) -> str:
@@ -67,38 +80,27 @@ class TraceMobilityModel(Agent):
         """Get the current location."""
         return self._current_location
 
-    @property
-    def current_time(self) -> int:
-        """Get the current time."""
-        return self._current_time
-
-    @current_time.setter
-    def current_time(self, value: int) -> None:
-        """Set the current time."""
-        self._current_time = value
-
-    def update_positions(self, positions: DataFrame) -> None:
+    def update_positions(self, new_positions_df: DataFrame) -> None:
         """
         Update the positions.
 
         Parameters
         ----------
-        positions : DataFrame
+        new_positions_df : DataFrame
             The new positions.
         """
-        self._positions = concat([self._positions, positions], ignore_index=True)
+        self._positions_df = concat(
+            [self._positions_df, new_positions_df], ignore_index=True
+        )
+        self._prepare_positions()
 
     def step(self) -> None:
         """
         Step through the model.
         """
         # Check if the current time is in the positions dataframe
-        if self._current_time in self._positions[cc.TIME_STEP].values:
-            self._current_location = (
-                self._positions[self._positions[cc.TIME_STEP] == self._current_time]
-                .iloc[0]
-                .values[2:]
-            )
+        if self.current_time in self._positions:
+            self._current_location = self._positions[self.current_time]
         else:
             # If not, then the vehicle is not moving
             self._current_location = self._current_location
