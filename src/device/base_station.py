@@ -103,6 +103,26 @@ class BaseStation(Agent):
         """Get the downlink vehicle data."""
         return self._downlink_vehicle_data
 
+    @property
+    def received_veh_data_size(self) -> float:
+        """Get the received vehicle data size."""
+        return self._received_veh_data_size
+
+    @property
+    def simplified_veh_data_size(self) -> float:
+        """Get the simplified vehicle data size."""
+        return self._simplified_veh_data_size
+
+    @property
+    def vehicles_in_range(self) -> int:
+        """Get the number of vehicles in range."""
+        return self._vehicles_in_range
+
+    @property
+    def data_generated_at_device(self) -> float:
+        """Get the data generated at the device."""
+        return -1.0
+
     def get_activation_times(self) -> ndarray[int]:
         """
         Get the activation times of the vehicle.

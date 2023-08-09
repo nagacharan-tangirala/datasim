@@ -56,11 +56,21 @@ class EdgeOrchestrator(Agent):
             int, dict[int, VehicleResponse]
         ] = {}
 
-        self.sim_model = None
         self._total_side_link_data: float = 0
+        self._vehicles_in_range: int = 0
 
         # Create the models
         self._create_models(model_data)
+
+    @property
+    def data_generated_at_device(self) -> float:
+        """Get the data generated at the device."""
+        return -1.0
+
+    @property
+    def vehicles_in_range(self) -> int:
+        """Get the number of vehicles in range."""
+        return self._vehicles_in_range
 
     def get_total_sidelink_data_size(self) -> float:
         """

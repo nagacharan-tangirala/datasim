@@ -44,8 +44,17 @@ class CloudOrchestrator(Agent):
             row[1]: row[2] for row in self._controller_links_df.values
         }
 
-        self.sim_model = None
         self._create_models(model_data)
+
+    @property
+    def data_generated_at_device(self) -> float:
+        """Get the data generated at the device."""
+        return -1.0
+
+    @property
+    def vehicles_in_range(self) -> int:
+        """Get the number of vehicles in range."""
+        return -1
 
     def active_controller_count(self) -> int:
         """
