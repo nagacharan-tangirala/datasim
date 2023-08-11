@@ -280,7 +280,6 @@ class EdgeOrchestrator(Agent):
         self._total_side_link_data = 0.0
         for vehicle_id, vehicle_data in self.sidelink_data_at_vehicles.items():
             this_vehicle = self._vehicles[vehicle_id]
-            this_veh_sidelink_payload = this_vehicle.sidelink_payload
             neighbour_ids = self._neighbour_finder.find_vehicles(vehicle_id)
 
             if len(neighbour_ids) == 0:
@@ -292,9 +291,7 @@ class EdgeOrchestrator(Agent):
                 ), f"Vehicle {neighbour_id} missing."
 
                 # Send the data to the neighbour
-                self._vehicles[neighbour_id].add_sidelink_received_data(
-                    this_veh_sidelink_payload
-                )
+                self._vehicles[neighbour_id].add_sidelink_received_data(vehicle_data)
 
                 # Consume the network bandwidth in both vehicles.
                 this_vehicle.use_network_for_sidelink(vehicle_data.total_data_size)
