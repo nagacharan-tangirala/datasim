@@ -165,7 +165,7 @@ class Vehicle(Agent):
         self._location = self._mobility_model.current_location
 
         # Place the vehicle in the network
-        # self.model.space.place_agent(self, self._location)
+        self.model.space.place_agent(self, self._location)
 
     def deactivate_vehicle(self, time_step: int) -> None:
         """
@@ -208,7 +208,7 @@ class Vehicle(Agent):
         self._location = self._mobility_model.current_location
 
         # Move the vehicle to the new location
-        # self.model.space.move_agent(self, self._location)
+        self.model.space.move_agent(self, self._location)
 
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(
