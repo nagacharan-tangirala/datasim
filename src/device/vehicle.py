@@ -159,6 +159,14 @@ class Vehicle(Agent):
         # Set previous time for data composer
         self._data_composer.previous_time = time_step
 
+        # Get the current location of the vehicle
+        self._mobility_model.current_time = self.model.current_time
+        self._mobility_model.step()
+        self._location = self._mobility_model.current_location
+
+        # Place the vehicle in the network
+        # self.model.space.place_agent(self, self._location)
+
     def deactivate_vehicle(self, time_step: int) -> None:
         """
         Deactivate the vehicle if the time step is correct.
@@ -198,6 +206,9 @@ class Vehicle(Agent):
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
+
+        # Move the vehicle to the new location
+        # self.model.space.move_agent(self, self._location)
 
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(
