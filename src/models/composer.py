@@ -117,6 +117,7 @@ class VehicleDataComposer:
         """
         # Collect data from all the data sources and create data payload
         data_payloads = []
+        all_data_size = 0.0
         for data_source in data_sources:
             data_payload = DataPayload()
             data_payload.type = data_source.data_type
@@ -127,14 +128,13 @@ class VehicleDataComposer:
 
             # Calculate the data size and add to the payload
             data_payload.data_size = data_source.data_size * data_counts
+            all_data_size += data_payload.data_size
             data_payloads.append(data_payload)
 
         # Create the vehicle payload
         vehicle_payload = VehiclePayload()
         vehicle_payload.timestamp = current_time
-        vehicle_payload.total_data_size = sum(
-            [data.data_size for data in data_payloads]
-        )
+        vehicle_payload.total_data_size = all_data_size
         vehicle_payload.data_payload_list = data_payloads
 
         assert vehicle_payload.total_data_size >= 0, "Uplink data size is negative."

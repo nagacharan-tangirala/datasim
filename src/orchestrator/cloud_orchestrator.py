@@ -3,6 +3,7 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
+import src.core.constants as constants
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
 from src.device.payload import BaseStationPayload, BaseStationResponse
@@ -23,6 +24,8 @@ class CloudOrchestrator(Agent):
             The model data.
         """
         super().__init__(990001, None)
+        self.type: str = constants.CLOUD_ORCHESTRATOR
+        self.model = None
 
         self._controllers: dict[int, CentralController] = {}
         self._base_stations: dict[int, BaseStation] = {}
@@ -44,8 +47,17 @@ class CloudOrchestrator(Agent):
             row[1]: row[2] for row in self._controller_links_df.values
         }
 
-        self.sim_model = None
         self._create_models(model_data)
+
+    @property
+    def data_generated_at_device(self) -> float:
+        """Get the data generated at the device."""
+        return -1.0
+
+    @property
+    def vehicles_in_range(self) -> int:
+        """Get the number of vehicles in range."""
+        return -1
 
     def active_controller_count(self) -> int:
         """
@@ -148,7 +160,7 @@ class CloudOrchestrator(Agent):
         """
         total_vehicles: int = 0
         for controller_id, controller in self._controllers.items():
-            total_vehicles += len(controller.visible_vehicles)
+            total_vehicles += controller.vehicles_in_range
         return total_vehicles
 
     def get_data_sizes_by_type(self) -> dict[str, float]:
@@ -201,7 +213,7 @@ class CloudOrchestrator(Agent):
 
         This is the second step in the overall simulation.
         """
-        logger.debug(f"Uplink stage at time {self.sim_model.current_time}.")
+        logger.debug(f"Uplink stage at time {self.model.current_time}.")
         # Step through the models.
 
         # Collect data from each base station
@@ -256,7 +268,7 @@ class CloudOrchestrator(Agent):
         """
         Step through the orchestration process for the downlink stage.
         """
-        logger.debug(f"Downlink stage at time {self.sim_model.current_time}.")
+        logger.debug(f"Downlink stage at time {self.model.current_time}.")
         # Collect data from each controller
         self._collect_data_from_controllers()
 

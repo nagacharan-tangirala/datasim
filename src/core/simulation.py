@@ -5,6 +5,8 @@ from tqdm import tqdm
 
 import src.core.common_constants as cc
 import src.core.constants as constants
+from output.agent_data import *
+from output.model_data import *
 from src.core.exceptions import UnsupportedInputFormatError
 from src.device.sim_model import SimModel
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
@@ -60,6 +62,10 @@ class Simulation:
 
         # Progress bar
         self._progress_bar: tqdm | None = None
+
+        # Output writers
+        self._model_output_writer: ModelOutputParquet | ModelOutputCSV | None = None
+        self._agent_output_writer: AgentOutputParquet | AgentOutputCSV | None = None
 
     def setup_simulation(self) -> None:
         """
@@ -243,6 +249,10 @@ class Simulation:
         """
         output_writer_factory = OutputWriterFactory(self.sim_input_helper.output_dir)
         self._model_output_writer = output_writer_factory.create_model_output_writer(
+            self.sim_input_helper.output_data[constants.OUTPUT_TYPE]
+        )
+
+        self._agent_output_writer = output_writer_factory.create_agent_output_writer(
             self.sim_input_helper.output_data[constants.OUTPUT_TYPE]
         )
 
@@ -434,13 +444,6 @@ class Simulation:
             self.step()
 
         logger.info("Simulation completed.")
-        model_level_data = (
-            self._simulation_model.data_collector.get_model_vars_dataframe()
-        )
-
-        # Save the data
-        logger.info("Saving the data.")
-        self.save_data([model_level_data])
 
     def step(self) -> None:
         """
@@ -457,16 +460,18 @@ class Simulation:
             logger.info(f"Refreshing simulation data at time {self.current_time}.")
             self._refresh_simulation_data()
 
-    def save_data(self, output_data: list[DataFrame]):
+    def save_simulation_results(self) -> None:
         """
-        Save the data to the output directory.
+        Save the simulation results.
+        """
+        logger.info("Saving simulation results.")
+        model_level_data = (
+            self._simulation_model.data_collector.get_model_vars_dataframe()
+        )
 
-        Parameters
-        ----------
-        list[DataFrame]
-            The list of data frames to save.
-        """
-        # Save the data.
-        logger.debug("Saving the data.")
-        for data in output_data:
-            self._model_output_writer.write_output(data)
+        agent_level_data = (
+            self._simulation_model.data_collector.get_agent_vars_dataframe()
+        )
+
+        self._agent_output_writer.write_output(agent_level_data)
+        self._model_output_writer.write_output(model_level_data)

@@ -36,14 +36,6 @@ class SimModel(Model):
         self._edge_orchestrator: EdgeOrchestrator = edge_orchestrator
         self._cloud_orchestrator: CloudOrchestrator = cloud_orchestrator
 
-        self._agents_by_type: dict[str, list] = {
-            constants.VEHICLES: self._vehicles,
-            constants.BASE_STATIONS: self._base_stations,
-            constants.CONTROLLERS: self._controllers,
-            constants.EDGE_ORCHESTRATOR: [self._edge_orchestrator],
-            constants.CLOUD_ORCHESTRATOR: [self._cloud_orchestrator],
-        }
-
         self._activation_times: dict[str, dict[int, set[int]]] = {
             constants.VEHICLES: {},
             constants.BASE_STATIONS: {},
@@ -81,6 +73,9 @@ class SimModel(Model):
 
         logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
+
+        logger.debug("Assign simulation model to all the devices.")
+        self._assign_sim_model_to_devices()
 
         logger.debug("Create data collector.")
         self._create_data_collector()
@@ -195,10 +190,22 @@ class SimModel(Model):
         """
         Add the orchestrators to the scheduler.
         """
+        self._edge_orchestrator.model = self
+        self._cloud_orchestrator.model = self
+
         self.schedule.add(self._edge_orchestrator)
         self.schedule.add(self._cloud_orchestrator)
-        self._edge_orchestrator.sim_model = self
-        self._cloud_orchestrator.sim_model = self
+
+    def _assign_sim_model_to_devices(self) -> None:
+        """
+        Assign the simulation model to the devices.
+        """
+        for vehicle in self._vehicles.values():
+            vehicle.model = self
+        for base_station in self._base_stations.values():
+            base_station.model = self
+        for controller in self._controllers.values():
+            controller.model = self
 
     def _create_data_collector(self) -> None:
         """
@@ -213,6 +220,16 @@ class SimModel(Model):
                 "side_link_data": self._edge_orchestrator.get_total_sidelink_data_size,
                 "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
                 "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
+            },
+            agent_reporters={
+                "vehicle_data": lambda v: v.data_generated_at_device
+                if v.type == constants.VEHICLES
+                else None,
+                "vehicles_in_range": lambda b: b.vehicles_in_range
+                if b.type != constants.CLOUD_ORCHESTRATOR
+                and b.type != constants.EDGE_ORCHESTRATOR
+                else None,
+                "agent_type": lambda a: a.type,
             },
         )
 
@@ -278,6 +295,7 @@ class SimModel(Model):
         for vehicle_id, vehicle in vehicles.items():
             if vehicle_id in self._vehicles:
                 self._vehicles[vehicle_id] = vehicle
+                self._vehicles[vehicle_id].model = self
 
     def update_base_stations(self, base_stations: dict[int, BaseStation]) -> None:
         """
@@ -291,6 +309,7 @@ class SimModel(Model):
         for base_station_id, base_station in base_stations.items():
             if base_station_id not in self._base_stations:
                 self._base_stations[base_station_id] = base_station
+                self._base_stations[base_station_id].model = self
 
     def update_controllers(self, controllers: dict[int, CentralController]) -> None:
         """
@@ -304,6 +323,7 @@ class SimModel(Model):
         for controller_id, controller in controllers.items():
             if controller_id not in self._controllers:
                 self._controllers[controller_id] = controller
+                self._controllers[controller_id].model = self
 
     def _do_device_activations(self) -> None:
         """
@@ -345,7 +365,6 @@ class SimModel(Model):
             # Add to the schedule and orchestrator and set the mesa model to this
             self.schedule.add(vehicle)
             self._edge_orchestrator.add_vehicle(vehicle)
-            vehicle.sim_model = self
 
     def _deactivate_vehicles(self) -> None:
         """
@@ -365,7 +384,6 @@ class SimModel(Model):
             # Remove from the schedule and orchestrator and set the mesa model to None
             self.schedule.remove(vehicle)
             self._edge_orchestrator.remove_vehicle(vehicle_id)
-            vehicle.sim_model = None
 
     def _activate_base_stations(self) -> None:
         """
@@ -386,7 +404,6 @@ class SimModel(Model):
             self.schedule.add(base_station)
             self._edge_orchestrator.add_base_station(base_station)
             self._cloud_orchestrator.add_base_station(base_station)
-            base_station.sim_model = self
 
     def _deactivate_base_stations(self) -> None:
         """
@@ -407,7 +424,6 @@ class SimModel(Model):
             self.schedule.remove(base_station)
             self._edge_orchestrator.remove_base_station(base_station_id)
             self._cloud_orchestrator.remove_base_station(base_station_id)
-            base_station.sim_model = None
 
     def _activate_controllers(self) -> None:
         """
@@ -427,7 +443,6 @@ class SimModel(Model):
             # Add to the schedule and orchestrator and set the mesa model to this
             self.schedule.add(controller)
             self._cloud_orchestrator.add_controller(controller)
-            controller.sim_model = self
 
     def _deactivate_controllers(self) -> None:
         """
@@ -447,4 +462,3 @@ class SimModel(Model):
             # Remove from the schedule and orchestrator and set the mesa model to None
             self.schedule.remove(controller)
             self._cloud_orchestrator.remove_controller(controller_id)
-            controller.sim_model = None

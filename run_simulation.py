@@ -36,6 +36,7 @@ def run_simulation(simulation: Simulation):
         The simulation object to run.
     """
     simulation.run()
+    simulation.save_simulation_results()
 
 
 if __name__ == "__main__":
