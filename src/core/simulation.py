@@ -5,10 +5,10 @@ from tqdm import tqdm
 
 import src.core.common_constants as cc
 import src.core.constants as constants
+from core.sim_model import SimModel
 from output.agent_data import *
 from output.model_data import *
 from src.core.exceptions import UnsupportedInputFormatError
-from src.device.sim_model import SimModel
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
 from src.output.writer_factory import OutputWriterFactory
