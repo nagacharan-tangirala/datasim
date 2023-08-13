@@ -35,6 +35,7 @@ class SimulationInputHelper:
 
         self.simulation_data: dict = {}
         self.output_data: dict = {}
+        self.space_settings: dict = {}
         self.orchestrator_models_data: dict = {}
 
         self._output_dir: str = ""
@@ -62,6 +63,10 @@ class SimulationInputHelper:
         # Read the output settings.
         logger.debug("Storing the output settings.")
         self.output_data = self.config_data[constants.OUTPUT_SETTINGS]
+
+        # Read the space settings.
+        logger.debug("Storing the space settings.")
+        self.space_settings = self.config_data[constants.SPACE]
 
         # Read the channel models.
         logger.debug("Storing the edge and cloud orchestrator models.")
