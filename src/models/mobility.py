@@ -1,3 +1,5 @@
+import logging
+
 from mesa import Agent
 from pandas import DataFrame, concat
 
@@ -101,6 +103,6 @@ class TraceMobilityModel(Agent):
         # Check if the current time is in the positions dataframe
         if self.current_time in self._positions:
             self._current_location = self._positions[self.current_time]
-        else:
-            # If not, then the vehicle is not moving
-            self._current_location = self._current_location
+        elif not self._current_location:
+            logging.error(f"Missing position for time step {self.current_time}")
+            exit(1)
