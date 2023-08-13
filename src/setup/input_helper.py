@@ -96,11 +96,11 @@ class SimulationInputHelper:
         Create the loggers.
         """
         output_data = self.config_data[constants.OUTPUT_SETTINGS]
-        logging_level = "INFO"
+        logging_level = constants.DEFAULT_LOG_LEVEL
         if constants.LOGGING_LEVEL in output_data:
             logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
 
-        logging_filename = "simulation.log"
+        logging_filename = constants.DEFAULT_LOG_FILE
         if constants.LOG_FILE in output_data:
             logging_filename = output_data[constants.LOG_FILE]
 
