@@ -266,6 +266,7 @@ class Simulation:
             self._controllers,
             self.edge_orchestrator,
             self.cloud_orchestrator,
+            self.sim_input_helper.space_settings,
             self.start_time,
             self.end_time,
         )
