@@ -123,7 +123,6 @@ class CentralController(Agent):
         """
         self._mobility_model.current_time = time_step
         self._mobility_model.step()
-
         self._location = self._mobility_model.current_location
         self.model.space.place_agent(self, self._location)
 
@@ -172,9 +171,10 @@ class CentralController(Agent):
             f"Uplink stage for controller {self.unique_id} at time {self.model.current_time}."
         )
 
+        self._mobility_model.current_time = self.model.current_time
+        self._mobility_model.step()
+
         if self._mobility_model.type != constants.STATIC_MOBILITY:
-            self._mobility_model.current_time = self.model.current_time
-            self._mobility_model.step()
             self._location = self._mobility_model.current_location
             self.model.space.move_agent(self, self._location)
 

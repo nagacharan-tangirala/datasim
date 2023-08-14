@@ -32,6 +32,12 @@ class StaticMobilityModel(Agent):
         """Get the current location."""
         return self._current_location
 
+    def step(self) -> None:
+        """
+        Step through the model.
+        """
+        pass
+
     def update_position(self, new_position: list[float]) -> None:
         """
         Update the position.
