@@ -277,20 +277,23 @@ class Simulation:
         """
         self._progress_bar = tqdm(
             total=self.end_time,
-            desc=constants.PROGRES_BAR_TITLE,
+            desc=constants.PROGRESS_BAR_RUNNING_MESSAGE,
             ncols=constants.PROGRESS_BAR_WIDTH,
             unit=constants.PROGRESS_BAR_UNIT,
             position=0,
-            colour=constants.PROGRESS_BAR_COLOUR,
+            colour=constants.PROGRESS_BAR_RUNNING_COLOUR,
         )
 
     def _refresh_simulation_data(self) -> None:
         """
         Refresh the simulation data by reading the next chunk of data.
         """
+        logger.info(f"Refreshing simulation data at time {self.current_time}.")
+        self._pause_progress_bar()
         self._stream_next_input_data()
         self._update_devices_with_new_data()
         self._update_orchestrators_with_new_data()
+        self._resume_progress_bar()
 
     def _read_first_chunk_input_data(self) -> None:
         """
@@ -444,7 +447,7 @@ class Simulation:
             self._progress_bar.update(self.time_step)
             self.step()
 
-        self._progress_bar.close()
+        self._close_progress_bar()
 
     def step(self) -> None:
         """
@@ -458,22 +461,66 @@ class Simulation:
 
         # Refresh the simulation data if the current time is a multiple of the data stream interval.
         if self.current_time % self.data_stream_interval == 0:
-            logger.info(f"Refreshing simulation data at time {self.current_time}.")
             self._refresh_simulation_data()
+
+    def _pause_progress_bar(self) -> None:
+        """
+        Pause the progress bar.
+        """
+        self._progress_bar.colour = constants.PROGRESS_BAR_PAUSED_COLOUR
+        self._progress_bar.set_description(constants.PROGRESS_BAR_PAUSED_MESSAGE)
+        self._progress_bar.disable = True
+
+    def _resume_progress_bar(self) -> None:
+        """
+        Resume the progress bar.
+        """
+        self._progress_bar.disable = False
+        self._progress_bar.colour = constants.PROGRESS_BAR_RUNNING_COLOUR
+        self._progress_bar.set_description(constants.PROGRESS_BAR_RUNNING_MESSAGE)
+
+    def _close_progress_bar(self) -> None:
+        """
+        Close the progress bar.
+        """
+        self._progress_bar.set_description(constants.PROGRESS_BAR_DONE_MESSAGE)
+        self._progress_bar.colour = constants.PROGRESS_BAR_DONE_COLOUR
+        self._progress_bar.close()
 
     def save_simulation_results(self) -> None:
         """
         Save the simulation results.
         """
         logger.info("Last step - Saving simulation results.")
+        file_progress_bar = self._create_file_progress_bar()
+
         model_level_data = (
             self._simulation_model.data_collector.get_model_vars_dataframe()
         )
+        self._model_output_writer.write_output(model_level_data)
+        file_progress_bar.update(n=1)
 
         agent_level_data = (
             self._simulation_model.data_collector.get_agent_vars_dataframe()
         )
-
         self._agent_output_writer.write_output(agent_level_data)
-        self._model_output_writer.write_output(model_level_data)
+        file_progress_bar.update(n=1)
+
+        file_progress_bar.set_description(constants.FILE_PROGRESS_BAR_DONE_MESSAGE)
+        file_progress_bar.colour = constants.PROGRESS_BAR_DONE_COLOUR
+        file_progress_bar.close()
         logger.info("Done.")
+
+    @staticmethod
+    def _create_file_progress_bar() -> tqdm:
+        """
+        Create the file progress bar.
+        """
+        return tqdm(
+            total=2,
+            desc=constants.FILE_PROGRESS_BAR_STARTING_MESSAGE,
+            ncols=constants.FILE_PROGRESS_BAR_WIDTH,
+            unit=constants.FILE_PROGRESS_BAR_UNIT,
+            position=0,
+            colour=constants.PROGRESS_BAR_RUNNING_COLOUR,
+        )
