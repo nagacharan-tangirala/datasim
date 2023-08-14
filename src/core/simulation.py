@@ -444,7 +444,7 @@ class Simulation:
             self._progress_bar.update(self.time_step)
             self.step()
 
-        logger.info("Simulation completed.")
+        self._progress_bar.close()
 
     def step(self) -> None:
         """
