@@ -145,7 +145,12 @@ class BaseStation(Agent):
         """
         Activate the base station.
         """
-        pass
+        # Place the base station at the correct position
+        self._mobility_model.current_time = time_step
+        self._mobility_model.step()
+
+        self._location = self._mobility_model.current_location
+        self.model.space.place_agent(self, self._location)
 
     def deactivate_base_station(self, time_step: int) -> None:
         """

@@ -121,7 +121,11 @@ class CentralController(Agent):
         """
         Activate the controller.
         """
-        pass
+        self._mobility_model.current_time = time_step
+        self._mobility_model.step()
+
+        self._location = self._mobility_model.current_location
+        self.model.space.place_agent(self, self._location)
 
     def deactivate_controller(self, time_step: int) -> None:
         """
