@@ -128,8 +128,8 @@ class DeviceFactory:
 
             logger.debug(f"Created vehicle {vehicle_id} of type {veh_choice}")
 
+    @staticmethod
     def _create_vehicle(
-        self,
         vehicle_id: int,
         activation_settings: ActivationSettings,
         vehicle_models: dict,
