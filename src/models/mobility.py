@@ -4,8 +4,10 @@ from mesa import Agent
 from pandas import DataFrame, concat
 
 import src.core.common_constants as cc
+import src.core.constants as constants
 
 __all__ = ["StaticMobilityModel", "TraceMobilityModel"]
+logger = logging.getLogger(__name__)
 
 
 class StaticMobilityModel(Agent):
@@ -107,5 +109,5 @@ class TraceMobilityModel(Agent):
         if self.current_time in self._positions:
             self._current_location = self._positions[self.current_time]
         elif not self._current_location:
-            logging.error(f"Missing position for time step {self.current_time}")
+            logger.error(f"Missing position for time step {self.current_time}")
             exit(1)
