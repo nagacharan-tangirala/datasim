@@ -498,7 +498,6 @@ class Simulation:
             self._simulation_model.data_collector.get_model_vars_dataframe()
         )
         self._model_output_writer.write_output(model_level_data)
-        file_progress_bar.update(n=1)
 
         agent_level_data = (
             self._simulation_model.data_collector.get_agent_vars_dataframe()
@@ -521,6 +520,7 @@ class Simulation:
             desc=constants.FILE_PROGRESS_BAR_STARTING_MESSAGE,
             ncols=constants.FILE_PROGRESS_BAR_WIDTH,
             unit=constants.FILE_PROGRESS_BAR_UNIT,
-            position=0,
+            smoothing=1,
+            initial=1,
             colour=constants.PROGRESS_BAR_RUNNING_COLOUR,
         )
