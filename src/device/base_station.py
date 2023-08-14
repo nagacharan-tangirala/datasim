@@ -230,9 +230,12 @@ class BaseStation(Agent):
         logger.debug(
             f"Uplink stage for base station {self.unique_id} at time {self.model.current_time}."
         )
-        self._mobility_model.current_time = self.model.current_time
-        self._mobility_model.step()
-        self._location = self._mobility_model.current_location
+
+        if self._mobility_model.type != constants.STATIC_MOBILITY:
+            self._mobility_model.current_time = self.model.current_time
+            self._mobility_model.step()
+            self._location = self._mobility_model.current_location
+            self.model.space.move_agent(self, self._location)
 
         # Create base station payload if the base station has received data from the vehicles.
         self._uplink_payload = self._data_composer.compose_basestation_payload(

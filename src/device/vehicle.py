@@ -78,7 +78,7 @@ class Vehicle(Agent):
         return self._vehicles_in_range
 
     @property
-    def location(self) -> list[float, float]:
+    def location(self) -> list[float]:
         """Get the location of the vehicle."""
         return self._location
 
@@ -203,12 +203,11 @@ class Vehicle(Agent):
         self._previous_bs = self.selected_bs
 
         # Propagate the mobility model and get the current location
-        self._mobility_model.current_time = self.model.current_time
-        self._mobility_model.step()
-        self._location = self._mobility_model.current_location
-
-        # Move the vehicle to the new location
-        self.model.space.move_agent(self, self._location)
+        if self._mobility_model.type != constants.STATIC_MOBILITY:
+            self._mobility_model.current_time = self.model.current_time
+            self._mobility_model.step()
+            self._location = self._mobility_model.current_location
+            self.model.space.move_agent(self, self._location)
 
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(
