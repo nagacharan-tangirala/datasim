@@ -54,8 +54,23 @@ DATA_SIDE_LINK = "side_link"
 DATA_PRIORITY = "priority"
 RETENTION_FACTOR = "retention_factor"
 COMPRESSION_FACTOR = "compression_factor"
-STATIC_MOBILITY = "static_mobility"
-TRACE_MOBILITY = "trace_mobility"
+
+# Model type keys
+STATIC_MOBILITY = "static"
+TRACE_MOBILITY = "trace"
+
+TRACE_V2V = "trace"
+NEAREST_V2B = "nearest"
+
+SIMPLE_VEHICLE_DATA_COLLECTOR = "simple"
+SIMPLE_VEHICLE_DATA_COMPOSER = "simple"
+SIMPLE_VEHICLE_DATA_SIMPLIFIER = "simple"
+
+SIMPLE_CONTROLLER_DATA_COLLECTOR = "simple"
+SIMPLE_CONTROLLER_DATA_COMPOSER = "simple"
+
+SIMPLE_BASE_STATION_DATA_COMPOSER = "simple"
+SIMPLE_BASE_STATION_DATA_SIMPLIFIER = "simple"
 
 # Progress bar keys
 PROGRES_BAR_TITLE = "Simulation Progress"
