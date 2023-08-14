@@ -1,7 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray, empty
+from numpy import ndarray
 
 import src.core.constants as constants
 from src.device.activation import ActivationSettings
@@ -21,7 +21,7 @@ class BaseStation(Agent):
     def __init__(
         self,
         base_station_id,
-        base_station_position: ndarray[float],
+        base_station_position: list[float],
         computing_hardware: ComputingHardware,
         wireless_hardware: NetworkHardware,
         wired_hardware: NetworkHardware,
@@ -52,7 +52,7 @@ class BaseStation(Agent):
         self.type: str = constants.BASE_STATIONS
         self.model = None
 
-        self._location: ndarray[float] = empty(0, dtype=float)
+        self._location: list[float] = []
 
         self._wired_hardware: NetworkHardware = wired_hardware
         self._computing_hardware: ComputingHardware = computing_hardware
@@ -85,7 +85,7 @@ class BaseStation(Agent):
         logger.debug(f"Base station {self.unique_id} created.")
 
     @property
-    def location(self) -> ndarray[float]:
+    def location(self) -> list[float]:
         """Get the location of the base station."""
         return self._location
 
