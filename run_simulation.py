@@ -36,7 +36,10 @@ def run_simulation(simulation: Simulation):
         The simulation object to run.
     """
     simulation.run()
+
+    print("Saving simulation results...")
     simulation.save_simulation_results()
+    print("Done.")
 
 
 if __name__ == "__main__":

@@ -465,7 +465,7 @@ class Simulation:
         """
         Save the simulation results.
         """
-        logger.info("Saving simulation results.")
+        logger.info("Last step - Saving simulation results.")
         model_level_data = (
             self._simulation_model.data_collector.get_model_vars_dataframe()
         )
@@ -476,3 +476,4 @@ class Simulation:
 
         self._agent_output_writer.write_output(agent_level_data)
         self._model_output_writer.write_output(model_level_data)
+        logger.info("Done.")
