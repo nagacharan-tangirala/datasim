@@ -19,7 +19,7 @@ class StaticMobilityModel(Agent):
             DataFrame of positions.
         """
         super().__init__(0, None)
-        self._type = "static"
+        self._type = constants.STATIC_MOBILITY
         self._current_location = position
 
     @property
@@ -53,7 +53,7 @@ class TraceMobilityModel(Agent):
         Initialize the trace mobility model.
         """
         super().__init__(0, None)
-        self._type: str = "trace"
+        self._type: str = constants.TRACE_MOBILITY
 
         self.current_time: int = 0
         self._current_location: list[float] = []

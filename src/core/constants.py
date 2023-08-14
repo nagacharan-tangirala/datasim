@@ -54,6 +54,8 @@ DATA_SIDE_LINK = "side_link"
 DATA_PRIORITY = "priority"
 RETENTION_FACTOR = "retention_factor"
 COMPRESSION_FACTOR = "compression_factor"
+STATIC_MOBILITY = "static_mobility"
+TRACE_MOBILITY = "trace_mobility"
 
 # Progress bar keys
 PROGRES_BAR_TITLE = "Simulation Progress"

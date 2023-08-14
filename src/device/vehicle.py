@@ -143,10 +143,10 @@ class Vehicle(Agent):
             The mobility data to update.
         """
         match self._mobility_model.type:
-            case "static":
+            case constants.STATIC_MOBILITY:
                 logger.debug(f"Updating position for vehicle {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
-            case "trace":
+            case constants.TRACE_MOBILITY:
                 logger.debug(
                     f"Updating trace for vehicle {self.unique_id} with length {len(mobility_data)}"
                 )
