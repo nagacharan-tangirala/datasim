@@ -72,11 +72,24 @@ SIMPLE_CONTROLLER_DATA_COMPOSER = "simple"
 SIMPLE_BASE_STATION_DATA_COMPOSER = "simple"
 SIMPLE_BASE_STATION_DATA_SIMPLIFIER = "simple"
 
-# Progress bar keys
-PROGRES_BAR_TITLE = "Simulation Progress"
+# Main progress bar keys
 PROGRESS_BAR_UNIT = " steps"
-PROGRESS_BAR_COLOUR = "#11c26c"
+
+PROGRESS_BAR_RUNNING_MESSAGE = "Running. Simulation Progress"
+PROGRESS_BAR_PAUSED_MESSAGE = "Paused. Refreshing Input Data"
+PROGRESS_BAR_DONE_MESSAGE = "Done. Simulation Completed"
+
+PROGRESS_BAR_RUNNING_COLOUR = "#05d6fc"
+PROGRESS_BAR_PAUSED_COLOUR = "#fa772a"
+PROGRESS_BAR_DONE_COLOUR = "#11c26c"
+
 PROGRESS_BAR_WIDTH = 150
+
+# File progress bar keys
+FILE_PROGRESS_BAR_UNIT = " files"
+FILE_PROGRESS_BAR_WIDTH = 120
+FILE_PROGRESS_BAR_STARTING_MESSAGE = "Saving Files"
+FILE_PROGRESS_BAR_DONE_MESSAGE = " Done. Output Files Saved "
 
 # Space related constants
 BUFFER_SPACE = 100.0
