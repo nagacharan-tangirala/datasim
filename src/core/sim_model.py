@@ -1,8 +1,10 @@
 import logging
 
 from mesa import Model, DataCollector
+from mesa.space import ContinuousSpace
 from numpy import ndarray
 
+import src.core.common_constants as cc
 import src.core.constants as constants
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
 from src.device.base_station import BaseStation
@@ -22,6 +24,7 @@ class SimModel(Model):
         controllers: dict[int, CentralController],
         edge_orchestrator: EdgeOrchestrator,
         cloud_orchestrator: CloudOrchestrator,
+        space_settings: dict,
         start_time: int,
         end_time: int,
     ):
@@ -47,6 +50,7 @@ class SimModel(Model):
             constants.CONTROLLERS: {},
         }
 
+        self._space_settings: dict = space_settings
         self._start_time: int = start_time
         self._end_time: int = end_time
         self._current_time: int = -1
@@ -70,6 +74,9 @@ class SimModel(Model):
 
         logger.debug("Initializing the scheduler.")
         self._initialize_scheduler()
+
+        logger.debug("Initializing the 2D space.")
+        self._initialize_space()
 
         logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
@@ -185,6 +192,18 @@ class SimModel(Model):
         type_stage_list.append(vehicle_type_stage)
 
         self.schedule = OrderedMultiStageScheduler(self, type_stage_list, shuffle=True)
+
+    def _initialize_space(self) -> None:
+        """
+        Initialize the space.
+        """
+        self.space = ContinuousSpace(
+            x_max=self._space_settings[cc.SPACE_X_MAX] + constants.BUFFER_SPACE,
+            y_max=self._space_settings[cc.SPACE_Y_MAX] + constants.BUFFER_SPACE,
+            torus=False,
+            x_min=self._space_settings[cc.SPACE_X_MIN] - constants.BUFFER_SPACE,
+            y_min=self._space_settings[cc.SPACE_Y_MIN] - constants.BUFFER_SPACE,
+        )
 
     def _add_orchestrators_to_scheduler(self) -> None:
         """

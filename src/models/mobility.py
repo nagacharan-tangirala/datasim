@@ -1,9 +1,13 @@
+import logging
+
 from mesa import Agent
 from pandas import DataFrame, concat
 
 import src.core.common_constants as cc
+import src.core.constants as constants
 
 __all__ = ["StaticMobilityModel", "TraceMobilityModel"]
+logger = logging.getLogger(__name__)
 
 
 class StaticMobilityModel(Agent):
@@ -17,7 +21,7 @@ class StaticMobilityModel(Agent):
             DataFrame of positions.
         """
         super().__init__(0, None)
-        self._type = "static"
+        self._type = constants.STATIC_MOBILITY
         self._current_location = position
 
     @property
@@ -31,6 +35,9 @@ class StaticMobilityModel(Agent):
         return self._current_location
 
     def step(self) -> None:
+        """
+        Step through the model.
+        """
         pass
 
     def update_position(self, new_position: list[float]) -> None:
@@ -51,7 +58,7 @@ class TraceMobilityModel(Agent):
         Initialize the trace mobility model.
         """
         super().__init__(0, None)
-        self._type: str = "trace"
+        self._type: str = constants.TRACE_MOBILITY
 
         self.current_time: int = 0
         self._current_location: list[float] = []
@@ -101,6 +108,6 @@ class TraceMobilityModel(Agent):
         # Check if the current time is in the positions dataframe
         if self.current_time in self._positions:
             self._current_location = self._positions[self.current_time]
-        else:
-            # If not, then the vehicle is not moving
-            self._current_location = self._current_location
+        elif not self._current_location:
+            logger.error(f"Missing position for time step {self.current_time}")
+            exit(1)

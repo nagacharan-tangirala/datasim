@@ -34,12 +34,12 @@ class ModelFactory:
         """
         model_name = model_data[constants.MODEL_NAME]
         match model_name:
-            case "static":
+            case constants.STATIC_MOBILITY:
                 logger.debug(
                     f"Creating static mobility model with position {model_data[constants.POSITION]}."
                 )
                 return StaticMobilityModel(model_data[constants.POSITION])
-            case "trace":
+            case constants.TRACE_MOBILITY:
                 logger.debug("Creating trace mobility model.")
                 return TraceMobilityModel()
             case _:
@@ -51,7 +51,7 @@ class ModelFactory:
         Create the data composer model.
         """
         match data_composer_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_VEHICLE_DATA_COMPOSER:
                 return VehicleDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
@@ -67,7 +67,7 @@ class ModelFactory:
         Create the data simplifier model.
         """
         match data_simplifier_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_VEHICLE_DATA_SIMPLIFIER:
                 return VehicleDataSimplifier(data_simplifier_data)
             case _:
                 raise ModelTypeNotImplementedError(
@@ -83,7 +83,7 @@ class ModelFactory:
         Create the data composer model.
         """
         match data_composer_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_BASE_STATION_DATA_COMPOSER:
                 return BaseStationDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
@@ -99,7 +99,7 @@ class ModelFactory:
         Create the data simplifier model.
         """
         match data_simplifier_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_BASE_STATION_DATA_SIMPLIFIER:
                 return BaseStationDataSimplifier(data_simplifier_data)
             case _:
                 raise ModelTypeNotImplementedError(
@@ -115,7 +115,7 @@ class ModelFactory:
         Create the data composer model.
         """
         match data_composer_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_CONTROLLER_DATA_COMPOSER:
                 return ControllerDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
@@ -131,7 +131,7 @@ class ModelFactory:
         Create the controller collector model.
         """
         match controller_collector_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_CONTROLLER_DATA_COLLECTOR:
                 return ControllerCollector()
             case _:
                 raise ModelTypeNotImplementedError(
@@ -147,7 +147,7 @@ class ModelFactory:
         Create the base station finder.
         """
         match model_data[constants.MODEL_NAME]:
-            case "nearest":
+            case constants.NEAREST_V2B:
                 logger.debug(f"Creating nearest base station finder.")
                 return NearestNBaseStationFinder(base_station_links_df)
             case _:
@@ -163,7 +163,7 @@ class ModelFactory:
         Create the vehicle data collector model.
         """
         match vehicle_data_collector_data[constants.MODEL_NAME]:
-            case "simple":
+            case constants.SIMPLE_VEHICLE_DATA_COLLECTOR:
                 return VehicleCollector()
             case _:
                 raise ModelTypeNotImplementedError(
@@ -180,7 +180,7 @@ class ModelFactory:
         Create the vehicle neighbour finder model.
         """
         match vehicle_neighbour_finder_data[constants.MODEL_NAME]:
-            case "trace":
+            case constants.TRACE_V2V:
                 return TraceVehicleNeighbourFinder(v2v_links)
             case _:
                 raise ModelTypeNotImplementedError(

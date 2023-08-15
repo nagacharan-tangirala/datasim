@@ -78,7 +78,7 @@ class Vehicle(Agent):
         return self._vehicles_in_range
 
     @property
-    def location(self) -> list[float, float]:
+    def location(self) -> list[float]:
         """Get the location of the vehicle."""
         return self._location
 
@@ -143,10 +143,10 @@ class Vehicle(Agent):
             The mobility data to update.
         """
         match self._mobility_model.type:
-            case "static":
+            case constants.STATIC_MOBILITY:
                 logger.debug(f"Updating position for vehicle {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
-            case "trace":
+            case constants.TRACE_MOBILITY:
                 logger.debug(
                     f"Updating trace for vehicle {self.unique_id} with length {len(mobility_data)}"
                 )
@@ -158,6 +158,14 @@ class Vehicle(Agent):
         """
         # Set previous time for data composer
         self._data_composer.previous_time = time_step
+
+        # Get the current location of the vehicle
+        self._mobility_model.current_time = self.model.current_time
+        self._mobility_model.step()
+        self._location = self._mobility_model.current_location
+
+        # Place the vehicle in the network
+        self.model.space.place_agent(self, self._location)
 
     def deactivate_vehicle(self, time_step: int) -> None:
         """
@@ -197,7 +205,10 @@ class Vehicle(Agent):
         # Propagate the mobility model and get the current location
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
-        self._location = self._mobility_model.current_location
+
+        if self._mobility_model.type != constants.STATIC_MOBILITY:
+            self._location = self._mobility_model.current_location
+            self.model.space.move_agent(self, self._location)
 
         # Compose the data using the data composer
         self._uplink_payload = self._data_composer.compose_uplink_payload(

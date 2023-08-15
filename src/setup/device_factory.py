@@ -1,7 +1,7 @@
 import logging
 from random import choices
 
-from numpy import asarray, ndarray
+from numpy import asarray
 from pandas import DataFrame, Series
 
 import src.core.common_constants as cc
@@ -128,8 +128,8 @@ class DeviceFactory:
 
             logger.debug(f"Created vehicle {vehicle_id} of type {veh_choice}")
 
+    @staticmethod
     def _create_vehicle(
-        self,
         vehicle_id: int,
         activation_settings: ActivationSettings,
         vehicle_models: dict,
@@ -180,10 +180,12 @@ class DeviceFactory:
 
         for base_station_id in base_station_ids:
             logger.debug(f"Creating base station {base_station_id}")
-            # Get the base station position.
-            base_station_position: ndarray = base_station_data[
+            this_station_data = base_station_data[
                 base_station_data[cc.BASE_STATION_ID] == base_station_id
-            ][[cc.X, cc.Y]].values
+            ][[cc.X, cc.Y]]
+
+            # Get the base station position.
+            base_station_position: list[float] = this_station_data.values[0].tolist()
 
             # Create the base station.
             self._base_stations[base_station_id] = self._create_base_station(
@@ -193,7 +195,7 @@ class DeviceFactory:
     def _create_base_station(
         self,
         base_station_id: int,
-        base_station_position: ndarray[float],
+        base_station_position: list[float],
         base_station_models_data: dict,
     ) -> BaseStation:
         """
@@ -260,9 +262,11 @@ class DeviceFactory:
         # Create the controllers.
         for controller_id in controller_list:
             # Get the controller position.
-            controller_position: ndarray[float] = controller_data[
+            this_controller_data = controller_data[
                 controller_data[cc.CONTROLLER_ID] == controller_id
             ][[cc.X, cc.Y]]
+
+            controller_position: list[float] = this_controller_data.values[0].tolist()
 
             # Create the controller.
             self._controllers[controller_id] = self._create_controller(
@@ -270,7 +274,7 @@ class DeviceFactory:
             )
 
     def _create_controller(
-        self, controller_id, position: ndarray[float], controller_models_data
+        self, controller_id, position: list[float], controller_models_data
     ) -> CentralController:
         """
         Create a controller from the given parameters.
@@ -279,7 +283,7 @@ class DeviceFactory:
         ----------
         controller_id : int
             The ID of the controller.
-        position : ndarray[float]
+        position : list[float]
             The position of the controller.
         """
         # Create the computing hardware.
@@ -373,10 +377,12 @@ class DeviceFactory:
                 #  Currently, there is no requirement. All the base station data is static in the simulation.
                 continue
 
-            # Get the base station position.
-            base_station_position: ndarray[float] = base_station_data[
-                base_station_data[cc.BASE_STATION_ID] == base_station_data
+            # Get the base station position data.
+            this_station_data = base_station_data[
+                base_station_data[cc.BASE_STATION_ID] == base_station_id
             ][[cc.X, cc.Y]]
+
+            base_station_position: list[float] = this_station_data.values[0].tolist()
 
             # Create the base station.
             self._base_stations[base_station_id] = self._create_base_station(
@@ -397,9 +403,11 @@ class DeviceFactory:
                 continue
 
             # Get the controller position.
-            controller_position: ndarray[float] = controller_data[
+            this_controller_data = controller_data[
                 controller_data[cc.CONTROLLER_ID] == controller_id
-            ][[cc.X, cc.Y]].values.tolist()
+            ][[cc.X, cc.Y]]
+
+            controller_position: list[float] = this_controller_data.values[0].tolist()
 
             # Create the controller.
             self._controllers[controller_id] = self._create_controller(

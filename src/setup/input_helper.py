@@ -35,6 +35,7 @@ class SimulationInputHelper:
 
         self.simulation_data: dict = {}
         self.output_data: dict = {}
+        self.space_settings: dict = {}
         self.orchestrator_models_data: dict = {}
 
         self._output_dir: str = ""
@@ -62,6 +63,10 @@ class SimulationInputHelper:
         # Read the output settings.
         logger.debug("Storing the output settings.")
         self.output_data = self.config_data[constants.OUTPUT_SETTINGS]
+
+        # Read the space settings.
+        logger.debug("Storing the space settings.")
+        self.space_settings = self.config_data[constants.SPACE]
 
         # Read the channel models.
         logger.debug("Storing the edge and cloud orchestrator models.")
@@ -91,11 +96,16 @@ class SimulationInputHelper:
         Create the loggers.
         """
         output_data = self.config_data[constants.OUTPUT_SETTINGS]
-        logging_level = "INFO"
+        logging_level = constants.DEFAULT_LOG_LEVEL
         if constants.LOGGING_LEVEL in output_data:
             logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
 
-        logging_filename = "simulation.log"
+        log_overwrite = False
+        if constants.LOG_OVERWRITE in output_data:
+            if output_data[constants.LOG_OVERWRITE] == "yes":
+                log_overwrite = True
+
+        logging_filename = constants.DEFAULT_LOG_FILE
         if constants.LOG_FILE in output_data:
             logging_filename = output_data[constants.LOG_FILE]
 
@@ -110,7 +120,7 @@ class SimulationInputHelper:
         if not exists(dirname(logging_file)):
             makedirs(dirname(logging_file))
 
-        logger_config = LoggerConfig(logging_file, logging_level)
+        logger_config = LoggerConfig(logging_file, logging_level, log_overwrite)
         logger_config.setup_logger_config()
 
     def create_file_readers(self) -> None:

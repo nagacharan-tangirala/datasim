@@ -71,3 +71,9 @@ ACTIVATION_TIMES_COLUMN_DTYPES: dict[str, type] = {
 # File extensions
 PARQUET: str = "parquet"
 CSV: str = "csv"
+
+# Space keys
+SPACE_X_MIN = "x_min"
+SPACE_X_MAX = "x_max"
+SPACE_Y_MIN = "y_min"
+SPACE_Y_MAX = "y_max"

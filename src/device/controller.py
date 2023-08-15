@@ -1,8 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray, empty
-from pandas import Series
+from numpy import ndarray
 
 import src.core.constants as constants
 from src.device.activation import ActivationSettings
@@ -17,7 +16,7 @@ class CentralController(Agent):
     def __init__(
         self,
         controller_id: int,
-        controller_position: ndarray[float],
+        controller_position: list[float],
         computing_hardware: ComputingHardware,
         wireless_hardware: NetworkHardware,
         activation_settings: ActivationSettings,
@@ -32,7 +31,7 @@ class CentralController(Agent):
             The id of the controller.
         controller_models : dict
             The model data of the controller.
-        controller_position : Series
+        controller_position : list[float]
             The position of the controller.
         computing_hardware : ComputingHardware
             The computing hardware of the controller.
@@ -45,7 +44,7 @@ class CentralController(Agent):
 
         self.model = None
         self.type: str = constants.CONTROLLERS
-        self._location: ndarray[float] = empty(0)
+        self._location: list[float] = []
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._networking_hardware: NetworkHardware = wireless_hardware
@@ -62,7 +61,7 @@ class CentralController(Agent):
         self._create_models(controller_models)
 
     @property
-    def location(self) -> ndarray[float]:
+    def location(self) -> list[float]:
         """Get the location of the base station."""
         return self._location
 
@@ -122,7 +121,10 @@ class CentralController(Agent):
         """
         Activate the controller.
         """
-        pass
+        self._mobility_model.current_time = time_step
+        self._mobility_model.step()
+        self._location = self._mobility_model.current_location
+        self.model.space.place_agent(self, self._location)
 
     def deactivate_controller(self, time_step: int) -> None:
         """
@@ -168,9 +170,13 @@ class CentralController(Agent):
         logger.debug(
             f"Uplink stage for controller {self.unique_id} at time {self.model.current_time}."
         )
+
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
-        self._location = self._mobility_model.current_location
+
+        if self._mobility_model.type != constants.STATIC_MOBILITY:
+            self._location = self._mobility_model.current_location
+            self.model.space.move_agent(self, self._location)
 
         self._controller_collector.collect_data(self._received_data)
 

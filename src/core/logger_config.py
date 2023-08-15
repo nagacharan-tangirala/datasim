@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class LoggerConfig:
-    def __init__(self, log_file: str, log_level: str):
+    def __init__(self, log_file: str, log_level: str, log_overwrite: bool = False):
         """
         Initialize the logger configuration.
 
@@ -14,18 +14,20 @@ class LoggerConfig:
         """
         self._log_file = log_file
         self._log_level = log_level
+        self._log_overwrite = log_overwrite
 
     def setup_logger_config(self) -> None:
         """
         Configure the logger.
         """
         # Check if the log file already exists
-        if self._log_file:
+        if self._log_file and not self._log_overwrite:
             self._log_file = self._log_file.replace(
                 ".log", "_%s.log" % datetime.now().strftime("%Y%m%d_%H%M%S")
             )
-            with open(self._log_file, "w") as f:
-                f.write("")
+
+        with open(self._log_file, "w") as f:
+            f.write("")
 
         simple_config = {
             "version": 1,
