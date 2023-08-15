@@ -100,6 +100,11 @@ class SimulationInputHelper:
         if constants.LOGGING_LEVEL in output_data:
             logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
 
+        log_overwrite = False
+        if constants.LOG_OVERWRITE in output_data:
+            if output_data[constants.LOG_OVERWRITE] == "yes":
+                log_overwrite = True
+
         logging_filename = constants.DEFAULT_LOG_FILE
         if constants.LOG_FILE in output_data:
             logging_filename = output_data[constants.LOG_FILE]
@@ -115,7 +120,7 @@ class SimulationInputHelper:
         if not exists(dirname(logging_file)):
             makedirs(dirname(logging_file))
 
-        logger_config = LoggerConfig(logging_file, logging_level)
+        logger_config = LoggerConfig(logging_file, logging_level, log_overwrite)
         logger_config.setup_logger_config()
 
     def create_file_readers(self) -> None:

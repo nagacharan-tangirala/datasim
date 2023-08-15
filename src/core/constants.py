@@ -19,6 +19,7 @@ DATA_STREAMING_INTERVAL = "data_streaming_interval"
 LOGGING_LEVEL = "logging_level"
 LOG_FILE = "log_file"
 LOG_LOCATION = "log_location"
+LOG_OVERWRITE = "log_overwrite"
 OUTPUT_TYPE = "output_type"
 OUTPUT_LOCATION = "output_location"
 
