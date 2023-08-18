@@ -1,19 +1,20 @@
 import argparse
-from os.path import exists
+from pathlib import Path
 
 from src.core.simulation import Simulation
 
 
 def create_simulation(config_file: str) -> Simulation:
     """
-    This function creates the simulation object.
+    Creates a simulation object.
 
     Parameters
     ----------
     config_file : str
         The path to the config file.
     """
-    if not exists(config_file):
+    config_file = Path(config_file).resolve()
+    if not Path.exists(config_file):
         raise FileNotFoundError("Config file not found: %s" % config_file)
 
     # Create the simulation object.
@@ -28,7 +29,7 @@ def create_simulation(config_file: str) -> Simulation:
 
 def run_simulation(simulation: Simulation):
     """
-    This function initiates the simulation.
+    Runs the simulation.
 
     Parameters
     ----------

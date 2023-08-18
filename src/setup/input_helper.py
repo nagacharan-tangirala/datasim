@@ -1,12 +1,11 @@
 import logging
-from os import makedirs
-from os.path import dirname, exists, join
+from pathlib import Path
 
 import toml
+from core.exceptions import UnsupportedInputFormatError
 
 import src.core.common_constants as cc
 import src.core.constants as constants
-from src.core.exceptions import *
 from src.core.logger_config import LoggerConfig
 from src.setup.file_reader import CSVDataReader, ParquetDataReader
 
@@ -14,20 +13,21 @@ logger = logging.getLogger(__name__)
 
 
 class SimulationInputHelper:
-    def __init__(self, config_file: str):
+    def __init__(self, config_file: Path):
         """
         Initialize the simulation input helper.
 
         Parameters
         ----------
-        config_file : str
+        config_file : Path
             The path to the configuration file.
         """
-        self.config_file: str = config_file
-        self.config_data: dict = {}
-        self.project_path: str = dirname(config_file)
+        self.config_file: Path = config_file
+        self.project_path: Path = config_file.parent
 
-        self.file_readers: dict[str, CSVDataReader | ParquetDataReader] = {}
+        self.config_data: dict = {}
+
+        self.file_readers: dict[str, CSVDataReader | ParquetDataReader | None] = {}
 
         self.vehicle_models_data: dict = {}
         self.base_station_models_data: dict = {}
@@ -41,10 +41,8 @@ class SimulationInputHelper:
         self._output_dir: str = ""
 
     def read_config_file(self) -> None:
-        """
-        Read the config file.
-        """
-        with open(self.config_file, "r") as f:
+        """Read the config file."""
+        with self.config_file.open(mode="r") as f:
             self.config_data = toml.load(f)
 
     @property
@@ -53,9 +51,7 @@ class SimulationInputHelper:
         return self._output_dir
 
     def read_simulation_and_model_settings(self) -> None:
-        """
-        Read the input files.
-        """
+        """Read the input files."""
         # Read simulation settings.
         logger.debug("Storing the simulation settings.")
         self.simulation_data = self.config_data[constants.SIMULATION_SETTINGS]
@@ -89,7 +85,8 @@ class SimulationInputHelper:
         """
         # Create output directory.
         logger.debug("Creating the output directory.")
-        self._create_output_dir(self.output_data[constants.OUTPUT_LOCATION])
+        output_filepath: Path = Path(self.output_data[constants.OUTPUT_LOCATION])
+        self._create_output_dir(output_filepath)
 
     def create_loggers(self) -> None:
         """
@@ -101,9 +98,11 @@ class SimulationInputHelper:
             logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
 
         log_overwrite = False
-        if constants.LOG_OVERWRITE in output_data:
-            if output_data[constants.LOG_OVERWRITE] == "yes":
-                log_overwrite = True
+        if (
+            constants.LOG_OVERWRITE in output_data
+            and output_data[constants.LOG_OVERWRITE] == "yes"
+        ):
+            log_overwrite = True
 
         logging_filename = constants.DEFAULT_LOG_FILE
         if constants.LOG_FILE in output_data:
@@ -111,14 +110,11 @@ class SimulationInputHelper:
 
         logging_location = self.project_path
         if constants.LOG_LOCATION in output_data:
-            logging_location = join(
-                logging_location,
-                output_data[constants.LOG_LOCATION],
-            )
+            logging_location = logging_location / (output_data[constants.LOG_LOCATION])
 
-        logging_file = join(logging_location, logging_filename)
-        if not exists(dirname(logging_file)):
-            makedirs(dirname(logging_file))
+        logging_file = logging_location / logging_filename
+        if not logging_file.exists():
+            Path.mkdir(logging_location, parents=True, exist_ok=True)
 
         logger_config = LoggerConfig(logging_file, logging_level, log_overwrite)
         logger_config.setup_logger_config()
@@ -228,11 +224,10 @@ class SimulationInputHelper:
         file_key : str
             The file key.
         """
-        # Get the path to the file and the file type
-        file_path = join(self.project_path, filename)
+        file_path = self.project_path / filename
 
         # Check if it is a valid file.
-        if not exists(file_path):
+        if not file_path.exists():
             logger.warning("File %s does not exist. Skipping file.", file_path)
             return
 
@@ -261,7 +256,7 @@ class SimulationInputHelper:
         """
         self.file_readers[file_key] = None
 
-    def _create_output_dir(self, output_dir: str) -> None:
+    def _create_output_dir(self, output_dir: Path) -> None:
         """
         Create the output directory if it does not exist.
 
@@ -270,8 +265,8 @@ class SimulationInputHelper:
         output_dir : str
             The relative path to the output directory.
         """
-        self._output_dir = join(self.project_path, output_dir)
-        if not exists(output_dir):
-            makedirs(output_dir)
+        self._output_dir = self.project_path / output_dir
+        if not output_dir.exists():
+            Path.mkdir(output_dir, parents=True, exist_ok=True)
 
         logger.debug("Output directory: %s", self._output_dir)

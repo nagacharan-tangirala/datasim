@@ -1,22 +1,23 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 from pandas import DataFrame, concat, read_csv
 from pyarrow.parquet import ParquetFile
 
-from src.core.common_constants import PARQUET, TIME_STEP, CSV
+from src.core.common_constants import CSV, PARQUET, TIME_STEP
 
 logger = logging.getLogger(__name__)
 
 
 class ParquetDataReader:
     def __init__(
-        self, input_file: str, column_names: list[str], column_dtypes: dict[str, Any]
+        self, input_file: Path, column_names: list[str], column_dtypes: dict[str, Any]
     ):
         """
         Initialize the input data streamer.
         """
-        self._input_file: str = input_file
+        self._input_file: Path = input_file
         self._column_names: list[str] = column_names
         self._column_dtypes: dict[str, Any] = column_dtypes
 
@@ -29,7 +30,7 @@ class ParquetDataReader:
     @property
     def input_file(self) -> str:
         """Returns the input file."""
-        return self._input_file
+        return self._input_file.name
 
     @property
     def type(self) -> str:
@@ -81,12 +82,12 @@ class ParquetDataReader:
 
 class CSVDataReader:
     def __init__(
-        self, input_file: str, column_names: list[str], column_dtypes: dict[str, Any]
+        self, input_file: Path, column_names: list[str], column_dtypes: dict[str, Any]
     ):
         """
         Initialize the input data streamer.
         """
-        self._input_file: str = input_file
+        self._input_file: Path = input_file
         self._column_names: list[str] = column_names
         self._column_dtypes: dict[str, Any] = column_dtypes
 
@@ -95,7 +96,7 @@ class CSVDataReader:
     @property
     def input_file(self) -> str:
         """Returns the input file."""
-        return self._input_file
+        return self._input_file.name
 
     @property
     def type(self) -> str:

@@ -1,14 +1,15 @@
 from os.path import join
+from pathlib import Path
 
 from pandas import DataFrame
 
 
 class ModelOutputParquet:
-    def __init__(self, output_path: str):
+    def __init__(self, output_path: Path):
         """
         Initialize the model output.
         """
-        self._output_file = join(output_path, "model_output.parquet")
+        self._output_file = output_path / "model_output.parquet"
 
     def write_output(self, data: DataFrame):
         """
@@ -18,11 +19,11 @@ class ModelOutputParquet:
 
 
 class ModelOutputCSV:
-    def __init__(self, output_path: str):
+    def __init__(self, output_path: Path):
         """
         Initialize the model output.
         """
-        self._output_file = join(output_path, "model_output.csv")
+        self._output_file = output_path / "model_output.csv"
 
     def write_output(self, data: DataFrame):
         """

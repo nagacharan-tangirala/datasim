@@ -1,35 +1,36 @@
 import logging
+from pathlib import Path
 
+from core.sim_model import SimModel
 from pandas import DataFrame
 from tqdm import tqdm
 
 import src.core.common_constants as cc
 import src.core.constants as constants
-from core.sim_model import SimModel
-from output.agent_data import *
-from output.model_data import *
+from output.agent_data import AgentOutputCSV, AgentOutputParquet
+from output.model_data import ModelOutputCSV, ModelOutputParquet
 from src.core.exceptions import UnsupportedInputFormatError
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
 from src.output.writer_factory import OutputWriterFactory
 from src.setup.device_factory import DeviceFactory
-from src.setup.file_reader import ParquetDataReader, CSVDataReader
+from src.setup.file_reader import CSVDataReader, ParquetDataReader
 from src.setup.input_helper import SimulationInputHelper
 
 logger = logging.getLogger(__name__)
 
 
 class Simulation:
-    def __init__(self, config_file: str) -> None:
+    def __init__(self, config_filepath: Path) -> None:
         """
         Initialize the simulation object.
 
         Parameters
         ----------
-        config_file : str
+        config_filepath : Path
             The path to the config file.
         """
-        self.config_file: str = config_file
+        self.config_filepath: Path = config_filepath
 
         self._device_factory: DeviceFactory | None = None
 
@@ -102,7 +103,7 @@ class Simulation:
         Read the config file and store the parsed parameters in the config dict.
         """
         # Create the config reader and read the config file
-        self.sim_input_helper = SimulationInputHelper(self.config_file)
+        self.sim_input_helper = SimulationInputHelper(self.config_filepath)
         self.sim_input_helper.read_config_file()
 
     def _perform_initial_setup(self) -> None:

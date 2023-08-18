@@ -1,20 +1,25 @@
 import logging.config
 from datetime import datetime
+from pathlib import Path
 
 
 class LoggerConfig:
-    def __init__(self, log_file: str, log_level: str, log_overwrite: bool = False):
+    def __init__(self, log_file: Path, log_level: str, log_overwrite: bool = False):
         """
         Initialize the logger configuration.
 
         Parameters
         ----------
-        log_file : str
+        log_file : Path
             The log file.
+        log_level : str
+            The log level.
+        log_overwrite : bool
+            Whether to overwrite the log file.
         """
-        self._log_file = log_file
-        self._log_level = log_level
-        self._log_overwrite = log_overwrite
+        self._log_file: Path = log_file
+        self._log_level: str = log_level
+        self._log_overwrite: bool = log_overwrite
 
     def setup_logger_config(self) -> None:
         """
@@ -22,11 +27,13 @@ class LoggerConfig:
         """
         # Check if the log file already exists
         if self._log_file and not self._log_overwrite:
-            self._log_file = self._log_file.replace(
+            log_file_name = self._log_file.name
+            log_file_name = log_file_name.replace(
                 ".log", "_%s.log" % datetime.now().strftime("%Y%m%d_%H%M%S")
             )
+            self._log_file = self._log_file.parent / log_file_name
 
-        with open(self._log_file, "w") as f:
+        with self._log_file.open(mode="w") as f:
             f.write("")
 
         simple_config = {
