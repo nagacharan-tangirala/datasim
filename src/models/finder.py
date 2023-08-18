@@ -21,7 +21,6 @@ class NearestNBaseStationFinder(Agent):
         self._base_station_distances: dict = {}
 
         self._filtered_v2b_links_data: dict = {}
-        self._filtered_base_station_distances: dict = {}
         self.current_time: int = -1
 
         self._create_v2b_links_data()
@@ -33,13 +32,11 @@ class NearestNBaseStationFinder(Agent):
         # Convert the v2b links df to dictionary
         self._v2b_links_data = (
             self._v2b_links_df.groupby(cc.TIME_STEP)
-            .apply(lambda x: dict(zip(x[cc.VEHICLE_ID], x[cc.BASE_STATIONS])))
-            .to_dict()
-        )
-
-        self._base_station_distances = (
-            self._v2b_links_df.groupby(cc.TIME_STEP)
-            .apply(lambda x: dict(zip(x[cc.VEHICLE_ID], x[cc.DISTANCES])))
+            .apply(
+                lambda x: dict(
+                    zip(x[cc.VEHICLE_ID], zip(x[cc.BASE_STATIONS], x[cc.DISTANCES]))
+                )
+            )
             .to_dict()
         )
 
@@ -61,9 +58,6 @@ class NearestNBaseStationFinder(Agent):
             return
 
         self._filtered_v2b_links_data = self._v2b_links_data[self.current_time]
-        self._filtered_base_station_distances = self._base_station_distances[
-            self.current_time
-        ]
 
     def select_n_stations_for_vehicle(self, vehicle_id: int, n: int) -> ndarray[int]:
         """
@@ -75,7 +69,7 @@ class NearestNBaseStationFinder(Agent):
             return empty(0, dtype=int)
 
         # Get the base stations for the vehicle.
-        base_stations: str = self._filtered_v2b_links_data[vehicle_id]
+        base_stations: str = self._filtered_v2b_links_data[vehicle_id][0]
 
         # Split the base stations string into a numpy array of integers.
         base_stations: ndarray[int] = array(base_stations.split(" ")).astype(int)
@@ -110,13 +104,11 @@ class TraceVehicleNeighbourFinder(Agent):
         # Convert the v2b links df to dictionary
         self._v2v_links_data = (
             self._v2v_links_df.groupby(cc.TIME_STEP)
-            .apply(lambda x: dict(zip(x[cc.VEHICLE_ID], x[cc.NEIGHBOURS])))
-            .to_dict()
-        )
-
-        self._neighbour_distances = (
-            self._v2v_links_df.groupby(cc.TIME_STEP)
-            .apply(lambda x: dict(zip(x[cc.VEHICLE_ID], x[cc.DISTANCES])))
+            .apply(
+                lambda x: dict(
+                    zip(x[cc.VEHICLE_ID], zip(x[cc.NEIGHBOURS], x[cc.DISTANCES]))
+                )
+            )
             .to_dict()
         )
 
@@ -138,9 +130,6 @@ class TraceVehicleNeighbourFinder(Agent):
             return
 
         self._filtered_v2v_links_data = self._v2v_links_data[self.current_time]
-        self._filtered_neighbour_distances = self._neighbour_distances[
-            self.current_time
-        ]
 
     def find_vehicles(self, vehicle_id: int) -> ndarray[int]:
         """
@@ -155,7 +144,7 @@ class TraceVehicleNeighbourFinder(Agent):
             return empty(0, dtype=int)
 
         # Get the neighbours for the vehicle.
-        neighbours: str = self._filtered_v2v_links_data[vehicle_id]
+        neighbours: str = self._filtered_v2v_links_data[vehicle_id][0]
 
         # Split the neighbours string into a numpy array of integers.
         neighbours: ndarray[int] = array(neighbours.split(" ")).astype(int)
