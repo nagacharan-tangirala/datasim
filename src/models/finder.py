@@ -1,7 +1,7 @@
 import logging
 
 from mesa import Agent
-from numpy import ndarray, array, empty
+from numpy import array, empty, ndarray
 from pandas import DataFrame
 
 import src.core.common_constants as cc

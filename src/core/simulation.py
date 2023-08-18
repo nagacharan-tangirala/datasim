@@ -174,7 +174,7 @@ class Simulation:
             The file reader object.
 
         Returns
-        ----------
+        -------
         DataFrame
             The input data.
         """
@@ -323,8 +323,9 @@ class Simulation:
         self, data_reader: CSVDataReader | ParquetDataReader
     ) -> DataFrame:
         """
-        Read the first chunk of the input data. CSVs are read completely while parquet
-        files are read partially.
+        Read the first chunk of the input data.
+
+        CSVs are read completely while parquet files are read partially.
 
         Parameters
         ----------
@@ -332,7 +333,7 @@ class Simulation:
             The input data reader object.
 
         Returns
-        ----------
+        -------
         DataFrame
             The input data.
         """
@@ -420,7 +421,7 @@ class Simulation:
             The input data reader object.
 
         Returns
-        ----------
+        -------
         DataFrame
             The input data.
         """

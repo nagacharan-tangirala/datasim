@@ -7,9 +7,9 @@ import src.core.constants as constants
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (
-    VehiclePayload,
     BaseStationPayload,
     BaseStationResponse,
+    VehiclePayload,
     VehicleResponse,
 )
 from src.models.model_factory import ModelFactory
@@ -219,8 +219,9 @@ class BaseStation(Agent):
 
     def uplink_stage(self) -> None:
         """
-        Uplink stage of the base station. Create data to be sent to the central controller.
-        This is the third step in the overall simulation.
+        Uplink stage of the base station.
+
+        Create data to be sent to the central controller.
         """
         # Clear the downlink response.
         self._downlink_response = None

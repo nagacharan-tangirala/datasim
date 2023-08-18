@@ -145,7 +145,7 @@ class CloudOrchestrator(Agent):
             The total data at the controllers.
         """
         total_data: float = 0.0
-        for controller_id, controller in self._controllers.items():
+        for controller in self._controllers.values():
             total_data += controller.total_data_received
         return total_data
 
@@ -159,7 +159,7 @@ class CloudOrchestrator(Agent):
             The total number of vehicles.
         """
         total_vehicles: int = 0
-        for controller_id, controller in self._controllers.items():
+        for controller in self._controllers.values():
             total_vehicles += controller.vehicles_in_range
         return total_vehicles
 
@@ -173,7 +173,7 @@ class CloudOrchestrator(Agent):
             The data types and sizes.
         """
         data_types_sizes: dict = {}
-        for controller_id, controller in self._controllers.items():
+        for controller in self._controllers.values():
             type_sizes = controller.data_sizes_by_type
             for data_type, size in type_sizes.items():
                 if data_type not in data_types_sizes:
@@ -192,7 +192,7 @@ class CloudOrchestrator(Agent):
             The data counts by type.
         """
         data_types_counts: dict = {}
-        for controller_id, controller in self._controllers.items():
+        for controller in self._controllers.values():
             type_counts = controller.data_counts_by_type
             for data_type, count in type_counts.items():
                 if data_type not in data_types_counts:
@@ -203,7 +203,7 @@ class CloudOrchestrator(Agent):
 
     def _create_models(self, model_data: dict):
         """
-        Create the models
+        Create the models.
         """
         pass
 
@@ -229,7 +229,7 @@ class CloudOrchestrator(Agent):
         """
         Collect data from each base station.
         """
-        logger.debug(f"Collecting data from base stations.")
+        logger.debug("Collecting data from base stations.")
         self.data_at_basestations.clear()
         for station_id, base_station in self._base_stations.items():
             self.data_at_basestations[station_id] = base_station.uplink_payload
@@ -240,7 +240,7 @@ class CloudOrchestrator(Agent):
         """
         Assign target controllers for each base station.
         """
-        logger.debug(f"Assigning target controllers.")
+        logger.debug("Assigning target controllers.")
         # Clear the previous data
         self.uplink_basestations_data.clear()
 
@@ -258,7 +258,7 @@ class CloudOrchestrator(Agent):
         """
         Send data to controllers.
         """
-        logger.debug(f"Sending data to controllers.")
+        logger.debug("Sending data to controllers.")
         for controller_id, base_station_data in self.uplink_basestations_data.items():
             self._controllers[controller_id].received_data = base_station_data
             # Consume the wired network bandwidth in the base station.
@@ -279,7 +279,7 @@ class CloudOrchestrator(Agent):
         """
         Collect data from each controller.
         """
-        logger.debug(f"Collecting data from controllers.")
+        logger.debug("Collecting data from controllers.")
         self.downlink_response_at_controllers.clear()
         for controller_id, controller in self._controllers.items():
             self.downlink_response_at_controllers[
@@ -292,11 +292,8 @@ class CloudOrchestrator(Agent):
         """
         Send data to base stations.
         """
-        logger.debug(f"Sending data to base stations.")
-        for (
-            controller_id,
-            controller_data,
-        ) in self.downlink_response_at_controllers.items():
+        logger.debug("Sending data to base stations.")
+        for controller_data in self.downlink_response_at_controllers.values():
             for station_id, station_data in controller_data.items():
                 self._base_stations[station_id].downlink_response = station_data
                 # Consume the network bandwidth in the base station.

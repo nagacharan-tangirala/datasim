@@ -1,5 +1,5 @@
 import src.core.constants as constants
-from src.device.payload import VehiclePayload, BaseStationPayload
+from src.device.payload import BaseStationPayload, VehiclePayload
 
 __all__ = ["VehicleDataSimplifier", "BaseStationDataSimplifier"]
 

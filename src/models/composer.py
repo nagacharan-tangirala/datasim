@@ -1,7 +1,14 @@
 import logging
+from dataclasses import dataclass
+
+from device.payload import (
+    BaseStationPayload,
+    BaseStationResponse,
+    DataPayload,
+    VehiclePayload,
+)
 
 import src.core.constants as constants
-from src.device.payload import *
 
 __all__ = ["VehicleDataComposer", "BaseStationDataComposer", "ControllerDataComposer"]
 logger = logging.getLogger(__name__)

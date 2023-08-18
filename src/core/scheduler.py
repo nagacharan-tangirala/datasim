@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from mesa import Model, Agent
+from mesa import Agent, Model
 from mesa.time import BaseScheduler
 
 
@@ -42,7 +42,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
 
     def add(self, agent: Agent) -> None:
         """
-        Add an Agent object to the schedule
+        Adds an agent to the schedule.
 
         Parameters
         ----------
@@ -55,7 +55,7 @@ class OrderedMultiStageScheduler(BaseScheduler):
 
     def remove(self, agent: Agent) -> None:
         """
-        Remove all instances of a given agent from the schedule.
+        Removes all instances of a given agent from the schedule.
 
         Parameters
         ----------

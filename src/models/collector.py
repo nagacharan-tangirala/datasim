@@ -42,7 +42,7 @@ class ControllerCollector:
 
         self._data_sizes_by_type = {}
         self._data_counts_by_type = {}
-        for base_station_id, base_station_payload in incoming_data.items():
+        for base_station_payload in incoming_data.values():
             # Calculate total data size and the list of all vehicles
             self._total_data_size += base_station_payload.uplink_data_size
             self._all_vehicles.extend(base_station_payload.sources)
@@ -97,7 +97,7 @@ class VehicleCollector:
         self._total_data_size = 0.0
         self._data_sizes_by_type = {}
         self._data_counts_by_type = {}
-        for vehicle_id, vehicle_payload in incoming_data.items():
+        for vehicle_payload in incoming_data.values():
             # Calculate total data size and the list of all vehicles
             self._total_data_size += vehicle_payload.total_data_size
 

@@ -1,6 +1,6 @@
 import logging
 
-from numpy import ndarray, array
+from numpy import array, ndarray
 
 logger = logging.getLogger(__name__)
 

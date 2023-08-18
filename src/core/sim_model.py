@@ -1,6 +1,6 @@
 import logging
 
-from mesa import Model, DataCollector
+from mesa import DataCollector, Model
 from mesa.space import ContinuousSpace
 from numpy import ndarray
 

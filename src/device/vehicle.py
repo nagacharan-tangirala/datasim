@@ -6,7 +6,7 @@ from pandas import DataFrame
 
 import src.core.constants as constants
 from src.device.activation import ActivationSettings
-from src.device.hardware import *
+from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import VehiclePayload, VehicleResponse
 from src.models.model_factory import ModelFactory
 
