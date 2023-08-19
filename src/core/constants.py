@@ -59,7 +59,6 @@ COMPRESSION_FACTOR = "compression_factor"
 # Model type keys
 STATIC_MOBILITY = "static"
 TRACE_MOBILITY = "trace"
-
 TRACE_V2V = "trace"
 NEAREST_V2B = "nearest"
 
@@ -93,4 +92,4 @@ FILE_PROGRESS_BAR_STARTING_MESSAGE = "Saving Files"
 FILE_PROGRESS_BAR_DONE_MESSAGE = " Done. Output Files Saved "
 
 # Space related constants
-BUFFER_SPACE = 100.0
+BUFFER_SPACE = 10.0

@@ -223,7 +223,6 @@ class BaseStation(Agent):
 
         Create data to be sent to the central controller.
         """
-        # Clear the downlink response.
         self._downlink_response = None
         self._downlink_vehicle_data.clear()
 
@@ -253,14 +252,11 @@ class BaseStation(Agent):
         """
         Downlink stage of the base station.
         """
-        # Clear the uplink vehicle data as the transfer is complete.
         self._uplink_vehicle_data.clear()
 
         logger.debug(
             f"Downlink stage for base station {self.unique_id} at time {self.model.current_time}."
         )
-
-        # Create the downlink vehicle response.
         vehicle_index_in_data = 0
         for vehicle_id in self._downlink_response.destination_vehicles:
             if vehicle_id == -1:

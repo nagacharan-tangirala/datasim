@@ -34,37 +34,30 @@ class Simulation:
 
         self._device_factory: DeviceFactory | None = None
 
-        # Devices in the simulation
         self._vehicles: dict = {}
         self._base_stations: dict = {}
         self._controllers: dict = {}
+        self._roadside_units: dict = {}
 
-        # Main simulation model
         self._simulation_model: SimModel | None = None
 
-        # Orchestrators
         self.edge_orchestrator: EdgeOrchestrator | None = None
         self.cloud_orchestrator: CloudOrchestrator | None = None
 
-        # Simulation parameters
         self.start_time: int = -1
         self.end_time: int = -1
         self.time_step: int = -1
         self.current_time: int = -1
         self.data_stream_interval: int = -1
 
-        # Helper to read input data
         self.sim_input_helper: SimulationInputHelper | None = None
 
-        # Activation data
         self._vehicle_activations_data: DataFrame = DataFrame()
         self._base_station_activations_data: DataFrame = DataFrame()
         self._controller_activations_data: DataFrame = DataFrame()
 
-        # Progress bar
         self._progress_bar: tqdm | None = None
 
-        # Output writers
         self._model_output_writer: ModelOutputParquet | ModelOutputCSV | None = None
         self._agent_output_writer: AgentOutputParquet | AgentOutputCSV | None = None
 
@@ -197,7 +190,6 @@ class Simulation:
         """
         Create the devices in the simulation.
         """
-        # Create the device factory object.
         logger.debug("Creating the device factory.")
         self._device_factory = DeviceFactory(
             self._vehicle_activations_data,
@@ -207,7 +199,6 @@ class Simulation:
             self.end_time,
         )
 
-        # Create a device factory object and create the participants
         logger.debug("Creating the Vehicles")
         self._device_factory.create_vehicles(
             self.vehicle_trace_data, self.sim_input_helper.vehicle_models_data
@@ -439,9 +430,6 @@ class Simulation:
         """
         Run the simulation.
         """
-        logger.info("Performing final setup.")
-        self._simulation_model.perform_final_setup()
-
         logger.debug("Creating the progress bar.")
         self._create_progress_bar()
 

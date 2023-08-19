@@ -66,15 +66,3 @@ class ActivationSettings:
                 self.disable_times = array([self._sim_end_time])
             else:
                 logger.debug("Skipping inactive device.")
-
-    def get_start_times(self) -> ndarray[int]:
-        """
-        Get the start times.
-        """
-        return self.enable_times
-
-    def get_end_times(self) -> ndarray[int]:
-        """
-        Get the end times.
-        """
-        return self.disable_times
