@@ -74,7 +74,37 @@ class Simulation:
         """
         self._read_config()
         self._perform_initial_setup()
+        self._read_input_data()
+        self._create_simulation_entities()
+        self._create_simulation_model()
+        self._simulation_model.do_model_setup()
 
+    def _read_config(self) -> None:
+        """
+        Creates the input helper and reads the config file.
+        """
+        self.sim_input_helper = SimulationInputHelper(self.config_filepath)
+        self.sim_input_helper.read_config_file()
+
+    def _perform_initial_setup(self) -> None:
+        """
+        Carry out initial setup tasks.
+        """
+        self.sim_input_helper.create_loggers()
+
+        logger.debug("Reading simulation and model settings.")
+        self.sim_input_helper.read_simulation_and_model_settings()
+
+        logger.debug("Creating the output directory.")
+        self.sim_input_helper.create_output_directory()
+
+        logger.debug("Creating the file readers.")
+        self.sim_input_helper.create_file_readers()
+
+    def _read_input_data(self) -> None:
+        """
+        Read the input data.
+        """
         logger.info("Reading simulation parameters.")
         self._read_simulation_parameters()
 
@@ -84,6 +114,10 @@ class Simulation:
         logger.info("Streaming the first chunk of the input data.")
         self._read_first_chunk_input_data()
 
+    def _create_simulation_entities(self) -> None:
+        """
+        Create the entities in the simulation.
+        """
         logger.info("Creating devices.")
         self._create_devices()
 
@@ -93,43 +127,10 @@ class Simulation:
         logger.info("Creating output writers.")
         self._create_output_writers()
 
-        logger.info("Creating device model.")
-        self._create_simulation_model()
-
-        logger.info("Initializing simulation.")
-
-    def _read_config(self) -> None:
-        """
-        Read the config file and store the parsed parameters in the config dict.
-        """
-        # Create the config reader and read the config file
-        self.sim_input_helper = SimulationInputHelper(self.config_filepath)
-        self.sim_input_helper.read_config_file()
-
-    def _perform_initial_setup(self) -> None:
-        """
-        Perform the initial setup.
-        """
-        # Create the loggers
-        self.sim_input_helper.create_loggers()
-
-        # Read the simulation and model settings
-        logger.debug("Reading simulation and model settings.")
-        self.sim_input_helper.read_simulation_and_model_settings()
-
-        # Create the output directory
-        logger.debug("Creating the output directory.")
-        self.sim_input_helper.create_output_directory()
-
-        # Create the file readers
-        logger.debug("Creating the file readers.")
-        self.sim_input_helper.create_file_readers()
-
     def _read_simulation_parameters(self) -> None:
         """
         Read the simulation parameters.
         """
-        # Get the simulation parameters
         simulation_data = self.sim_input_helper.simulation_data
 
         self.start_time: int = simulation_data[constants.SIMULATION_START_TIME]
