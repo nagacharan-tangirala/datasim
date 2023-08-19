@@ -65,9 +65,9 @@ class SimModel(Model):
         """Set the current time."""
         self._current_time = value
 
-    def perform_final_setup(self) -> None:
+    def do_model_setup(self) -> None:
         """
-        Complete the simulation setup.
+        Set up the model before the simulation starts.
         """
         logger.debug("Reading activation and deactivation times for all the devices.")
         self.save_device_activation_times()
