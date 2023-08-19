@@ -155,6 +155,9 @@ class Simulation:
         self._controller_activations_data = self._read_file(
             self.sim_input_helper.file_readers[cc.CONTROLLER_ACTIVATIONS_FILE]
         )
+        self._rsu_activations_data = self._read_file(
+            self.sim_input_helper.file_readers[cc.RSU_ACTIVATIONS_FILE]
+        )
 
     def _read_file(
         self, data_reader: ParquetDataReader | CSVDataReader | None
@@ -214,7 +217,11 @@ class Simulation:
             self.controller_data, self.sim_input_helper.controller_models_data
         )
 
-        # Get the devices from the factory
+        logger.debug("Creating the RSUs.")
+        self._device_factory.create_rsus(
+            self.rsu_data, self.sim_input_helper.rsu_models_data
+        )
+
         self._vehicles = self._device_factory.vehicles
         self._base_stations = self._device_factory.base_stations
         self._controllers = self._device_factory.controllers
@@ -253,6 +260,7 @@ class Simulation:
         """
         Create the main simulation model.
         """
+        logger.info("Creating simulation model.")
         self._simulation_model = SimModel(
             self._vehicles,
             self._base_stations,
