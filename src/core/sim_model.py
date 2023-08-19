@@ -127,71 +127,82 @@ class SimModel(Model):
     def _initialize_scheduler(self) -> None:
         """
         Initialize the scheduler.
-        """
-        # Prepare the type stage list.
-        type_stage_list: list[TypeStage] = []
 
-        # Add the vehicle type to the type stage list for the uplink stage.
+        The order of the types and stages is important. The order in which the types
+        and stages are added to the scheduler is the order of execution of the stages.
+        """
+        type_stage_list: list[TypeStage] = []
+        type_stage_list.extend(self._get_uplink_stages_in_order())
+        type_stage_list.extend(self._get_downlink_stages_in_order())
+        self.schedule = OrderedMultiStageScheduler(self, type_stage_list, shuffle=True)
+
+    def _get_uplink_stages_in_order(self) -> list[TypeStage]:
+        """
+        Add the uplink stages to the scheduler.
+
+        Order is as follows - Vehicle, Edge Orchestrator, Base Station,
+        Controller
+        """
+        type_stage_list: list[TypeStage] = []
         vehicle_type_stage = TypeStage(
             type=type(list(self._vehicles.values())[0]), stage="uplink_stage"
         )
         type_stage_list.append(vehicle_type_stage)
 
-        # Add the edge orchestrator type to the type stage list for the uplink stage.
         edge_orchestrator_type_stage = TypeStage(
             type=type(self._edge_orchestrator), stage="uplink_stage"
         )
         type_stage_list.append(edge_orchestrator_type_stage)
 
-        # Add the base station type to the type stage list for the uplink stage.
         base_station_type_stage = TypeStage(
             type=type(list(self._base_stations.values())[0]), stage="uplink_stage"
         )
         type_stage_list.append(base_station_type_stage)
 
-        # Add the cloud orchestrator type to the type stage list for the uplink stage.
         cloud_orchestrator_type_stage = TypeStage(
             type=type(self._cloud_orchestrator), stage="uplink_stage"
         )
         type_stage_list.append(cloud_orchestrator_type_stage)
 
-        # Add the controller type to the type stage list for the uplink stage.
         controller_type_stage = TypeStage(
             type=type(list(self._controllers.values())[0]), stage="uplink_stage"
         )
         type_stage_list.append(controller_type_stage)
+        return type_stage_list
 
-        # Add the controller type to the type stage list for the downlink stage.
+    def _get_downlink_stages_in_order(self) -> list[TypeStage]:
+        """
+        Add the downlink stages to the scheduler.
+
+        Order is as follows - Controller, Cloud Orchestrator, Base Station,
+        Edge Orchestrator, Vehicles
+        """
+        type_stage_list: list[TypeStage] = []
         controller_type_stage = TypeStage(
             type=type(list(self._controllers.values())[0]), stage="downlink_stage"
         )
         type_stage_list.append(controller_type_stage)
 
-        # Add the cloud orchestrator type to the type stage list for the downlink stage.
         cloud_orchestrator_type_stage = TypeStage(
             type=type(self._cloud_orchestrator), stage="downlink_stage"
         )
         type_stage_list.append(cloud_orchestrator_type_stage)
 
-        # Add the base station type to the type stage list for the downlink stage.
         base_station_type_stage = TypeStage(
             type=type(list(self._base_stations.values())[0]), stage="downlink_stage"
         )
         type_stage_list.append(base_station_type_stage)
 
-        # Add the edge orchestrator type to the type stage list for the downlink stage.
         edge_orchestrator_type_stage = TypeStage(
             type=type(self._edge_orchestrator), stage="downlink_stage"
         )
         type_stage_list.append(edge_orchestrator_type_stage)
 
-        # Add the vehicle type to the type stage list for the downlink stage.
         vehicle_type_stage = TypeStage(
             type=type(list(self._vehicles.values())[0]), stage="downlink_stage"
         )
         type_stage_list.append(vehicle_type_stage)
-
-        self.schedule = OrderedMultiStageScheduler(self, type_stage_list, shuffle=True)
+        return type_stage_list
 
     def _initialize_space(self) -> None:
         """
