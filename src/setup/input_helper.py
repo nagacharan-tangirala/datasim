@@ -32,6 +32,7 @@ class SimulationInputHelper:
         self.vehicle_models_data: dict = {}
         self.base_station_models_data: dict = {}
         self.controller_models_data: dict = {}
+        self.rsu_models_data: dict = {}
 
         self.simulation_data: dict = {}
         self.output_data: dict = {}
@@ -78,6 +79,7 @@ class SimulationInputHelper:
         self.vehicle_models_data = self.config_data[constants.VEHICLES]
         self.base_station_models_data = self.config_data[constants.BASE_STATIONS]
         self.controller_models_data = self.config_data[constants.CONTROLLERS]
+        self.rsu_models_data = self.config_data[constants.ROADSIDE_UNITS]
 
     def create_output_directory(self) -> None:
         """
@@ -123,33 +125,19 @@ class SimulationInputHelper:
         """
         Read the input files.
         """
-        # Read the input files.
-        logger.debug("Creating input file readers.")
-        input_files = self.config_data[constants.INPUT_FILES]
+        self._create_all_devices_file_readers()
+        self._create_activation_file_readers()
+        self._create_links_file_readers()
 
-        # Create the file readers
+    def _create_all_devices_file_readers(self) -> None:
+        """Create the file readers for all devices."""
+        input_files = self.config_data[constants.INPUT_FILES]
         logger.debug("Creating file reader for vehicle trace file.")
         self._create_new_file_reader(
             input_files[cc.VEHICLE_TRACE_FILE],
             cc.VEHICLE_TRACE_COLUMN_NAMES,
             cc.VEHICLE_TRACE_COLUMN_DTYPES,
             cc.VEHICLE_TRACE_FILE,
-        )
-
-        logger.debug("Creating file reader for activation times file.")
-        self._create_new_file_reader(
-            input_files[cc.VEHICLE_ACTIVATIONS_FILE],
-            cc.ACTIVATION_TIMES_COLUMN_NAMES,
-            cc.ACTIVATION_TIMES_COLUMN_DTYPES,
-            cc.VEHICLE_ACTIVATIONS_FILE,
-        )
-
-        logger.debug("Creating file reader for v2v links file.")
-        self._create_new_file_reader(
-            input_files[cc.V2V_LINKS_FILE],
-            cc.V2V_LINKS_COLUMN_NAMES,
-            cc.V2V_LINKS_COLUMN_DTYPES,
-            cc.V2V_LINKS_FILE,
         )
 
         logger.debug("Creating file reader for base stations file.")
@@ -160,14 +148,6 @@ class SimulationInputHelper:
             cc.BASE_STATIONS_FILE,
         )
 
-        logger.debug("Creating file reader for v2b links file.")
-        self._create_new_file_reader(
-            input_files[cc.V2B_LINKS_FILE],
-            cc.V2B_LINKS_COLUMN_NAMES,
-            cc.V2B_LINKS_COLUMN_DTYPES,
-            cc.V2B_LINKS_FILE,
-        )
-
         logger.debug("Creating file reader for controllers file.")
         self._create_new_file_reader(
             input_files[cc.CONTROLLERS_FILE],
@@ -176,15 +156,16 @@ class SimulationInputHelper:
             cc.CONTROLLERS_FILE,
         )
 
-        logger.debug("Creating file reader for b2c links file.")
+    def _create_activation_file_readers(self) -> None:
+        """Create the file readers for all activation files."""
+        input_files = self.config_data[constants.INPUT_FILES]
+        logger.debug("Creating file reader for vehicle activation times file.")
         self._create_new_file_reader(
-            input_files[cc.B2C_LINKS_FILE],
-            cc.B2C_LINKS_COLUMN_NAMES,
-            cc.B2C_LINKS_COLUMN_DTYPES,
-            cc.B2C_LINKS_FILE,
+            input_files[cc.VEHICLE_ACTIVATIONS_FILE],
+            cc.ACTIVATION_TIMES_COLUMN_NAMES,
+            cc.ACTIVATION_TIMES_COLUMN_DTYPES,
+            cc.VEHICLE_ACTIVATIONS_FILE,
         )
-
-        logger.debug("Creating optional file readers if they are provided.")
         if input_files[cc.BASE_STATION_ACTIVATIONS_FILE] != "":
             logger.debug("Creating file reader for base station activations file.")
             self._create_new_file_reader(
@@ -206,6 +187,54 @@ class SimulationInputHelper:
             )
         else:
             self._create_none_file_reader(cc.CONTROLLER_ACTIVATIONS_FILE)
+
+        if input_files[cc.RSU_ACTIVATIONS_FILE] != "":
+            logger.debug("Creating file reader for roadside unit activations file.")
+            self._create_new_file_reader(
+                input_files[cc.RSU_ACTIVATIONS_FILE],
+                cc.ACTIVATION_TIMES_COLUMN_NAMES,
+                cc.ACTIVATION_TIMES_COLUMN_DTYPES,
+                cc.RSU_ACTIVATIONS_FILE,
+            )
+        else:
+            self._create_none_file_reader(cc.RSU_ACTIVATIONS_FILE)
+
+    def _create_links_file_readers(self) -> None:
+        """Create the file readers for all links files."""
+        logger.debug("Creating input file readers.")
+        input_files = self.config_data[constants.INPUT_FILES]
+
+        logger.debug("Creating file reader for v2v links file.")
+        self._create_new_file_reader(
+            input_files[cc.V2V_LINKS_FILE],
+            cc.V2V_LINKS_COLUMN_NAMES,
+            cc.V2V_LINKS_COLUMN_DTYPES,
+            cc.V2V_LINKS_FILE,
+        )
+
+        logger.debug("Creating file reader for v2b links file.")
+        self._create_new_file_reader(
+            input_files[cc.V2B_LINKS_FILE],
+            cc.V2B_LINKS_COLUMN_NAMES,
+            cc.V2B_LINKS_COLUMN_DTYPES,
+            cc.V2B_LINKS_FILE,
+        )
+
+        logger.debug("Creating file reader for b2c links file.")
+        self._create_new_file_reader(
+            input_files[cc.B2C_LINKS_FILE],
+            cc.B2C_LINKS_COLUMN_NAMES,
+            cc.B2C_LINKS_COLUMN_DTYPES,
+            cc.B2C_LINKS_FILE,
+        )
+
+        logger.debug("Creating file reader for roadside units file.")
+        self._create_new_file_reader(
+            input_files[cc.ROADSIDE_UNITS_FILE],
+            cc.ROADSIDE_UNITS_COLUMN_NAMES,
+            cc.ROADSIDE_UNITS_COLUMN_DTYPES,
+            cc.ROADSIDE_UNITS_FILE,
+        )
 
     def _create_new_file_reader(
         self, filename: str, column_names: list[str], column_dtypes: dict, file_key: str
