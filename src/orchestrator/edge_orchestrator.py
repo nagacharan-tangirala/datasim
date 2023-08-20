@@ -217,7 +217,8 @@ class EdgeOrchestrator(Agent):
             self.all_vehicles_uplink_data[base_station_id][vehicle_id] = vehicle_data
 
             logger.debug(
-                f"Vehicle {vehicle_id} is assigned to base station {base_station_id} at time {self.model.current_time}"
+                f"Vehicle {vehicle_id} is assigned to base station {base_station_id} "
+                f"at time {self.model.current_time}"
             )
 
     def _send_data_to_basestations(self) -> None:
@@ -263,7 +264,6 @@ class EdgeOrchestrator(Agent):
         logger.debug("Sending data to vehicles")
         for base_station_data in self.downlink_response_at_basestations.values():
             for vehicle_id, veh_data in base_station_data.items():
-                assert vehicle_id in self._vehicles, f"Vehicle {vehicle_id} not found"
                 self._vehicles[vehicle_id].downlink_response = veh_data
                 # Consume the network bandwidth in the vehicle.
                 self._vehicles[vehicle_id].use_network_for_downlink()
@@ -281,10 +281,6 @@ class EdgeOrchestrator(Agent):
                 continue
 
             for neighbour_id in neighbour_ids:
-                assert (
-                    neighbour_id in self._vehicles
-                ), f"Vehicle {neighbour_id} missing."
-
                 # Send the data to the neighbour
                 self._vehicles[neighbour_id].add_sidelink_received_data(vehicle_data)
 

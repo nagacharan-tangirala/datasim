@@ -143,7 +143,6 @@ class VehicleDataComposer:
         vehicle_payload.total_data_size = all_data_size
         vehicle_payload.data_payload_list = data_payloads
 
-        assert vehicle_payload.total_data_size >= 0, "Uplink data size is negative."
         return vehicle_payload
 
 

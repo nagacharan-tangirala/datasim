@@ -29,4 +29,7 @@ class ModelTypeNotImplementedError(Exception):
         self.model_type = model_type
 
     def __str__(self):
-        return f"The model '{self.model_name}' with type '{self.model_type}' is not implemented."
+        return (
+            f"The model '{self.model_name}' with type '{self.model_type}' "
+            f"is not implemented."
+        )

@@ -25,10 +25,11 @@ class OrderedMultiStageScheduler(BaseScheduler):
         model : Model
             Model object associated with the schedule.
         type_stage_list : list[str] | None, optional
-            List of types and their respective stages to run, in the order to run them in, by default None
+            List of types and their respective stages to run, in the order to run them
+            in, by default None
         shuffle : bool, optional
-            If True, shuffle the order of agents within each step, by default False. This does not shuffle the order of
-            the stages and the types.
+            If True, shuffle the order of agents within each step, by default False.
+            This does not shuffle the order of the stages and the types.
         """
         super().__init__(model)
         self.types_with_stages: list[TypeStage] = (

@@ -37,7 +37,8 @@ class ActivationSettings:
 
             if enable_time > disable_time:
                 logger.exception(
-                    f"Enable time {enable_time} is greater than disable time {disable_time}."
+                    f"Enable time {enable_time} is greater than "
+                    f"disable time {disable_time}."
                 )
 
             if enable_time > self._sim_end_time:

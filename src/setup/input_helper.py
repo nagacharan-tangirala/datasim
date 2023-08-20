@@ -24,7 +24,6 @@ class SimulationInputHelper:
         """
         self.config_file: Path = config_file
         self.project_path: Path = config_file.parent
-
         self.config_data: dict = {}
 
         self.file_readers: dict[str, CSVDataReader | ParquetDataReader | None] = {}

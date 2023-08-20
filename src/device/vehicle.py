@@ -143,12 +143,13 @@ class Vehicle(Agent):
             The mobility data to update.
         """
         match self._mobility_model.type:
-            case constants.STATIC_MOBILITY:
+            case ModelType.STATIC:
                 logger.debug(f"Updating position for vehicle {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
-            case constants.TRACE_MOBILITY:
+            case ModelType.TRACE:
                 logger.debug(
-                    f"Updating trace for vehicle {self.unique_id} with length {len(mobility_data)}"
+                    f"Updating trace for vehicle {self.unique_id} with "
+                    f"length {len(mobility_data)}"
                 )
                 self._mobility_model.update_positions(mobility_data)
 
@@ -231,7 +232,8 @@ class Vehicle(Agent):
         Downlink stage for the vehicle.
         """
         logger.debug(
-            f"Downlink stage for vehicle {self.unique_id} at time {self.model.current_time}"
+            f"Downlink stage for vehicle {self.unique_id} at time"
+            f" {self.model.current_time}"
         )
 
         self._vehicles_in_range = len(self._sidelink_received_data)

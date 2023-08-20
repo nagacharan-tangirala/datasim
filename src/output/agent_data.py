@@ -1,4 +1,3 @@
-from os.path import join
 from pathlib import Path
 
 from pandas import DataFrame

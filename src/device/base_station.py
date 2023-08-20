@@ -227,17 +227,18 @@ class BaseStation(Agent):
         self._downlink_vehicle_data.clear()
 
         logger.debug(
-            f"Uplink stage for base station {self.unique_id} at time {self.model.current_time}."
+            f"Uplink stage for base station {self.unique_id} "
+            f"at time {self.model.current_time}."
         )
 
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
 
-        if self._mobility_model.type != constants.STATIC_MOBILITY:
+        if self._mobility_model.type != ModelType.STATIC:
             self._location = self._mobility_model.current_location
             self.model.space.move_agent(self, self._location)
 
-        # Create base station payload if the base station has received data from the vehicles.
+        # Create base station payload if the bs has received data from the vehicles.
         self._uplink_payload = self._data_composer.compose_basestation_payload(
             self.model.current_time, self._uplink_vehicle_data
         )
@@ -255,7 +256,8 @@ class BaseStation(Agent):
         self._uplink_vehicle_data.clear()
 
         logger.debug(
-            f"Downlink stage for base station {self.unique_id} at time {self.model.current_time}."
+            f"Downlink stage for base station {self.unique_id}"
+            f" at time {self.model.current_time}."
         )
         vehicle_index_in_data = 0
         for vehicle_id in self._downlink_response.destination_vehicles:

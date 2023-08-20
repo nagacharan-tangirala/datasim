@@ -168,13 +168,14 @@ class CentralController(Agent):
         Step through the central controller for the uplink stage.
         """
         logger.debug(
-            f"Uplink stage for controller {self.unique_id} at time {self.model.current_time}."
+            f"Uplink stage for controller {self.unique_id} "
+            f"at time {self.model.current_time}."
         )
 
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
 
-        if self._mobility_model.type != constants.STATIC_MOBILITY:
+        if self._mobility_model.type != ModelType:
             self._location = self._mobility_model.current_location
             self.model.space.move_agent(self, self._location)
 
@@ -190,6 +191,7 @@ class CentralController(Agent):
         Step through the central controller for the downlink stage.
         """
         logger.debug(
-            f"Downlink stage for controller {self.unique_id} at time {self.model.current_time}."
+            f"Downlink stage for controller {self.unique_id} "
+            f"at time {self.model.current_time}."
         )
         pass
