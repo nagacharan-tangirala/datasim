@@ -155,7 +155,7 @@ class ColumnDTypes(dict[str, type], Enum):
     """
 
     VEHICLE_TRACES: dict[str, type] = {
-        TraceTimes.TIME_STEP: float,
+        TraceTimes.TIME_STEP: int,
         DeviceId.VEHICLE: int,
         CoordSpace.X: float,
         CoordSpace.Y: float,
