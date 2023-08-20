@@ -87,6 +87,14 @@ class DeviceFactory:
         ]
         vehicle_types = list(vehicle_models.keys())
 
+        vehicle_trace_dict = (
+            vehicle_trace_data.groupby(DeviceId.VEHICLE)[
+                [TraceTimes.TIME_STEP, CoordSpace.X, CoordSpace.Y, Column.VELOCITY]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
         logger.debug(f"Vehicle Weights: {veh_weights}")
         logger.debug(f"Vehicle Types: {vehicle_types}")
 

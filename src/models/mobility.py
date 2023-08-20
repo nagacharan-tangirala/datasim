@@ -60,30 +60,11 @@ class TraceMobilityModel(Agent):
         self._type: str = ModelType.TRACE
 
         self.current_time: int = 0
+        self._current_velocity: float = 0.0
         self._current_location: list[float] = []
-        self._positions_df: DataFrame = DataFrame()
+
         self._positions: dict = {}
-
-    def _prepare_positions(self) -> None:
-        """
-        Prepare the positions.
-        """
-        self._positions_df[TraceTimes.TIME_STEP] = self._positions_df[
-            TraceTimes.TIME_STEP
-        ].astype(int)
-
-        # Convert the positions to a dictionary
-        self._positions = dict(
-            zip(
-                self._positions_df[TraceTimes.TIME_STEP],
-                list(
-                    zip(
-                        self._positions_df[CoordSpace.X],
-                        self._positions_df[CoordSpace.Y],
-                    )
-                ),
-            )
-        )
+        self._velocities: dict = {}
 
     @property
     def type(self) -> str:
