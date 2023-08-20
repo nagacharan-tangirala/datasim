@@ -4,7 +4,7 @@ from random import choices
 from numpy import asarray
 from pandas import DataFrame, Series
 
-from src.core.common_constants import CoordSpace, DeviceId, TraceTimes
+from src.core.common_constants import Column, CoordSpace, DeviceId, TraceTimes
 from src.core.constants import HardwareKey, ModelParam
 from src.device.activation import ActivationSettings
 from src.device.base_station import BaseStation
@@ -80,8 +80,6 @@ class DeviceFactory:
         vehicle_models : dict
             The model data of the vehicles.
         """
-        vehicle_ids = vehicle_trace_data[DeviceId.VEHICLE].unique()
-        logger.debug(f"Creating {len(vehicle_ids)} vehicles.")
         veh_weights = [
             ue_data[ModelParam.VEHICLE_RATIO] for ue_data in vehicle_models.values()
         ]
@@ -98,7 +96,7 @@ class DeviceFactory:
         logger.debug(f"Vehicle Weights: {veh_weights}")
         logger.debug(f"Vehicle Types: {vehicle_types}")
 
-        for vehicle_id in vehicle_ids:
+        for vehicle_id, vehicle_trace in vehicle_trace_dict.items():
             logger.debug(f"Creating vehicle {vehicle_id}")
             # Randomly select the type of the vehicle and get the respective model set.
             veh_choice = choices(vehicle_types, weights=veh_weights, k=1)[0]
@@ -117,10 +115,7 @@ class DeviceFactory:
             self._vehicles[vehicle_id] = self._create_vehicle(
                 vehicle_id, this_activation_settings, selected_vehicle_models
             )
-            this_vehicle_trace: DataFrame = vehicle_trace_data[
-                vehicle_trace_data[DeviceId.VEHICLE] == vehicle_id
-            ]
-            self._vehicles[vehicle_id].update_mobility_data(this_vehicle_trace)
+            self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
 
             logger.debug(f"Created vehicle {vehicle_id} of type {veh_choice}")
 
@@ -168,18 +163,19 @@ class DeviceFactory:
         """
         Create the base stations in the simulation.
         """
-        base_station_ids = base_station_data[DeviceId.BASE_STATION].unique()
+        base_station_dict = (
+            base_station_data.groupby(DeviceId.BASE_STATION)[
+                [CoordSpace.X, CoordSpace.Y]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
 
-        for base_station_id in base_station_ids:
-            logger.debug(f"Creating base station {base_station_id}")
-            this_station_data = base_station_data[
-                base_station_data[DeviceId.BASE_STATION] == base_station_id
-            ][[CoordSpace.X, CoordSpace.Y]]
-
-            base_station_position: list[float] = this_station_data.values[0].tolist()
-
-            self._base_stations[base_station_id] = self._create_base_station(
-                base_station_id, base_station_position, base_station_models_data
+        for station_id, station_data in base_station_dict.items():
+            logger.debug(f"Creating base station {station_id}")
+            station_position: list[float] = [pos[0] for pos in station_data.values()]
+            self._base_stations[station_id] = self._create_base_station(
+                station_id, station_position, base_station_models_data
             )
 
     def _create_base_station(
@@ -238,17 +234,16 @@ class DeviceFactory:
         """
         Create the controllers in the simulation.
         """
-        controller_list = controller_data[DeviceId.CONTROLLER].unique()
+        controller_dict = (
+            controller_data.groupby(DeviceId.CONTROLLER)[[CoordSpace.X, CoordSpace.Y]]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
 
-        for controller_id in controller_list:
-            # Get the controller position.
-            this_controller_data = controller_data[
-                controller_data[DeviceId.CONTROLLER] == controller_id
-            ][[CoordSpace.X, CoordSpace.Y]]
-
-            controller_position: list[float] = this_controller_data.values[0].tolist()
-
-            # Create the controller.
+        for controller_id, controller_info in controller_dict.items():
+            controller_position: list[float] = [
+                pos[0] for pos in controller_info.values()
+            ]
             self._controllers[controller_id] = self._create_controller(
                 controller_id, controller_position, controller_models_data
             )
@@ -298,19 +293,23 @@ class DeviceFactory:
         """
         Update the vehicles based on the new trace data.
         """
-        ue_list = vehicle_trace_data[DeviceId.VEHICLE].unique()
+        vehicle_trace_dict = (
+            vehicle_trace_data.groupby(DeviceId.VEHICLE)[
+                [TraceTimes.TIME_STEP, CoordSpace.X, CoordSpace.Y, Column.VELOCITY]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
         vehicle_weights = [
             float(ue_data[ModelParam.VEHICLE_RATIO])
             for ue_data in vehicle_models.values()
         ]
         vehicle_types = list(vehicle_models.keys())
 
-        for vehicle_id in ue_list:
-            this_vehicle_trace: DataFrame = vehicle_trace_data[
-                vehicle_trace_data[DeviceId.VEHICLE] == vehicle_id
-            ]
+        for vehicle_id, vehicle_trace in vehicle_trace_dict.items():
             if vehicle_id in self._vehicles:
-                self._vehicles[vehicle_id].update_mobility_data(this_vehicle_trace)
+                self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
                 continue
 
             type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[0]
@@ -329,7 +328,7 @@ class DeviceFactory:
             self._vehicles[vehicle_id] = self._create_vehicle(
                 vehicle_id, this_activation_settings, selected_vehicle_models
             )
-            self._vehicles[vehicle_id].update_mobility_data(this_vehicle_trace)
+            self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
 
     def create_new_base_stations(
         self, base_station_data: DataFrame, base_station_models_data: dict
@@ -337,22 +336,20 @@ class DeviceFactory:
         """
         Update the base stations based on the new trace data.
         """
-        base_station_list = base_station_data[DeviceId.BASE_STATION].unique()
+        base_station_dict = (
+            base_station_data.groupby(DeviceId.BASE_STATION)[
+                [CoordSpace.X, CoordSpace.Y]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
 
-        for base_station_id in base_station_list:
-            if base_station_id in self._base_stations:
-                # TODO: Update the base station if there is any requirement to do so.
-                #  Currently, there is no requirement. All the base station data is
-                #  static in the simulation.
+        for station_id, station_data in base_station_dict.items():
+            if station_id in self._base_stations:
                 continue
-
-            this_station_data = base_station_data[
-                base_station_data[DeviceId.BASE_STATION] == base_station_id
-            ][[CoordSpace.X, CoordSpace.Y]]
-
-            base_station_position: list[float] = this_station_data.values[0].tolist()
-            self._base_stations[base_station_id] = self._create_base_station(
-                base_station_id, base_station_position, base_station_models_data
+            station_position: list[float] = [pos[0] for pos in station_data.values()]
+            self._base_stations[station_id] = self._create_base_station(
+                station_id, station_position, base_station_models_data
             )
 
     def create_new_controllers(
@@ -361,17 +358,18 @@ class DeviceFactory:
         """
         Update the controllers based on the new trace data.
         """
-        controller_list = controller_data[DeviceId.CONTROLLER].unique()
-        for controller_id in controller_list:
+        controller_dict = (
+            controller_data.groupby(DeviceId.CONTROLLER)[[CoordSpace.X, CoordSpace.Y]]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        for controller_id, controller_info in controller_dict.items():
             if controller_id in self._controllers:
                 continue
-
-            this_controller_data = controller_data[
-                controller_data[DeviceId.CONTROLLER] == controller_id
-            ][[CoordSpace.X, CoordSpace.Y]]
-
-            controller_position: list[float] = this_controller_data.values[0].tolist()
-
+            controller_position: list[float] = [
+                pos[0] for pos in controller_info.values()
+            ]
             self._controllers[controller_id] = self._create_controller(
                 controller_id, controller_position, controller_models_data
             )
