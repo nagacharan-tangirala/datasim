@@ -213,7 +213,7 @@ class ColumnDTypes(dict[str, type], Enum):
         Column.DISTANCES_STR: str,
     }
     ACTIVATION_TIMES: dict[str, type] = {
-        DeviceId.VEHICLE: int,
+        DeviceId.DEVICE: int,
         TraceTimes.START_TIME: str,
         TraceTimes.END_TIME: str,
     }
