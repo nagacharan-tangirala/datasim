@@ -133,7 +133,7 @@ class Vehicle(Agent):
             model_data[ModelName.DATA_COLLECTOR]
         )
 
-    def update_mobility_data(self, mobility_data: DataFrame | list[float]) -> None:
+    def update_mobility_data(self, mobility_data: dict | list[float]) -> None:
         """
         Update the mobility data depending on the mobility model.
 
@@ -151,7 +151,7 @@ class Vehicle(Agent):
                     f"Updating trace for vehicle {self.unique_id} with "
                     f"length {len(mobility_data)}"
                 )
-                self._mobility_model.update_positions(mobility_data)
+                self._mobility_model.update_mobility_data(mobility_data)
 
     def activate_vehicle(self, time_step: int) -> None:
         """
