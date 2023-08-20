@@ -1,7 +1,6 @@
 from mesa import Agent
 
-from src.device.computing_hardware import ComputingHardware
-from src.device.network_hardware import NetworkHardware
+from src.device.hardware import ComputingHardware, NetworkHardware
 
 
 class RoadSideUnit(Agent):

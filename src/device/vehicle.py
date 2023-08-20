@@ -4,7 +4,7 @@ from mesa import Agent
 from numpy import ndarray
 from pandas import DataFrame
 
-import src.core.constants as constants
+from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import VehiclePayload, VehicleResponse
@@ -42,7 +42,7 @@ class Vehicle(Agent):
         self.model = None
 
         self._location: list[float] = []
-        self.type: str = constants.VEHICLES
+        self.type: str = MainKey.VEHICLES
 
         self._uplink_payload: VehiclePayload | None = None
         self.sidelink_payload: VehiclePayload | None = None
@@ -118,19 +118,19 @@ class Vehicle(Agent):
         model_factory = ModelFactory()
 
         self._mobility_model = model_factory.create_mobility_model(
-            model_data[constants.MOBILITY]
+            model_data[ModelName.MOBILITY]
         )
 
         self._data_composer = model_factory.create_vehicle_data_composer(
-            model_data[constants.DATA_COMPOSER]
+            model_data[ModelName.DATA_COMPOSER]
         )
 
         self._data_simplifier = model_factory.create_vehicle_data_simplifier(
-            model_data[constants.DATA_SIMPLIFIER]
+            model_data[ModelName.DATA_SIMPLIFIER]
         )
 
         self._data_collector = model_factory.create_vehicle_data_collector(
-            model_data[constants.DATA_COLLECTOR]
+            model_data[ModelName.DATA_COLLECTOR]
         )
 
     def update_mobility_data(self, mobility_data: DataFrame | list[float]) -> None:
@@ -207,7 +207,7 @@ class Vehicle(Agent):
         self._mobility_model.current_time = self.model.current_time
         self._mobility_model.step()
 
-        if self._mobility_model.type != constants.STATIC_MOBILITY:
+        if self._mobility_model.type != ModelType.STATIC:
             self._location = self._mobility_model.current_location
             self.model.space.move_agent(self, self._location)
 

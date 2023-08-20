@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
-import src.core.constants as constants
+from src.core.constants import MainKey, ModelName, ModelParam, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import BaseStationPayload, BaseStationResponse
@@ -43,7 +43,7 @@ class CentralController(Agent):
         super().__init__(controller_id, None)
 
         self.model = None
-        self.type: str = constants.CONTROLLERS
+        self.type: str = MainKey.CONTROLLERS
         self._location: list[float] = []
 
         self._computing_hardware: ComputingHardware = computing_hardware
@@ -57,7 +57,7 @@ class CentralController(Agent):
 
         self._vehicles_in_range: int = 0
 
-        controller_models[constants.MOBILITY][constants.POSITION] = controller_position
+        controller_models[ModelName.MOBILITY][ModelParam.POSITION] = controller_position
         self._create_models(controller_models)
 
     @property
@@ -138,15 +138,15 @@ class CentralController(Agent):
         """
         model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
-            controller_models[constants.MOBILITY]
+            controller_models[ModelName.MOBILITY]
         )
 
         self._controller_collector = model_factory.create_controller_collector(
-            controller_models[constants.DATA_COLLECTOR]
+            controller_models[ModelName.DATA_COLLECTOR]
         )
 
         self._data_composer = model_factory.create_controller_data_composer(
-            controller_models[constants.DATA_COMPOSER]
+            controller_models[ModelName.DATA_COMPOSER]
         )
 
     def use_network_for_uplink(self) -> None:

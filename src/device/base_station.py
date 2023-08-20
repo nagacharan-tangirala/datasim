@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
-import src.core.constants as constants
+from src.core.constants import MainKey, ModelName, ModelParam, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (
@@ -49,7 +49,7 @@ class BaseStation(Agent):
             The model data of the base station.
         """
         super().__init__(base_station_id, None)
-        self.type: str = constants.BASE_STATIONS
+        self.type: str = MainKey.BASE_STATIONS
         self.model = None
 
         self._location: list[float] = []
@@ -68,12 +68,13 @@ class BaseStation(Agent):
         # Downlink response received from the controllers
         self._downlink_response: BaseStationResponse | None = None
 
-        # Downlink responses generated at the base station after receiving the controller response
+        # Downlink responses generated at the base station
+        # after receiving the controller response
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
         # Add the position to the base station models data
-        base_station_models_data[constants.MOBILITY][
-            constants.POSITION
+        base_station_models_data[ModelName.MOBILITY][
+            ModelParam.POSITION
         ] = base_station_position
         self._create_models(base_station_models_data)
 
@@ -164,7 +165,8 @@ class BaseStation(Agent):
         self._uplink_vehicle_data = incoming_data
         logger.debug(
             f"Vehicles near base station {self.unique_id} are "
-            f"{[x.source for x in self._uplink_vehicle_data.values()]} at time {self.model.current_time}."
+            f"{[x.source for x in self._uplink_vehicle_data.values()]}"
+            f" at time {self.model.current_time}."
         )
 
     def _create_models(self, base_station_models_data: dict) -> None:
@@ -173,15 +175,15 @@ class BaseStation(Agent):
         """
         model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
-            base_station_models_data[constants.MOBILITY]
+            base_station_models_data[ModelName.MOBILITY]
         )
 
         self._data_composer = model_factory.create_base_station_data_composer(
-            base_station_models_data[constants.DATA_COMPOSER]
+            base_station_models_data[ModelName.DATA_COMPOSER]
         )
 
         self._data_simplifier = model_factory.create_base_station_data_simplifier(
-            base_station_models_data[constants.DATA_SIMPLIFIER]
+            base_station_models_data[ModelName.DATA_SIMPLIFIER]
         )
 
     def use_wired_for_uplink(self) -> None:

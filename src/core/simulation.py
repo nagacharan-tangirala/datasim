@@ -5,10 +5,16 @@ from core.sim_model import SimModel
 from pandas import DataFrame
 from tqdm import tqdm
 
-import src.core.common_constants as cc
-import src.core.constants as constants
 from output.agent_data import AgentOutputCSV, AgentOutputParquet
 from output.model_data import ModelOutputCSV, ModelOutputParquet
+from src.core.common_constants import FileExtension, FilenameKey
+from src.core.constants import (
+    MainKey,
+    OutputKey,
+    ProgressBar,
+    ProgressBarWidth,
+    SimTimes,
+)
 from src.core.exceptions import UnsupportedInputFormatError
 from src.orchestrator.cloud_orchestrator import CloudOrchestrator
 from src.orchestrator.edge_orchestrator import EdgeOrchestrator
@@ -126,11 +132,11 @@ class Simulation:
         """
         simulation_data = self.sim_input_helper.simulation_data
 
-        self.start_time: int = simulation_data[constants.SIMULATION_START_TIME]
-        self.end_time: int = simulation_data[constants.SIMULATION_END_TIME]
-        self.time_step: int = simulation_data[constants.SIMULATION_TIME_STEP]
+        self.start_time: int = simulation_data[SimTimes.START]
+        self.end_time: int = simulation_data[SimTimes.END]
+        self.time_step: int = simulation_data[SimTimes.STEP]
         self.data_stream_interval: int = simulation_data[
-            constants.DATA_STREAMING_INTERVAL
+            SimTimes.DATA_STREAMING_INTERVAL
         ]
 
         self.current_time: int = self.start_time
@@ -147,16 +153,16 @@ class Simulation:
         Read the activation input data.
         """
         self._vehicle_activations_data = self._read_file(
-            self.sim_input_helper.file_readers[cc.VEHICLE_ACTIVATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.VEHICLE_ACTIVATIONS]
         )
         self._base_station_activations_data = self._read_file(
-            self.sim_input_helper.file_readers[cc.BASE_STATION_ACTIVATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.BASE_STATION_ACTIVATIONS]
         )
         self._controller_activations_data = self._read_file(
-            self.sim_input_helper.file_readers[cc.CONTROLLER_ACTIVATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.CONTROLLER_ACTIVATIONS]
         )
         self._rsu_activations_data = self._read_file(
-            self.sim_input_helper.file_readers[cc.RSU_ACTIVATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.RSU_ACTIVATIONS]
         )
 
     def _read_file(
@@ -178,12 +184,13 @@ class Simulation:
         if data_reader is None:
             return DataFrame()
 
-        if data_reader.type == cc.CSV:
+        if data_reader.type == FileExtension.CSV:
             logger.debug(f"Reading the entire data from {data_reader.input_file} file.")
             return data_reader.read_all_data()
-        elif data_reader.type == cc.PARQUET:
+        elif data_reader.type == FileExtension.PARQUET:
             logger.debug(
-                f"Reading partial data from {data_reader.input_file} file until timestamp {self.data_stream_interval}."
+                f"Reading partial data from {data_reader.input_file} file "
+                f"until timestamp {self.data_stream_interval}."
             )
             return data_reader.read_data_until_timestamp(self.data_stream_interval)
         else:
@@ -233,14 +240,12 @@ class Simulation:
         self.edge_orchestrator = EdgeOrchestrator(
             self.v2v_links_data,
             self.v2b_links_data,
-            self.sim_input_helper.orchestrator_models_data[constants.EDGE_ORCHESTRATOR],
+            self.sim_input_helper.orchestrator_models_data[MainKey.EDGE_ORCHESTRATOR],
         )
 
         self.cloud_orchestrator = CloudOrchestrator(
             self.b2c_links_data,
-            self.sim_input_helper.orchestrator_models_data[
-                constants.CLOUD_ORCHESTRATOR
-            ],
+            self.sim_input_helper.orchestrator_models_data[MainKey.CLOUD_ORCHESTRATOR],
         )
 
     def _create_output_writers(self) -> None:
@@ -249,11 +254,11 @@ class Simulation:
         """
         output_writer_factory = OutputWriterFactory(self.sim_input_helper.output_dir)
         self._model_output_writer = output_writer_factory.create_model_output_writer(
-            self.sim_input_helper.output_data[constants.OUTPUT_TYPE]
+            self.sim_input_helper.output_data[OutputKey.TYPE]
         )
 
         self._agent_output_writer = output_writer_factory.create_agent_output_writer(
-            self.sim_input_helper.output_data[constants.OUTPUT_TYPE]
+            self.sim_input_helper.output_data[OutputKey.TYPE]
         )
 
     def _create_simulation_model(self) -> None:
@@ -278,11 +283,11 @@ class Simulation:
         """
         self._progress_bar = tqdm(
             total=self.end_time,
-            desc=constants.PROGRESS_BAR_RUNNING_MESSAGE,
-            ncols=constants.PROGRESS_BAR_WIDTH,
-            unit=constants.PROGRESS_BAR_UNIT,
+            desc=ProgressBar.SIM_RUNNING_MESSAGE,
+            unit=ProgressBar.SIM_PROGRESS_UNIT,
+            ncols=ProgressBarWidth.SIM,
             position=0,
-            colour=constants.PROGRESS_BAR_RUNNING_COLOUR,
+            colour=ProgressBar.RUNNING_COLOUR,
         )
 
     def _refresh_simulation_data(self) -> None:
@@ -301,22 +306,25 @@ class Simulation:
         Read the input data for the first time.
         """
         self.vehicle_trace_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.VEHICLE_TRACE_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.VEHICLE_TRACE]
         )
         self.v2v_links_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.V2V_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.V2V_LINKS]
         )
         self.base_stations_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.BASE_STATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.BASE_STATIONS]
         )
         self.v2b_links_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.V2B_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.V2B_LINKS]
         )
         self.controller_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.CONTROLLERS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.CONTROLLERS]
         )
         self.b2c_links_data = self._read_first_chunk(
-            self.sim_input_helper.file_readers[cc.B2C_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.B2C_LINKS]
+        )
+        self.rsu_data = self._read_first_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.ROADSIDE_UNITS]
         )
 
     def _read_first_chunk(
@@ -337,9 +345,9 @@ class Simulation:
         DataFrame
             The input data.
         """
-        if data_reader.type == cc.CSV:
+        if data_reader.type == FileExtension.CSV:
             return data_reader.read_all_data()
-        elif data_reader.type == cc.PARQUET:
+        elif data_reader.type == FileExtension.PARQUET:
             return data_reader.read_data_until_timestamp(
                 self.current_time + self.data_stream_interval
             )
@@ -391,22 +399,22 @@ class Simulation:
         Refresh the input data until the next streaming interval.
         """
         self.vehicle_trace_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.VEHICLE_TRACE_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.VEHICLE_TRACE]
         )
         self.v2v_links_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.V2V_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.V2V_LINKS]
         )
         self.base_stations_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.BASE_STATIONS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.BASE_STATIONS]
         )
         self.v2b_links_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.V2B_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.V2B_LINKS]
         )
         self.controller_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.CONTROLLERS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.CONTROLLERS]
         )
         self.b2c_links_data = self._read_next_chunk(
-            self.sim_input_helper.file_readers[cc.B2C_LINKS_FILE]
+            self.sim_input_helper.file_readers[FilenameKey.B2C_LINKS]
         )
 
     def _read_next_chunk(
@@ -425,9 +433,9 @@ class Simulation:
         DataFrame
             The input data.
         """
-        if data_reader.type == cc.CSV:
+        if data_reader.type == FileExtension.CSV:
             return DataFrame()
-        elif data_reader.type == cc.PARQUET:
+        elif data_reader.type == FileExtension.PARQUET:
             return data_reader.read_data_until_timestamp(
                 self.current_time + self.data_stream_interval
             )
@@ -458,7 +466,7 @@ class Simulation:
         # Update the time.
         self.current_time += self.time_step
 
-        # Refresh the simulation data if the current time is a multiple of the data stream interval.
+        # Refresh the simulation data if it is time to do so.
         if self.current_time % self.data_stream_interval == 0:
             self._refresh_simulation_data()
 
@@ -466,8 +474,8 @@ class Simulation:
         """
         Pause the progress bar.
         """
-        self._progress_bar.colour = constants.PROGRESS_BAR_PAUSED_COLOUR
-        self._progress_bar.set_description(constants.PROGRESS_BAR_PAUSED_MESSAGE)
+        self._progress_bar.colour = ProgressBar.PAUSED_COLOUR
+        self._progress_bar.set_description_str(ProgressBar.SIM_PAUSED_MESSAGE)
         self._progress_bar.disable = True
 
     def _resume_progress_bar(self) -> None:
@@ -475,15 +483,15 @@ class Simulation:
         Resume the progress bar.
         """
         self._progress_bar.disable = False
-        self._progress_bar.colour = constants.PROGRESS_BAR_RUNNING_COLOUR
-        self._progress_bar.set_description(constants.PROGRESS_BAR_RUNNING_MESSAGE)
+        self._progress_bar.colour = ProgressBar.RUNNING_COLOUR
+        self._progress_bar.set_description_str(ProgressBar.SIM_RUNNING_MESSAGE)
 
     def _close_progress_bar(self) -> None:
         """
         Close the progress bar.
         """
-        self._progress_bar.set_description(constants.PROGRESS_BAR_DONE_MESSAGE)
-        self._progress_bar.colour = constants.PROGRESS_BAR_DONE_COLOUR
+        self._progress_bar.set_description_str(ProgressBar.SIM_DONE_MESSAGE)
+        self._progress_bar.colour = ProgressBar.DONE_COLOUR
         self._progress_bar.close()
 
     def save_simulation_results(self) -> None:
@@ -504,8 +512,8 @@ class Simulation:
         self._agent_output_writer.write_output(agent_level_data)
         file_progress_bar.update(n=1)
 
-        file_progress_bar.set_description(constants.FILE_PROGRESS_BAR_DONE_MESSAGE)
-        file_progress_bar.colour = constants.PROGRESS_BAR_DONE_COLOUR
+        file_progress_bar.set_description_str(ProgressBar.SAVE_DONE_MESSAGE)
+        file_progress_bar.colour = ProgressBar.DONE_COLOUR
         file_progress_bar.close()
         logger.info("Done.")
 
@@ -516,10 +524,10 @@ class Simulation:
         """
         return tqdm(
             total=2,
-            desc=constants.FILE_PROGRESS_BAR_STARTING_MESSAGE,
-            ncols=constants.FILE_PROGRESS_BAR_WIDTH,
-            unit=constants.FILE_PROGRESS_BAR_UNIT,
+            desc=ProgressBar.SAVE_STARTING_MESSAGE,
+            ncols=ProgressBarWidth.FILE_SAVE,
+            unit=str(ProgressBar.SAVE_PROGRESS_UNIT),
             smoothing=1,
             initial=1,
-            colour=constants.PROGRESS_BAR_RUNNING_COLOUR,
+            colour=str(ProgressBar.RUNNING_COLOUR),
         )
