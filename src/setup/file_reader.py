@@ -42,6 +42,7 @@ class ParquetDataReader:
         Stream the data from the input file until the timestamp.
         """
         data_df = DataFrame(columns=self._column_names)
+        data_df = data_df.astype(self._column_dtypes)
         logger.debug(
             f"Trying to fetch data until timestamp {timestamp} from "
             f"the file {self._input_file}."
