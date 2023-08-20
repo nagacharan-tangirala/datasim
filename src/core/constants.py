@@ -1,96 +1,152 @@
-# Top level keys in the input file
-INPUT_FILES = "input_files"
-SIMULATION_SETTINGS = "simulation_settings"
-VEHICLES = "vehicles"
-BASE_STATIONS = "base_stations"
-CONTROLLERS = "controllers"
-ROADSIDE_UNITS = "roadside_units"
-EDGE_ORCHESTRATOR = "edge_orchestrator"
-CLOUD_ORCHESTRATOR = "cloud_orchestrator"
-OUTPUT_SETTINGS = "output_settings"
-SPACE = "space"
+from enum import Enum, IntEnum, StrEnum
+from typing import final
 
-# Simulation parameters keys
-SIMULATION_START_TIME = "start_time"
-SIMULATION_END_TIME = "end_time"
-SIMULATION_TIME_STEP = "time_step"
-DATA_STREAMING_INTERVAL = "data_streaming_interval"
 
-# Logging settings keys
-LOGGING_LEVEL = "logging_level"
-LOG_FILE = "log_file"
-LOG_LOCATION = "log_location"
-LOG_OVERWRITE = "log_overwrite"
-OUTPUT_TYPE = "output_type"
-OUTPUT_LOCATION = "output_location"
+class MainKey(StrEnum):
+    """
+    Enum for the primary keys in the input file.
+    """
 
-# Other logging constants
-DEFAULT_LOG_FILE = "simulation.log"
-DEFAULT_LOG_LEVEL = "INFO"
+    INPUT_FILES: final(str) = "input_files"
+    SIMULATION_SETTINGS: final(str) = "simulation_settings"
+    VEHICLES: final(str) = "vehicles"
+    BASE_STATIONS: final(str) = "base_stations"
+    CONTROLLERS: final(str) = "controllers"
+    ROADSIDE_UNITS: final(str) = "roadside_units"
+    EDGE_ORCHESTRATOR: final(str) = "edge_orchestrator"
+    CLOUD_ORCHESTRATOR: final(str) = "cloud_orchestrator"
+    OUTPUT_SETTINGS: final(str) = "output_settings"
+    SPACE: final(str) = "space"
 
-# Vehicle data keys
-VEHICLE_RATIO = "ratio"
 
-# Hardware data keys
-COMPUTING_HARDWARE = "computing_hardware"
-NETWORKING_HARDWARE = "networking_hardware"
-WIRED = "wired"
-WIRELESS = "wireless"
+class SimTimes(StrEnum):
+    """
+    Enum for the simulation settings keys.
+    """
 
-# Model data keys
-MOBILITY = "mobility"
-DATA_SOURCE = "data_source"
-DATA_COMPOSER = "composer"
-DATA_SIMPLIFIER = "simplifier"
-DATA_COLLECTOR = "collector"
-BASE_STATION_FINDER = "base_station_finder"
-NEIGHBOUR_FINDER = "neighbour_finder"
+    START: final(str) = "start_time"
+    END: final(str) = "end_time"
+    STEP: final(str) = "time_step"
+    DATA_STREAMING_INTERVAL: final(str) = "data_streaming_interval"
 
-# Model parameter keys
-POSITION = "position"
-MODEL_NAME = "name"
-DATA_SIZE = "data_size"
-DATA_COUNTS = "data_counts"
-DATA_SOURCE_TYPE = "data_type"
-DATA_SIDE_LINK = "side_link"
-DATA_PRIORITY = "priority"
-RETENTION_FACTOR = "retention_factor"
-COMPRESSION_FACTOR = "compression_factor"
 
-# Model type keys
-STATIC_MOBILITY = "static"
-TRACE_MOBILITY = "trace"
-TRACE_V2V = "trace"
-NEAREST_V2B = "nearest"
+class LogKey(StrEnum):
+    """
+    Enum for the logging keys.
+    """
 
-SIMPLE_VEHICLE_DATA_COLLECTOR = "simple"
-SIMPLE_VEHICLE_DATA_COMPOSER = "simple"
-SIMPLE_VEHICLE_DATA_SIMPLIFIER = "simple"
+    LEVEL: final(str) = "logging_level"
+    FILE: final(str) = "log_file"
+    LOCATION: final(str) = "log_location"
+    OVERWRITE: final(str) = "log_overwrite"
 
-SIMPLE_CONTROLLER_DATA_COLLECTOR = "simple"
-SIMPLE_CONTROLLER_DATA_COMPOSER = "simple"
 
-SIMPLE_BASE_STATION_DATA_COMPOSER = "simple"
-SIMPLE_BASE_STATION_DATA_SIMPLIFIER = "simple"
+class OutputKey(StrEnum):
+    """
+    Enum for the output settings keys.
+    """
 
-# Main progress bar keys
-PROGRESS_BAR_UNIT = " steps"
+    TYPE: final(str) = "output_type"
+    LOCATION: final(str) = "output_location"
 
-PROGRESS_BAR_RUNNING_MESSAGE = "Running. Simulation Progress"
-PROGRESS_BAR_PAUSED_MESSAGE = "Paused. Refreshing Input Data"
-PROGRESS_BAR_DONE_MESSAGE = "Done. Simulation Completed"
 
-PROGRESS_BAR_RUNNING_COLOUR = "#05d6fc"
-PROGRESS_BAR_PAUSED_COLOUR = "#fa772a"
-PROGRESS_BAR_DONE_COLOUR = "#11c26c"
+class HardwareKey(StrEnum):
+    """
+    Enum for the hardware keys.
+    """
 
-PROGRESS_BAR_WIDTH = 150
+    COMPUTING: final(str) = "computing_hardware"
+    NETWORKING: final(str) = "networking_hardware"
+    WIRED: final(str) = "wired"
+    WIRELESS: final(str) = "wireless"
 
-# File progress bar keys
-FILE_PROGRESS_BAR_UNIT = " files"
-FILE_PROGRESS_BAR_WIDTH = 120
-FILE_PROGRESS_BAR_STARTING_MESSAGE = "Saving Files"
-FILE_PROGRESS_BAR_DONE_MESSAGE = " Done. Output Files Saved "
 
-# Space related constants
-BUFFER_SPACE = 10.0
+class ModelName(StrEnum):
+    """
+    Enum for the names of the models.
+    """
+
+    MOBILITY: final(str) = "mobility"
+    DATA_SOURCE: final(str) = "data_source"
+    DATA_COMPOSER: final(str) = "composer"
+    DATA_SIMPLIFIER: final(str) = "simplifier"
+    DATA_COLLECTOR: final(str) = "collector"
+    BASE_STATION_FINDER: final(str) = "base_station_finder"
+    NEIGHBOUR_FINDER: final(str) = "neighbour_finder"
+
+
+class ModelType(StrEnum):
+    """
+    Enum for the types of the models.
+    """
+
+    STATIC: final(str) = "static"
+    TRACE: final(str) = "trace"
+    NEAREST: final(str) = "nearest"
+    SIMPLE: final(str) = "simple"
+
+
+class ModelParam(StrEnum):
+    """
+    Enum for the settings of the models.
+    """
+
+    MODEL_NAME: final(str) = "name"
+    POSITION: final(str) = "position"
+    VEHICLE_RATIO: final(str) = "ratio"
+    RETENTION_FACTOR: final(str) = "retention_factor"
+    COMPRESSION_FACTOR: final(str) = "compression_factor"
+
+
+class DataSourceKey(StrEnum):
+    """
+    Enum for the data source keys.
+    """
+
+    DATA_SIZE: final(str) = "data_size"
+    DATA_COUNTS: final(str) = "data_counts"
+    DATA_SOURCE_TYPE: final(str) = "data_type"
+    DATA_SIDE_LINK: final(str) = "side_link"
+    DATA_PRIORITY: final(str) = "priority"
+
+
+class ProgressBar(StrEnum):
+    """
+    Enum for the progress bar keys.
+    """
+
+    # Simulation progress bar
+    SIM_PROGRESS_UNIT: final(str) = " steps"
+    SIM_RUNNING_MESSAGE: final(str) = "Running. Simulation Progress"
+    SIM_PAUSED_MESSAGE: final(str) = "Paused. Refreshing Input Data"
+    SIM_DONE_MESSAGE: final(str) = "Done. Simulation Completed"
+
+    # Output file saving progress bar
+    SAVE_PROGRESS_UNIT: final(str) = " files"
+    SAVE_STARTING_MESSAGE: final(str) = "Saving Files"
+    SAVE_DONE_MESSAGE: final(str) = " Done. Output Files Saved "
+
+    # Common for the progress bars
+    RUNNING_COLOUR: final(str) = "#05d6fc"
+    PAUSED_COLOUR: final(str) = "#fa772a"
+    DONE_COLOUR: final(str) = "#11c26c"
+
+
+class ProgressBarWidth(IntEnum):
+    """
+    Enum for the progress bar widths.
+    """
+
+    SIM: final(int) = 150
+    FILE_SAVE: final(int) = 120
+
+
+class Defaults:
+    """
+    Enum for the miscellaneous keys.
+    """
+
+    BUFFER_SPACE: final(float) = 10.0
+    LOG_FILE: final(str) = "simulation.log"
+    LOG_LEVEL: final(str) = "INFO"
+    LOG_OVERWRITE: final(bool) = False

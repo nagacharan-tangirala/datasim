@@ -1,116 +1,228 @@
-# Input file names
-VEHICLE_TRACE_FILE: str = "vehicle_traces"
-VEHICLE_ACTIVATIONS_FILE: str = "vehicle_activations"
-V2V_LINKS_FILE: str = "v2v_links"
-BASE_STATIONS_FILE: str = "base_stations"
-BASE_STATION_ACTIVATIONS_FILE: str = "base_station_activations"
-V2B_LINKS_FILE: str = "v2b_links"
-CONTROLLERS_FILE: str = "controllers"
-CONTROLLER_ACTIVATIONS_FILE: str = "controller_activations"
-B2C_LINKS_FILE: str = "b2c_links"
-ROADSIDE_UNITS_FILE: str = "road_side_units"
-RSU_ACTIVATIONS_FILE: str = "rsu_activations"
-R2B_LINKS_FILE: str = "r2b_links"
-V2R_LINKS_FILE: str = "v2r_links"
-R2R_LINKS_FILE: str = "r2r_links"
-
-# Main columns in the input files
-VEHICLE_ID: str = "vehicle_id"
-TIME_STEP: str = "time_step"
-X: str = "x"
-Y: str = "y"
-VELOCITY: str = "velocity"
-NEIGHBOURS: str = "neighbours"
-DISTANCES: str = "distances"
-BASE_STATIONS: str = "base_stations"
-BASE_STATION_ID: str = "base_station_id"
-ROADSIDE_UNITS: str = "roadside_units"
-RSU_ID: str = "rsu_id"
-CONTROLLER_ID: str = "controller_id"
-START_TIME: str = "start_time"
-END_TIME: str = "end_time"
-LINK_ID: str = "link_id"
-
-# Column names and data types for the input files
-VEHICLE_TRACE_COLUMN_NAMES: list[str] = [TIME_STEP, VEHICLE_ID, X, Y, VELOCITY]
-VEHICLE_TRACE_COLUMN_DTYPES: dict[str, type] = {
-    TIME_STEP: float,
-    VEHICLE_ID: int,
-    X: float,
-    Y: float,
-    VELOCITY: float,
-}
-
-BASE_STATION_COLUMN_NAMES: list[str] = [BASE_STATION_ID, X, Y]
-BASE_STATION_COLUMN_DTYPES: dict[str, type] = {BASE_STATION_ID: int, X: float, Y: float}
-
-CONTROLLERS_COLUMN_NAMES: list[str] = [CONTROLLER_ID, X, Y]
-CONTROLLERS_COLUMN_DTYPES: dict[str, type] = {CONTROLLER_ID: int, X: float, Y: float}
-
-ROADSIDE_UNITS_COLUMN_NAMES: list[str] = [RSU_ID, X, Y]
-ROADSIDE_UNITS_COLUMN_DTYPES: dict[str, type] = {RSU_ID: int, X: float, Y: float}
-
-V2V_LINKS_COLUMN_NAMES: list[str] = [VEHICLE_ID, TIME_STEP, NEIGHBOURS, DISTANCES]
-V2V_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    VEHICLE_ID: int,
-    TIME_STEP: int,
-    NEIGHBOURS: str,
-    DISTANCES: str,
-}
+from enum import Enum, StrEnum
+from typing import final
 
 
-V2B_LINKS_COLUMN_NAMES: list[str] = [VEHICLE_ID, TIME_STEP, BASE_STATIONS, DISTANCES]
-V2B_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    VEHICLE_ID: int,
-    TIME_STEP: int,
-    BASE_STATIONS: str,
-    DISTANCES: str,
-}
+class FilenameKey(StrEnum):
+    """
+    Enum for the input file names.
+    """
 
-V2R_LINKS_COLUMN_NAMES: list[str] = [VEHICLE_ID, TIME_STEP, ROADSIDE_UNITS, DISTANCES]
-V2R_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    VEHICLE_ID: int,
-    TIME_STEP: int,
-    ROADSIDE_UNITS: str,
-    DISTANCES: str,
-}
+    VEHICLE_TRACE: final(str) = "vehicle_traces"
+    BASE_STATIONS: final(str) = "base_stations"
+    CONTROLLERS: final(str) = "controllers"
+    ROADSIDE_UNITS: final(str) = "roadside_units"
 
-B2C_LINKS_COLUMN_NAMES: list[str] = [LINK_ID, BASE_STATION_ID, CONTROLLER_ID]
-B2C_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    LINK_ID: int,
-    BASE_STATION_ID: int,
-    CONTROLLER_ID: int,
-}
+    V2V_LINKS: final(str) = "v2v_links"
+    V2B_LINKS: final(str) = "v2b_links"
+    V2R_LINKS: final(str) = "v2r_links"
+    B2C_LINKS: final(str) = "b2c_links"
+    R2B_LINKS: final(str) = "r2b_links"
+    R2R_LINKS: final(str) = "r2r_links"
 
-R2B_LINKS_COLUMN_NAMES: list[str] = [LINK_ID, RSU_ID, BASE_STATIONS, DISTANCES]
-R2B_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    LINK_ID: int,
-    RSU_ID: int,
-    BASE_STATIONS: str,
-    DISTANCES: str,
-}
+    VEHICLE_ACTIVATIONS: final(str) = "vehicle_activations"
+    CONTROLLER_ACTIVATIONS: final(str) = "controller_activations"
+    BASE_STATION_ACTIVATIONS: final(str) = "base_station_activations"
+    RSU_ACTIVATIONS: final(str) = "rsu_activations"
 
-R2R_LINKS_COLUMN_NAMES: list[str] = [LINK_ID, RSU_ID, ROADSIDE_UNITS, DISTANCES]
-R2R_LINKS_COLUMN_DTYPES: dict[str, type] = {
-    LINK_ID: int,
-    RSU_ID: int,
-    ROADSIDE_UNITS: str,
-    DISTANCES: str,
-}
 
-ACTIVATION_TIMES_COLUMN_NAMES: list[str] = [VEHICLE_ID, START_TIME, END_TIME]
-ACTIVATION_TIMES_COLUMN_DTYPES: dict[str, type] = {
-    VEHICLE_ID: int,
-    START_TIME: str,
-    END_TIME: str,
-}
+class DeviceName(StrEnum):
+    """
+    Enum for the names of the devices in the simulation.
+    """
 
-# File extensions
-PARQUET: str = "parquet"
-CSV: str = "csv"
+    VEHICLES: final(str) = "vehicles"
+    BASE_STATIONS: final(str) = "base_stations"
+    CONTROLLERS: final(str) = "controllers"
+    ROADSIDE_UNITS: final(str) = "roadside_units"
+    EDGE_ORCHESTRATOR: final(str) = "edge_orchestrator"
+    CLOUD_ORCHESTRATOR: final(str) = "cloud_orchestrator"
 
-# Space keys
-SPACE_X_MIN = "x_min"
-SPACE_X_MAX = "x_max"
-SPACE_Y_MIN = "y_min"
-SPACE_Y_MAX = "y_max"
+
+class DeviceId(StrEnum):
+    """
+    Enum for the IDs of the devices in the simulation.
+    """
+
+    VEHICLE: final(str) = "vehicle_id"
+    BASE_STATION: final(str) = "base_station_id"
+    CONTROLLER: final(str) = "controller_id"
+    RSU: final(str) = "rsu_id"
+    LINK: final(str) = "link_id"
+    DEVICE: final(str) = "device_id"
+
+
+class CoordSpace(StrEnum):
+    """
+    Enum for the coordinates.
+    """
+
+    X: final(str) = "x"
+    X_MIN: final(str) = "x_min"
+    X_MAX: final(str) = "x_max"
+    Y: final(str) = "y"
+    Y_MIN: final(str) = "y_min"
+    Y_MAX: final(str) = "y_max"
+
+
+class TraceTimes(StrEnum):
+    """
+    Enum for the simulation time settings.
+    """
+
+    START_TIME: final(str) = "start_time"
+    END_TIME: final(str) = "end_time"
+    TIME_STEP: final(str) = "time_step"
+
+
+class Column(StrEnum):
+    """
+    Enum for some of the column headers in the input files.
+    """
+
+    VELOCITY: final(str) = "velocity"
+    VEHICLES_STR: final(str) = "vehicles_str"
+    BASE_STATIONS_STR: final(str) = "base_stations_str"
+    ROADSIDE_UNITS_STR: final(str) = "roadside_units_str"
+    DISTANCES_STR: final(str) = "distances_str"
+
+
+class ColumnNames(list[str], Enum):
+    """
+    Enum for the column names in the input files.
+    """
+
+    VEHICLE_TRACES: list[str] = [
+        TraceTimes.TIME_STEP,
+        DeviceId.VEHICLE,
+        CoordSpace.X,
+        CoordSpace.Y,
+        Column.VELOCITY,
+    ]
+    BASE_STATIONS: list[str] = [
+        DeviceId.BASE_STATION,
+        CoordSpace.X,
+        CoordSpace.Y,
+    ]
+    CONTROLLERS: list[str] = [DeviceId.CONTROLLER, CoordSpace.X, CoordSpace.Y]
+    ROADSIDE_UNITS: list[str] = [DeviceId.RSU, CoordSpace.X, CoordSpace.Y]
+
+    ACTIVATION_TIMES: list[str] = [
+        DeviceId.DEVICE,
+        TraceTimes.START_TIME,
+        TraceTimes.END_TIME,
+    ]
+    V2V_LINKS: list[str] = [
+        DeviceId.VEHICLE,
+        TraceTimes.TIME_STEP,
+        Column.VEHICLES_STR,
+        Column.DISTANCES_STR,
+    ]
+    V2B_LINKS: list[str] = [
+        DeviceId.VEHICLE,
+        TraceTimes.TIME_STEP,
+        Column.BASE_STATIONS_STR,
+        Column.DISTANCES_STR,
+    ]
+    V2R_LINKS: list[str] = [
+        DeviceId.VEHICLE,
+        TraceTimes.TIME_STEP,
+        Column.ROADSIDE_UNITS_STR,
+        Column.DISTANCES_STR,
+    ]
+
+    B2C_LINKS: list[str] = [
+        DeviceId.LINK,
+        DeviceId.BASE_STATION,
+        DeviceId.CONTROLLER,
+    ]
+    R2B_LINKS: list[str] = [
+        DeviceId.LINK,
+        DeviceId.RSU,
+        Column.BASE_STATIONS_STR,
+        Column.DISTANCES_STR,
+    ]
+    R2R_LINKS: list[str] = [
+        DeviceId.LINK,
+        DeviceId.RSU,
+        Column.ROADSIDE_UNITS_STR,
+        Column.DISTANCES_STR,
+    ]
+
+
+class ColumnDTypes(dict[str, type], Enum):
+    """
+    Enum for the data types of the columns in the input files.
+    """
+
+    VEHICLE_TRACES: dict[str, type] = {
+        TraceTimes.TIME_STEP: float,
+        DeviceId.VEHICLE: int,
+        CoordSpace.X: float,
+        CoordSpace.Y: float,
+        Column.VELOCITY: float,
+    }
+    BASE_STATIONS: dict[str, type] = {
+        DeviceId.BASE_STATION: int,
+        CoordSpace.X: float,
+        CoordSpace.Y: float,
+    }
+    CONTROLLERS: dict[str, type] = {
+        DeviceId.CONTROLLER: int,
+        CoordSpace.X: float,
+        CoordSpace.Y: float,
+    }
+    ROADSIDE_UNITS: dict[str, type] = {
+        DeviceId.RSU: int,
+        CoordSpace.X: float,
+        CoordSpace.Y: float,
+    }
+
+    V2V_LINKS: dict[str, type] = {
+        DeviceId.VEHICLE: int,
+        TraceTimes.TIME_STEP: int,
+        Column.VEHICLES_STR: str,
+        Column.DISTANCES_STR: str,
+    }
+    V2B_LINKS: dict[str, type] = {
+        DeviceId.VEHICLE: int,
+        TraceTimes.TIME_STEP: int,
+        Column.BASE_STATIONS_STR: str,
+        Column.DISTANCES_STR: str,
+    }
+    V2R_LINKS: dict[str, type] = {
+        DeviceId.VEHICLE: int,
+        TraceTimes.TIME_STEP: int,
+        Column.ROADSIDE_UNITS_STR: str,
+        Column.DISTANCES_STR: str,
+    }
+    B2C_LINKS: dict[str, type] = {
+        DeviceId.LINK: int,
+        DeviceId.BASE_STATION: int,
+        DeviceId.CONTROLLER: int,
+    }
+    R2B_LINKS: dict[str, type] = {
+        DeviceId.LINK: int,
+        DeviceId.RSU: int,
+        Column.BASE_STATIONS_STR: str,
+        Column.DISTANCES_STR: str,
+    }
+    R2R_LINKS: dict[str, type] = {
+        DeviceId.LINK: int,
+        DeviceId.RSU: int,
+        Column.ROADSIDE_UNITS_STR: str,
+        Column.DISTANCES_STR: str,
+    }
+    ACTIVATION_TIMES: dict[str, type] = {
+        DeviceId.VEHICLE: int,
+        TraceTimes.START_TIME: str,
+        TraceTimes.END_TIME: str,
+    }
+
+
+class FileExtension(StrEnum):
+    """
+    Enum for the file extensions.
+    """
+
+    PARQUET: final(str) = "parquet"
+    CSV: final(str) = "csv"
