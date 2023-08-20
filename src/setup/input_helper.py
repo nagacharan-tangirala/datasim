@@ -4,8 +4,13 @@ from pathlib import Path
 import toml
 from core.exceptions import UnsupportedInputFormatError
 
-import src.core.common_constants as cc
-import src.core.constants as constants
+from src.core.common_constants import (
+    ColumnDTypes,
+    ColumnNames,
+    FileExtension,
+    FilenameKey,
+)
+from src.core.constants import Defaults, LogKey, MainKey, OutputKey
 from src.core.logger_config import LoggerConfig
 from src.setup.file_reader import CSVDataReader, ParquetDataReader
 
@@ -38,7 +43,7 @@ class SimulationInputHelper:
         self.space_settings: dict = {}
         self.orchestrator_models_data: dict = {}
 
-        self._output_dir: str = ""
+        self._output_dir: Path | None = None
 
     def read_config_file(self) -> None:
         """Read the config file."""
@@ -46,72 +51,63 @@ class SimulationInputHelper:
             self.config_data = toml.load(f)
 
     @property
-    def output_dir(self) -> str:
+    def output_dir(self) -> Path:
         """Get the output directory."""
         return self._output_dir
 
     def read_simulation_and_model_settings(self) -> None:
         """Read the input files."""
-        # Read simulation settings.
         logger.debug("Storing the simulation settings.")
-        self.simulation_data = self.config_data[constants.SIMULATION_SETTINGS]
+        self.simulation_data = self.config_data[MainKey.SIMULATION_SETTINGS]
 
-        # Read the output settings.
         logger.debug("Storing the output settings.")
-        self.output_data = self.config_data[constants.OUTPUT_SETTINGS]
+        self.output_data = self.config_data[MainKey.OUTPUT_SETTINGS]
 
-        # Read the space settings.
         logger.debug("Storing the space settings.")
-        self.space_settings = self.config_data[constants.SPACE]
+        self.space_settings = self.config_data[MainKey.SPACE]
 
-        # Read the channel models.
         logger.debug("Storing the edge and cloud orchestrator models.")
-        self.orchestrator_models_data[constants.EDGE_ORCHESTRATOR] = self.config_data[
-            constants.EDGE_ORCHESTRATOR
+        self.orchestrator_models_data[MainKey.EDGE_ORCHESTRATOR] = self.config_data[
+            MainKey.EDGE_ORCHESTRATOR
         ]
-        self.orchestrator_models_data[constants.CLOUD_ORCHESTRATOR] = self.config_data[
-            constants.CLOUD_ORCHESTRATOR
+        self.orchestrator_models_data[MainKey.CLOUD_ORCHESTRATOR] = self.config_data[
+            MainKey.CLOUD_ORCHESTRATOR
         ]
 
-        # Read the devices.
         logger.debug("Storing all of the device models.")
-        self.vehicle_models_data = self.config_data[constants.VEHICLES]
-        self.base_station_models_data = self.config_data[constants.BASE_STATIONS]
-        self.controller_models_data = self.config_data[constants.CONTROLLERS]
-        self.rsu_models_data = self.config_data[constants.ROADSIDE_UNITS]
+        self.vehicle_models_data = self.config_data[MainKey.VEHICLES]
+        self.base_station_models_data = self.config_data[MainKey.BASE_STATIONS]
+        self.controller_models_data = self.config_data[MainKey.CONTROLLERS]
+        self.rsu_models_data = self.config_data[MainKey.ROADSIDE_UNITS]
 
     def create_output_directory(self) -> None:
         """
         Create the output directory.
         """
-        # Create output directory.
         logger.debug("Creating the output directory.")
-        output_filepath: Path = Path(self.output_data[constants.OUTPUT_LOCATION])
+        output_filepath: Path = Path(self.output_data[OutputKey.LOCATION])
         self._create_output_dir(output_filepath)
 
     def create_loggers(self) -> None:
         """
         Create the loggers.
         """
-        output_data = self.config_data[constants.OUTPUT_SETTINGS]
-        logging_level = constants.DEFAULT_LOG_LEVEL
-        if constants.LOGGING_LEVEL in output_data:
-            logging_level = str(output_data[constants.LOGGING_LEVEL]).upper()
+        output_data = self.config_data[MainKey.OUTPUT_SETTINGS]
+        logging_level = Defaults.LOG_LEVEL
+        if LogKey.LEVEL in output_data:
+            logging_level = str(output_data[LogKey.LEVEL]).upper()
 
-        log_overwrite = False
-        if (
-            constants.LOG_OVERWRITE in output_data
-            and output_data[constants.LOG_OVERWRITE] == "yes"
-        ):
+        log_overwrite = Defaults.LOG_OVERWRITE
+        if LogKey.OVERWRITE in output_data and output_data[LogKey.OVERWRITE] == "yes":
             log_overwrite = True
 
-        logging_filename = constants.DEFAULT_LOG_FILE
-        if constants.LOG_FILE in output_data:
-            logging_filename = output_data[constants.LOG_FILE]
+        logging_filename = Defaults.LOG_FILE
+        if LogKey.FILE in output_data:
+            logging_filename = output_data[LogKey.FILE]
 
         logging_location = self.project_path
-        if constants.LOG_LOCATION in output_data:
-            logging_location = logging_location / (output_data[constants.LOG_LOCATION])
+        if LogKey.LOCATION in output_data:
+            logging_location = logging_location / (output_data[LogKey.LOCATION])
 
         logging_file = logging_location / logging_filename
         if not logging_file.exists():
@@ -124,154 +120,147 @@ class SimulationInputHelper:
         """
         Read the input files.
         """
+        logger.debug("Creating input file readers.")
         self._create_all_devices_file_readers()
         self._create_activation_file_readers()
-        self._create_links_file_readers()
+        self._create_vehicle_links_file_readers()
+        self._create_other_links_file_readers()
 
     def _create_all_devices_file_readers(self) -> None:
         """Create the file readers for all devices."""
-        input_files = self.config_data[constants.INPUT_FILES]
         logger.debug("Creating file reader for vehicle trace file.")
         self._create_new_file_reader(
-            input_files[cc.VEHICLE_TRACE_FILE],
-            cc.VEHICLE_TRACE_COLUMN_NAMES,
-            cc.VEHICLE_TRACE_COLUMN_DTYPES,
-            cc.VEHICLE_TRACE_FILE,
+            FilenameKey.VEHICLE_TRACE,
+            ColumnNames.VEHICLE_TRACES,
+            ColumnDTypes.VEHICLE_TRACES,
         )
 
         logger.debug("Creating file reader for base stations file.")
         self._create_new_file_reader(
-            input_files[cc.BASE_STATIONS_FILE],
-            cc.BASE_STATION_COLUMN_NAMES,
-            cc.BASE_STATION_COLUMN_DTYPES,
-            cc.BASE_STATIONS_FILE,
+            FilenameKey.BASE_STATIONS,
+            ColumnNames.BASE_STATIONS,
+            ColumnDTypes.BASE_STATIONS,
         )
 
         logger.debug("Creating file reader for controllers file.")
         self._create_new_file_reader(
-            input_files[cc.CONTROLLERS_FILE],
-            cc.CONTROLLERS_COLUMN_NAMES,
-            cc.CONTROLLERS_COLUMN_DTYPES,
-            cc.CONTROLLERS_FILE,
-        )
-
-    def _create_activation_file_readers(self) -> None:
-        """Create the file readers for all activation files."""
-        input_files = self.config_data[constants.INPUT_FILES]
-        logger.debug("Creating file reader for vehicle activation times file.")
-        self._create_new_file_reader(
-            input_files[cc.VEHICLE_ACTIVATIONS_FILE],
-            cc.ACTIVATION_TIMES_COLUMN_NAMES,
-            cc.ACTIVATION_TIMES_COLUMN_DTYPES,
-            cc.VEHICLE_ACTIVATIONS_FILE,
-        )
-        if input_files[cc.BASE_STATION_ACTIVATIONS_FILE] != "":
-            logger.debug("Creating file reader for base station activations file.")
-            self._create_new_file_reader(
-                input_files[cc.BASE_STATION_ACTIVATIONS_FILE],
-                cc.ACTIVATION_TIMES_COLUMN_NAMES,
-                cc.ACTIVATION_TIMES_COLUMN_DTYPES,
-                cc.BASE_STATION_ACTIVATIONS_FILE,
-            )
-        else:
-            self._create_none_file_reader(cc.BASE_STATION_ACTIVATIONS_FILE)
-
-        if input_files[cc.CONTROLLER_ACTIVATIONS_FILE] != "":
-            logger.debug("Creating file reader for controller activations file.")
-            self._create_new_file_reader(
-                input_files[cc.CONTROLLER_ACTIVATIONS_FILE],
-                cc.ACTIVATION_TIMES_COLUMN_NAMES,
-                cc.ACTIVATION_TIMES_COLUMN_DTYPES,
-                cc.CONTROLLER_ACTIVATIONS_FILE,
-            )
-        else:
-            self._create_none_file_reader(cc.CONTROLLER_ACTIVATIONS_FILE)
-
-        if input_files[cc.RSU_ACTIVATIONS_FILE] != "":
-            logger.debug("Creating file reader for roadside unit activations file.")
-            self._create_new_file_reader(
-                input_files[cc.RSU_ACTIVATIONS_FILE],
-                cc.ACTIVATION_TIMES_COLUMN_NAMES,
-                cc.ACTIVATION_TIMES_COLUMN_DTYPES,
-                cc.RSU_ACTIVATIONS_FILE,
-            )
-        else:
-            self._create_none_file_reader(cc.RSU_ACTIVATIONS_FILE)
-
-    def _create_links_file_readers(self) -> None:
-        """Create the file readers for all links files."""
-        logger.debug("Creating input file readers.")
-        input_files = self.config_data[constants.INPUT_FILES]
-
-        logger.debug("Creating file reader for v2v links file.")
-        self._create_new_file_reader(
-            input_files[cc.V2V_LINKS_FILE],
-            cc.V2V_LINKS_COLUMN_NAMES,
-            cc.V2V_LINKS_COLUMN_DTYPES,
-            cc.V2V_LINKS_FILE,
-        )
-
-        logger.debug("Creating file reader for v2b links file.")
-        self._create_new_file_reader(
-            input_files[cc.V2B_LINKS_FILE],
-            cc.V2B_LINKS_COLUMN_NAMES,
-            cc.V2B_LINKS_COLUMN_DTYPES,
-            cc.V2B_LINKS_FILE,
-        )
-
-        logger.debug("Creating file reader for b2c links file.")
-        self._create_new_file_reader(
-            input_files[cc.B2C_LINKS_FILE],
-            cc.B2C_LINKS_COLUMN_NAMES,
-            cc.B2C_LINKS_COLUMN_DTYPES,
-            cc.B2C_LINKS_FILE,
+            FilenameKey.CONTROLLERS, ColumnNames.CONTROLLERS, ColumnDTypes.CONTROLLERS
         )
 
         logger.debug("Creating file reader for roadside units file.")
         self._create_new_file_reader(
-            input_files[cc.ROADSIDE_UNITS_FILE],
-            cc.ROADSIDE_UNITS_COLUMN_NAMES,
-            cc.ROADSIDE_UNITS_COLUMN_DTYPES,
-            cc.ROADSIDE_UNITS_FILE,
+            FilenameKey.ROADSIDE_UNITS,
+            ColumnNames.ROADSIDE_UNITS,
+            ColumnDTypes.ROADSIDE_UNITS,
+        )
+
+    def _create_activation_file_readers(self) -> None:
+        """Create the file readers for all activation files."""
+        input_files = self.config_data[MainKey.INPUT_FILES]
+        logger.debug("Creating file reader for vehicle activation times file.")
+        self._create_new_file_reader(
+            FilenameKey.VEHICLE_ACTIVATIONS,
+            ColumnNames.ACTIVATION_TIMES,
+            ColumnDTypes.ACTIVATION_TIMES,
+        )
+
+        if input_files[FilenameKey.BASE_STATION_ACTIVATIONS] != "":
+            logger.debug("Creating file reader for base station activations file.")
+            self._create_new_file_reader(
+                FilenameKey.BASE_STATION_ACTIVATIONS,
+                ColumnNames.ACTIVATION_TIMES,
+                ColumnDTypes.ACTIVATION_TIMES,
+            )
+        else:
+            self._create_none_file_reader(FilenameKey.BASE_STATION_ACTIVATIONS)
+
+        if input_files[FilenameKey.CONTROLLER_ACTIVATIONS] != "":
+            logger.debug("Creating file reader for controller activations file.")
+            self._create_new_file_reader(
+                FilenameKey.CONTROLLER_ACTIVATIONS,
+                ColumnNames.ACTIVATION_TIMES,
+                ColumnDTypes.ACTIVATION_TIMES,
+            )
+        else:
+            self._create_none_file_reader(FilenameKey.CONTROLLER_ACTIVATIONS)
+
+        if input_files[FilenameKey.RSU_ACTIVATIONS] != "":
+            logger.debug("Creating file reader for roadside unit activations file.")
+            self._create_new_file_reader(
+                FilenameKey.RSU_ACTIVATIONS,
+                ColumnNames.ACTIVATION_TIMES,
+                ColumnDTypes.ACTIVATION_TIMES,
+            )
+        else:
+            self._create_none_file_reader(FilenameKey.RSU_ACTIVATIONS)
+
+    def _create_vehicle_links_file_readers(self) -> None:
+        """Create the file readers for all vehicle links files."""
+        logger.debug("Creating file reader for v2v links file.")
+        self._create_new_file_reader(
+            FilenameKey.V2V_LINKS, ColumnNames.V2V_LINKS, ColumnDTypes.V2V_LINKS
+        )
+
+        logger.debug("Creating file reader for v2b links file.")
+        self._create_new_file_reader(
+            FilenameKey.V2B_LINKS, ColumnNames.V2B_LINKS, ColumnDTypes.V2B_LINKS
+        )
+
+        logger.debug("Creating file reader for v2r links file.")
+        self._create_new_file_reader(
+            FilenameKey.V2R_LINKS, ColumnNames.V2R_LINKS, ColumnDTypes.V2R_LINKS
+        )
+
+    def _create_other_links_file_readers(self) -> None:
+        """Create the file readers for all other links files."""
+        logger.debug("Creating file reader for b2c links file.")
+        self._create_new_file_reader(
+            FilenameKey.B2C_LINKS, ColumnNames.B2C_LINKS, ColumnDTypes.B2C_LINKS
+        )
+
+        logger.debug("Creating file reader for r2r links file.")
+        self._create_new_file_reader(
+            FilenameKey.R2R_LINKS, ColumnNames.R2R_LINKS, ColumnDTypes.R2R_LINKS
+        )
+
+        logger.debug("Creating file reader for r2b links file.")
+        self._create_new_file_reader(
+            FilenameKey.R2B_LINKS, ColumnNames.R2B_LINKS, ColumnDTypes.R2B_LINKS
         )
 
     def _create_new_file_reader(
-        self, filename: str, column_names: list[str], column_dtypes: dict, file_key: str
+        self, file_key: str, column_names: list[str], column_dtypes: dict
     ) -> None:
         """
         Create a new file reader.
 
         Parameters
         ----------
-        filename : str
-            The filename.
+        file_key : str
+            The file key.
         column_names : list[str]
             The column names.
         column_dtypes : dict
             The column data types.
-        file_key : str
-            The file key.
         """
-        file_path = self.project_path / filename
+        input_files = self.config_data[MainKey.INPUT_FILES]
+        file_path = self.project_path / input_files[file_key]
 
-        # Check if it is a valid file.
         if not file_path.exists():
-            logger.warning("File %s does not exist. Skipping file.", file_path)
-            return
+            logger.error(f"File {file_path} does not exist.")
+            exit(1)
 
-        file_type = filename.split(".")[-1]
-
-        logger.debug("Creating reader object for file %s", file_path)
-        if file_type == cc.PARQUET:
+        logger.debug(f"Creating file reader for file {file_path}.")
+        if file_path.suffix.endswith(FileExtension.PARQUET):
             self.file_readers[file_key] = ParquetDataReader(
                 file_path, column_names, column_dtypes
             )
-        elif file_type == cc.CSV:
+        elif file_path.suffix.endswith(FileExtension.CSV):
             self.file_readers[file_key] = CSVDataReader(
                 file_path, column_names, column_dtypes
             )
         else:
-            raise UnsupportedInputFormatError(file_type)
+            raise UnsupportedInputFormatError(file_path.suffix)
 
     def _create_none_file_reader(self, file_key: str) -> None:
         """
@@ -290,7 +279,7 @@ class SimulationInputHelper:
 
         Parameters
         ----------
-        output_dir : str
+        output_dir : Path
             The relative path to the output directory.
         """
         self._output_dir = self.project_path / output_dir
