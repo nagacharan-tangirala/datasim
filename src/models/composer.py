@@ -8,7 +8,7 @@ from device.payload import (
     VehiclePayload,
 )
 
-import src.core.constants as constants
+from src.core.constants import DataSourceKey, ModelName
 
 logger = logging.getLogger(__name__)
 
@@ -23,20 +23,20 @@ class DataSource:
 
 
 class VehicleDataComposer:
-    def __init__(self, data_source_params: dict[dict]):
+    def __init__(self, data_source_params: dict):
         """
         Initialize the data composer.
 
         Parameters
         ----------
-        data_source_params : dict[dict]
+        data_source_params : dict
             The data source parameters from the config file.
         """
         self._all_data_sources: list[DataSource] = []
         self._side_links_sources: list[DataSource] = []
 
         self.previous_time: int = 0
-        self._create_data_sources(data_source_params[constants.DATA_SOURCE])
+        self._create_data_sources(data_source_params[ModelName.DATA_SOURCE])
 
     def _create_data_sources(self, data_source_params: dict) -> None:
         """
@@ -54,11 +54,11 @@ class VehicleDataComposer:
         for params in data_source_params:
             data_source = DataSource()
 
-            data_source.data_type = params[constants.DATA_SOURCE_TYPE]
-            data_source.data_counts = params[constants.DATA_COUNTS]
-            data_source.data_size = params[constants.DATA_SIZE]
-            data_source.data_priority = params[constants.DATA_PRIORITY]
-            data_source.side_link = params[constants.DATA_SIDE_LINK]
+            data_source.data_type = params[DataSourceKey.DATA_SOURCE_TYPE]
+            data_source.data_counts = params[DataSourceKey.DATA_COUNTS]
+            data_source.data_size = params[DataSourceKey.DATA_SIZE]
+            data_source.data_priority = params[DataSourceKey.DATA_PRIORITY]
+            data_source.side_link = params[DataSourceKey.DATA_SIDE_LINK]
 
             self._all_data_sources.append(data_source)
             if data_source.side_link == "yes":

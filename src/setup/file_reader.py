@@ -5,7 +5,7 @@ from typing import Any
 from pandas import DataFrame, concat, read_csv
 from pyarrow.parquet import ParquetFile
 
-from src.core.common_constants import CSV, PARQUET, TIME_STEP
+from src.core.common_constants import FileExtension, TraceTimes
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class ParquetDataReader:
         self._total_row_groups: int = self._input_file_reader.num_row_groups
 
         self._row_group_idx: int = 0
-        self._type = PARQUET
+        self._type = FileExtension.PARQUET
 
     @property
     def input_file(self) -> str:
@@ -60,7 +60,7 @@ class ParquetDataReader:
 
             # Set the column dtypes and get the maximum timestamp in the current chunk.
             temp_data_df = temp_data_df.astype(self._column_dtypes)
-            max_timestamp = temp_data_df[TIME_STEP].max()
+            max_timestamp = temp_data_df[TraceTimes.TIME_STEP].max()
 
             logger.debug(f"Maximum timestamp in the streamed data is {max_timestamp}.")
 
@@ -70,8 +70,11 @@ class ParquetDataReader:
                 data_df = concat([data_df, temp_data_df], ignore_index=True)
                 self._row_group_idx += 1
             else:
-                # Add the data until the timestamp to the dataframe. Do not increment the row group index.
-                temp_data_df = temp_data_df[temp_data_df[TIME_STEP] < timestamp]
+                # Add the data until the timestamp to the dataframe.
+                # Do not increment the row group index.
+                temp_data_df = temp_data_df[
+                    temp_data_df[TraceTimes.TIME_STEP] < timestamp
+                ]
                 data_df = concat([data_df, temp_data_df], ignore_index=True)
                 break
 
@@ -92,7 +95,7 @@ class CSVDataReader:
         self._column_names: list[str] = column_names
         self._column_dtypes: dict[str, Any] = column_dtypes
 
-        self._type = CSV
+        self._type = FileExtension.CSV
 
     @property
     def input_file(self) -> str:

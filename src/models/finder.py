@@ -4,7 +4,7 @@ from mesa import Agent
 from numpy import array, empty, ndarray
 from pandas import DataFrame
 
-import src.core.common_constants as cc
+from src.core.common_constants import Column, DeviceId, DeviceName, TraceTimes
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +31,16 @@ class NearestNBaseStationFinder(Agent):
         """
         # Convert the v2b links df to dictionary
         self._v2b_links_data = (
-            self._v2b_links_df.groupby(cc.TIME_STEP)
+            self._v2b_links_df.groupby(TraceTimes.TIME_STEP)
             .apply(
-                lambda x: dict(
-                    zip(x[cc.VEHICLE_ID], zip(x[cc.BASE_STATIONS], x[cc.DISTANCES]))
+                lambda row: dict(
+                    zip(
+                        row[DeviceId.VEHICLE],
+                        zip(
+                            row[Column.BASE_STATIONS_STR],
+                            row[Column.DISTANCES_STR],
+                        ),
+                    )
                 )
             )
             .to_dict()
@@ -103,10 +109,13 @@ class TraceVehicleNeighbourFinder(Agent):
         """
         # Convert the v2b links df to dictionary
         self._v2v_links_data = (
-            self._v2v_links_df.groupby(cc.TIME_STEP)
+            self._v2v_links_df.groupby(TraceTimes.TIME_STEP)
             .apply(
-                lambda x: dict(
-                    zip(x[cc.VEHICLE_ID], zip(x[cc.NEIGHBOURS], x[cc.DISTANCES]))
+                lambda row: dict(
+                    zip(
+                        row[DeviceId.VEHICLE],
+                        zip(row[Column.VEHICLES_STR], row[Column.DISTANCES_STR]),
+                    )
                 )
             )
             .to_dict()

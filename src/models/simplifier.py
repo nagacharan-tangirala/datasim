@@ -1,4 +1,4 @@
-import src.core.constants as constants
+from src.core.constants import ModelParam
 from src.device.payload import BaseStationPayload, VehiclePayload
 
 
@@ -7,8 +7,8 @@ class VehicleDataSimplifier:
         """
         Simplify the vehicle data.
         """
-        self._retention_ratio: float = model_data[constants.RETENTION_FACTOR]
-        self._compression_ratio: float = model_data[constants.COMPRESSION_FACTOR]
+        self._retention_ratio: float = model_data[ModelParam.RETENTION_FACTOR]
+        self._compression_ratio: float = model_data[ModelParam.COMPRESSION_FACTOR]
 
     def simplify_data(self, veh_payload: VehiclePayload) -> VehiclePayload:
         """

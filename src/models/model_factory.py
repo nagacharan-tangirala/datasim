@@ -2,7 +2,7 @@ import logging
 
 from pandas import DataFrame
 
-import src.core.constants as constants
+from src.core.constants import ModelName, ModelParam, ModelType
 from src.core.exceptions import ModelTypeNotImplementedError
 from src.models.collector import ControllerCollector, VehicleCollector
 from src.models.composer import (
@@ -36,14 +36,15 @@ class ModelFactory:
         model_data : dict
             Dictionary containing all the mobility model data.
         """
-        model_name = model_data[constants.MODEL_NAME]
+        model_name = model_data[ModelParam.MODEL_NAME]
         match model_name:
-            case constants.STATIC_MOBILITY:
+            case ModelType.STATIC:
                 logger.debug(
-                    f"Creating static mobility model with position {model_data[constants.POSITION]}."
+                    f"Creating static mobility model with position "
+                    f"{model_data[ModelParam.POSITION]}."
                 )
-                return StaticMobilityModel(model_data[constants.POSITION])
-            case constants.TRACE_MOBILITY:
+                return StaticMobilityModel(model_data[ModelParam.POSITION])
+            case ModelType.TRACE:
                 logger.debug("Creating trace mobility model.")
                 return TraceMobilityModel()
             case _:
@@ -54,13 +55,13 @@ class ModelFactory:
         """
         Create the data composer model.
         """
-        match data_composer_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_VEHICLE_DATA_COMPOSER:
+        match data_composer_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return VehicleDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_COMPOSER,
-                    data_composer_data[constants.MODEL_NAME],
+                    ModelName.DATA_COMPOSER,
+                    data_composer_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -70,13 +71,13 @@ class ModelFactory:
         """
         Create the data simplifier model.
         """
-        match data_simplifier_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_VEHICLE_DATA_SIMPLIFIER:
+        match data_simplifier_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return VehicleDataSimplifier(data_simplifier_data)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_SIMPLIFIER,
-                    data_simplifier_data[constants.MODEL_NAME],
+                    ModelName.DATA_SIMPLIFIER,
+                    data_simplifier_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -86,13 +87,13 @@ class ModelFactory:
         """
         Create the data composer model.
         """
-        match data_composer_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_BASE_STATION_DATA_COMPOSER:
+        match data_composer_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return BaseStationDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_COMPOSER,
-                    data_composer_data[constants.MODEL_NAME],
+                    ModelName.DATA_COMPOSER,
+                    data_composer_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -102,13 +103,13 @@ class ModelFactory:
         """
         Create the data simplifier model.
         """
-        match data_simplifier_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_BASE_STATION_DATA_SIMPLIFIER:
+        match data_simplifier_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return BaseStationDataSimplifier(data_simplifier_data)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_SIMPLIFIER,
-                    data_simplifier_data[constants.MODEL_NAME],
+                    ModelName.DATA_SIMPLIFIER,
+                    data_simplifier_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -118,13 +119,13 @@ class ModelFactory:
         """
         Create the data composer model.
         """
-        match data_composer_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_CONTROLLER_DATA_COMPOSER:
+        match data_composer_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return ControllerDataComposer(data_composer_data)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_COMPOSER,
-                    data_composer_data[constants.MODEL_NAME],
+                    ModelName.DATA_COMPOSER,
+                    data_composer_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -134,13 +135,13 @@ class ModelFactory:
         """
         Create the controller collector model.
         """
-        match controller_collector_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_CONTROLLER_DATA_COLLECTOR:
+        match controller_collector_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return ControllerCollector()
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_COLLECTOR,
-                    controller_collector_data[constants.MODEL_NAME],
+                    ModelName.DATA_COLLECTOR,
+                    controller_collector_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -150,13 +151,14 @@ class ModelFactory:
         """
         Create the base station finder.
         """
-        match model_data[constants.MODEL_NAME]:
-            case constants.NEAREST_V2B:
+        match model_data[ModelParam.MODEL_NAME]:
+            case ModelType.NEAREST:
                 logger.debug("Creating nearest base station finder.")
                 return NearestNBaseStationFinder(base_station_links_df)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.BASE_STATION_FINDER, model_data[constants.MODEL_NAME]
+                    ModelName.BASE_STATION_FINDER,
+                    model_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -166,13 +168,13 @@ class ModelFactory:
         """
         Create the vehicle data collector model.
         """
-        match vehicle_data_collector_data[constants.MODEL_NAME]:
-            case constants.SIMPLE_VEHICLE_DATA_COLLECTOR:
+        match vehicle_data_collector_data[ModelParam.MODEL_NAME]:
+            case ModelType.SIMPLE:
                 return VehicleCollector()
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.DATA_COLLECTOR,
-                    vehicle_data_collector_data[constants.MODEL_NAME],
+                    ModelName.DATA_COLLECTOR,
+                    vehicle_data_collector_data[ModelParam.MODEL_NAME],
                 )
 
     @staticmethod
@@ -183,11 +185,11 @@ class ModelFactory:
         """
         Create the vehicle neighbour finder model.
         """
-        match vehicle_neighbour_finder_data[constants.MODEL_NAME]:
-            case constants.TRACE_V2V:
+        match vehicle_neighbour_finder_data[ModelParam.MODEL_NAME]:
+            case ModelType.TRACE:
                 return TraceVehicleNeighbourFinder(v2v_links)
             case _:
                 raise ModelTypeNotImplementedError(
-                    constants.NEIGHBOUR_FINDER,
-                    vehicle_neighbour_finder_data[constants.MODEL_NAME],
+                    ModelName.NEIGHBOUR_FINDER,
+                    vehicle_neighbour_finder_data[ModelParam.MODEL_NAME],
                 )

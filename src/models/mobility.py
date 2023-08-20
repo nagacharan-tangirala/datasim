@@ -3,8 +3,8 @@ import logging
 from mesa import Agent
 from pandas import DataFrame, concat
 
-import src.core.common_constants as cc
-import src.core.constants as constants
+from src.core.common_constants import CoordSpace, TraceTimes
+from src.core.constants import ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class StaticMobilityModel(Agent):
             DataFrame of positions.
         """
         super().__init__(0, None)
-        self._type = constants.STATIC_MOBILITY
+        self._type = ModelType.STATIC
         self._current_location = position
 
     @property
@@ -57,7 +57,7 @@ class TraceMobilityModel(Agent):
         Initialize the trace mobility model.
         """
         super().__init__(0, None)
-        self._type: str = constants.TRACE_MOBILITY
+        self._type: str = ModelType.TRACE
 
         self.current_time: int = 0
         self._current_location: list[float] = []
@@ -68,11 +68,20 @@ class TraceMobilityModel(Agent):
         """
         Prepare the positions.
         """
-        self._positions_df[cc.TIME_STEP] = self._positions_df[cc.TIME_STEP].astype(int)
+        self._positions_df[TraceTimes.TIME_STEP] = self._positions_df[
+            TraceTimes.TIME_STEP
+        ].astype(int)
+
+        # Convert the positions to a dictionary
         self._positions = dict(
             zip(
-                self._positions_df[cc.TIME_STEP],
-                list(zip(self._positions_df[cc.X], self._positions_df[cc.Y])),
+                self._positions_df[TraceTimes.TIME_STEP],
+                list(
+                    zip(
+                        self._positions_df[CoordSpace.X],
+                        self._positions_df[CoordSpace.Y],
+                    )
+                ),
             )
         )
 

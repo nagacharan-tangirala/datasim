@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-import src.core.constants as constants
+from src.core.constants import MainKey
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
 from src.device.payload import BaseStationPayload, BaseStationResponse
@@ -24,7 +24,7 @@ class CloudOrchestrator(Agent):
             The model data.
         """
         super().__init__(990001, None)
-        self.type: str = constants.CLOUD_ORCHESTRATOR
+        self.type: str = MainKey.CLOUD_ORCHESTRATOR
         self.model = None
 
         self._controllers: dict[int, CentralController] = {}

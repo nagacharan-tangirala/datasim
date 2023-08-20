@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from pandas import DataFrame
 
-import src.core.constants as constants
+from src.core.constants import MainKey, ModelName
 from src.device.base_station import BaseStation
 from src.device.payload import VehiclePayload, VehicleResponse
 from src.device.vehicle import Vehicle
@@ -33,7 +33,7 @@ class EdgeOrchestrator(Agent):
             The model data.
         """
         super().__init__(990000, None)
-        self.type: str = constants.EDGE_ORCHESTRATOR
+        self.type: str = MainKey.EDGE_ORCHESTRATOR
         self.model = None
 
         self._vehicles: dict[int, Vehicle] = {}
@@ -136,12 +136,12 @@ class EdgeOrchestrator(Agent):
         model_factory = ModelFactory()
         self._base_station_finder = model_factory.create_basestation_finder(
             self._base_station_links,
-            model_data[constants.BASE_STATION_FINDER],
+            model_data[ModelName.BASE_STATION_FINDER],
         )
 
         self._neighbour_finder = model_factory.create_vehicle_neighbour_finder(
             self._vehicle_links,
-            model_data[constants.NEIGHBOUR_FINDER],
+            model_data[ModelName.NEIGHBOUR_FINDER],
         )
 
     def uplink_stage(self) -> None:

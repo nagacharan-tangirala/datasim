@@ -4,8 +4,8 @@ from random import choices
 from numpy import asarray
 from pandas import DataFrame, Series
 
-import src.core.common_constants as cc
-import src.core.constants as constants
+from src.core.common_constants import CoordSpace, DeviceId, TraceTimes
+from src.core.constants import HardwareKey, ModelParam
 from src.device.activation import ActivationSettings
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
@@ -84,12 +84,12 @@ class DeviceFactory:
             The model data of the vehicles.
         """
         # Get the list of vehicles in the simulation.
-        vehicle_ids = vehicle_trace_data[cc.VEHICLE_ID].unique()
+        vehicle_ids = vehicle_trace_data[DeviceId.VEHICLE].unique()
 
         logger.debug(f"Creating {len(vehicle_ids)} vehicles.")
         # Get the weights of the ue types.
         veh_weights = [
-            ue_data[constants.VEHICLE_RATIO] for ue_data in vehicle_models.values()
+            ue_data[ModelParam.VEHICLE_RATIO] for ue_data in vehicle_models.values()
         ]
         vehicle_types = list(vehicle_models.keys())
 
@@ -105,12 +105,12 @@ class DeviceFactory:
 
             # Create activation settings from the activation data.
             this_activation_data: Series = self._veh_activations[
-                self._veh_activations[cc.VEHICLE_ID] == vehicle_id
+                self._veh_activations[DeviceId.DEVICE] == vehicle_id
             ]
 
             this_activation_settings = ActivationSettings(
-                this_activation_data[cc.START_TIME].values,
-                this_activation_data[cc.END_TIME].values,
+                this_activation_data[TraceTimes.START_TIME].values,
+                this_activation_data[TraceTimes.END_TIME].values,
                 self._sim_start_time,
                 self._sim_end_time,
             )
@@ -122,7 +122,7 @@ class DeviceFactory:
 
             # Update the vehicle trace data.
             this_vehicle_trace: DataFrame = vehicle_trace_data[
-                vehicle_trace_data[cc.VEHICLE_ID] == vehicle_id
+                vehicle_trace_data[DeviceId.VEHICLE] == vehicle_id
             ]
             self._vehicles[vehicle_id].update_mobility_data(this_vehicle_trace)
 
@@ -153,12 +153,12 @@ class DeviceFactory:
         """
         # Create the computing hardware.
         computing_hardware = DeviceFactory._create_computing_hardware(
-            vehicle_models[constants.COMPUTING_HARDWARE]
+            vehicle_models[HardwareKey.COMPUTING]
         )
 
         # Create the networking hardware.
         wireless_hardware = DeviceFactory._create_networking_hardware(
-            vehicle_models[constants.NETWORKING_HARDWARE]
+            vehicle_models[HardwareKey.NETWORKING]
         )
 
         return Vehicle(
@@ -176,13 +176,13 @@ class DeviceFactory:
         Create the base stations in the simulation.
         """
         # Get the list of base stations in the simulation.
-        base_station_ids = base_station_data[cc.BASE_STATION_ID].unique()
+        base_station_ids = base_station_data[DeviceId.BASE_STATION].unique()
 
         for base_station_id in base_station_ids:
             logger.debug(f"Creating base station {base_station_id}")
             this_station_data = base_station_data[
-                base_station_data[cc.BASE_STATION_ID] == base_station_id
-            ][[cc.X, cc.Y]]
+                base_station_data[DeviceId.BASE_STATION] == base_station_id
+            ][[CoordSpace.X, CoordSpace.Y]]
 
             # Get the base station position.
             base_station_position: list[float] = this_station_data.values[0].tolist()
@@ -217,17 +217,17 @@ class DeviceFactory:
         """
         # Create the computing hardware.
         computing_hardware = DeviceFactory._create_computing_hardware(
-            base_station_models_data[constants.COMPUTING_HARDWARE]
+            base_station_models_data[HardwareKey.COMPUTING]
         )
 
         # Create wired hardware.
         wired_hardware = DeviceFactory._create_networking_hardware(
-            base_station_models_data[constants.NETWORKING_HARDWARE][constants.WIRED]
+            base_station_models_data[HardwareKey.NETWORKING][HardwareKey.WIRED]
         )
 
         # Create wireless hardware.
         wireless_hardware = DeviceFactory._create_networking_hardware(
-            base_station_models_data[constants.NETWORKING_HARDWARE][constants.WIRELESS]
+            base_station_models_data[HardwareKey.NETWORKING][HardwareKey.WIRELESS]
         )
 
         # Create activation settings from the activation data.
@@ -257,14 +257,14 @@ class DeviceFactory:
         Create the controllers in the simulation.
         """
         # Get the list of controllers in the simulation.
-        controller_list = controller_data[cc.CONTROLLER_ID].unique()
+        controller_list = controller_data[DeviceId.CONTROLLER].unique()
 
         # Create the controllers.
         for controller_id in controller_list:
             # Get the controller position.
             this_controller_data = controller_data[
-                controller_data[cc.CONTROLLER_ID] == controller_id
-            ][[cc.X, cc.Y]]
+                controller_data[DeviceId.CONTROLLER] == controller_id
+            ][[CoordSpace.X, CoordSpace.Y]]
 
             controller_position: list[float] = this_controller_data.values[0].tolist()
 
@@ -288,12 +288,12 @@ class DeviceFactory:
         """
         # Create the computing hardware.
         computing_hardware = DeviceFactory._create_computing_hardware(
-            controller_models_data[constants.COMPUTING_HARDWARE]
+            controller_models_data[HardwareKey.COMPUTING]
         )
 
         # Create wired hardware.
         wired_hardware = DeviceFactory._create_networking_hardware(
-            controller_models_data[constants.NETWORKING_HARDWARE]
+            controller_models_data[HardwareKey.NETWORKING]
         )
 
         # Create activation settings from the activation data.
@@ -315,24 +315,27 @@ class DeviceFactory:
             controller_models_data,
         )
 
+    def create_rsus(self, rsu_data: DataFrame, rsu_models: dict):
+        pass
+
     def create_new_vehicles(
         self, vehicle_trace_data: DataFrame, vehicle_models: dict
     ) -> None:
         """
         Update the vehicles based on the new trace data.
         """
-        ue_list = vehicle_trace_data[cc.VEHICLE_ID].unique()
+        ue_list = vehicle_trace_data[DeviceId.VEHICLE].unique()
 
         # Get the weights of the vehicle types.
         vehicle_weights = [
-            float(ue_data[constants.VEHICLE_RATIO])
+            float(ue_data[ModelParam.VEHICLE_RATIO])
             for ue_data in vehicle_models.values()
         ]
         vehicle_types = list(vehicle_models.keys())
 
         for vehicle_id in ue_list:
             this_vehicle_trace: DataFrame = vehicle_trace_data[
-                vehicle_trace_data[cc.VEHICLE_ID] == vehicle_id
+                vehicle_trace_data[DeviceId.VEHICLE] == vehicle_id
             ]
             if vehicle_id in self._vehicles:
                 # Already exists, update the trace data and continue
@@ -343,14 +346,13 @@ class DeviceFactory:
             type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[0]
             selected_vehicle_models = vehicle_models[type_choice].copy()
 
-            # Create the activation settings.
             this_activation_data: Series = self._veh_activations[
-                self._veh_activations[cc.VEHICLE_ID] == vehicle_id
+                self._veh_activations[DeviceId.DEVICE] == vehicle_id
             ]
 
             this_activation_settings = ActivationSettings(
-                this_activation_data[cc.START_TIME].values,
-                this_activation_data[cc.END_TIME].values,
+                this_activation_data[TraceTimes.START_TIME].values,
+                this_activation_data[TraceTimes.END_TIME].values,
                 self._sim_start_time,
                 self._sim_end_time,
             )
@@ -369,18 +371,19 @@ class DeviceFactory:
         Update the base stations based on the new trace data.
         """
         # Get the list of base stations in the simulation.
-        base_station_list = base_station_data[cc.BASE_STATION_ID].unique()
+        base_station_list = base_station_data[DeviceId.BASE_STATION].unique()
 
         for base_station_id in base_station_list:
             if base_station_id in self._base_stations:
                 # TODO: Update the base station if there is any requirement to do so.
-                #  Currently, there is no requirement. All the base station data is static in the simulation.
+                #  Currently, there is no requirement. All the base station data is
+                #  static in the simulation.
                 continue
 
             # Get the base station position data.
             this_station_data = base_station_data[
-                base_station_data[cc.BASE_STATION_ID] == base_station_id
-            ][[cc.X, cc.Y]]
+                base_station_data[DeviceId.BASE_STATION] == base_station_id
+            ][[CoordSpace.X, CoordSpace.Y]]
 
             base_station_position: list[float] = this_station_data.values[0].tolist()
 
@@ -396,7 +399,7 @@ class DeviceFactory:
         Update the controllers based on the new trace data.
         """
         # Get the list of controllers in the simulation.
-        controller_list = controller_data[cc.CONTROLLER_ID].unique()
+        controller_list = controller_data[DeviceId.CONTROLLER].unique()
 
         for controller_id in controller_list:
             if controller_id in self._controllers:
@@ -404,8 +407,8 @@ class DeviceFactory:
 
             # Get the controller position.
             this_controller_data = controller_data[
-                controller_data[cc.CONTROLLER_ID] == controller_id
-            ][[cc.X, cc.Y]]
+                controller_data[DeviceId.CONTROLLER] == controller_id
+            ][[CoordSpace.X, CoordSpace.Y]]
 
             controller_position: list[float] = this_controller_data.values[0].tolist()
 
