@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class StaticMobilityModel(Agent):
-    def __init__(self, position: list[float]):
+    def __init__(self):
         """
         Initialize the static mobility model.
 
@@ -20,7 +20,7 @@ class StaticMobilityModel(Agent):
         """
         super().__init__(0, None)
         self._type = ModelType.STATIC
-        self._current_location = position
+        self._current_location: list[float] = []
 
     @property
     def type(self) -> str:
