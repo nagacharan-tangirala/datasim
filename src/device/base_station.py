@@ -3,7 +3,7 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
-from src.core.constants import MainKey, ModelName, ModelParam, ModelType
+from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (
@@ -21,7 +21,6 @@ class BaseStation(Agent):
     def __init__(
         self,
         base_station_id,
-        base_station_position: list[float],
         computing_hardware: ComputingHardware,
         wireless_hardware: NetworkHardware,
         wired_hardware: NetworkHardware,
@@ -35,8 +34,6 @@ class BaseStation(Agent):
         ----------
         base_station_id : int
             The id of the base station.
-        base_station_position : ndarray[float]
-            The position of the base station.
         computing_hardware : ComputingHardware
             The computing hardware of the base station.
         wireless_hardware : NetworkHardware
@@ -66,16 +63,12 @@ class BaseStation(Agent):
         self._uplink_payload: BaseStationPayload | None = None
 
         # Downlink response received from the controllers
-        self._downlink_response: BaseStationResponse | None = None
+        self.downlink_response: BaseStationResponse | None = None
 
         # Downlink responses generated at the base station
         # after receiving the controller response
         self._downlink_vehicle_data: dict[int, VehicleResponse] = {}
 
-        # Add the position to the base station models data
-        base_station_models_data[ModelName.MOBILITY][
-            ModelParam.POSITION
-        ] = base_station_position
         self._create_models(base_station_models_data)
 
         # These are the output metrics
@@ -94,16 +87,6 @@ class BaseStation(Agent):
     def uplink_payload(self) -> BaseStationPayload:
         """Get the uplink payload."""
         return self._uplink_payload
-
-    @property
-    def downlink_response(self) -> BaseStationResponse:
-        """Get the downlink response."""
-        return self._downlink_response
-
-    @downlink_response.setter
-    def downlink_response(self, response: BaseStationResponse) -> None:
-        """Set the downlink response."""
-        self._downlink_response = response
 
     @property
     def downlink_vehicle_data(self) -> dict[int, VehicleResponse]:
@@ -141,6 +124,21 @@ class BaseStation(Agent):
         Get the deactivation times of the vehicle.
         """
         return self._activation_settings.disable_times
+
+    def update_mobility_data(self, mobility_data: dict | list[float]) -> None:
+        """
+        Update the mobility data of the base station.
+        """
+        match self._mobility_model.type:
+            case ModelType.STATIC:
+                logger.debug(f"Updating position for base station {self.unique_id}")
+                self._mobility_model.update_position(mobility_data)
+            case ModelType.TRACE:
+                logger.debug(
+                    f"Updating trace for base station {self.unique_id} with "
+                    f"length {len(mobility_data)}"
+                )
+                self._mobility_model.update_mobility_data(mobility_data)
 
     def activate_base_station(self, time_step: int) -> None:
         """
@@ -195,9 +193,7 @@ class BaseStation(Agent):
         """
         Use the network hardware to transfer data in the downlink direction.
         """
-        self._wired_hardware.consume_capacity(
-            sum(self._downlink_response.downlink_data)
-        )
+        self._wired_hardware.consume_capacity(sum(self.downlink_response.downlink_data))
 
     def use_wireless_for_uplink(self) -> None:
         """
@@ -215,7 +211,7 @@ class BaseStation(Agent):
         Use the network hardware to transfer data in the downlink direction.
         """
         self._wireless_hardware.consume_capacity(
-            sum(self._downlink_response.downlink_data)
+            sum(self.downlink_response.downlink_data)
         )
 
     def uplink_stage(self) -> None:
@@ -224,7 +220,7 @@ class BaseStation(Agent):
 
         Create data to be sent to the central controller.
         """
-        self._downlink_response = None
+        self.downlink_response = None
         self._downlink_vehicle_data.clear()
 
         logger.debug(
@@ -261,7 +257,7 @@ class BaseStation(Agent):
             f" at time {self.model.current_time}."
         )
         vehicle_index_in_data = 0
-        for vehicle_id in self._downlink_response.destination_vehicles:
+        for vehicle_id in self.downlink_response.destination_vehicles:
             if vehicle_id == -1:
                 vehicle_index_in_data += 1
                 continue
@@ -271,7 +267,7 @@ class BaseStation(Agent):
                 destination=vehicle_id,
                 status=True,
                 timestamp=self.model.current_time,
-                downlink_data=self._downlink_response.downlink_data[
+                downlink_data=self.downlink_response.downlink_data[
                     vehicle_index_in_data
                 ],
             )
