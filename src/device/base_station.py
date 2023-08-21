@@ -12,7 +12,7 @@ from src.device.payload import (
     VehiclePayload,
     VehicleResponse,
 )
-from src.models.model_factory import ModelFactory
+import src.models.model_factory as model_factory
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +173,6 @@ class BaseStation(Agent):
         """
         Create the models for the base station.
         """
-        model_factory = ModelFactory()
         self._mobility_model = model_factory.create_mobility_model(
             base_station_models_data[ModelName.MOBILITY]
         )

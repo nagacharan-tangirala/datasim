@@ -8,7 +8,7 @@ from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import VehiclePayload, VehicleResponse
-from src.models.model_factory import ModelFactory
+import src.models.model_factory as model_factory
 
 logger = logging.getLogger(__name__)
 
@@ -115,8 +115,6 @@ class Vehicle(Agent):
         Create the models for this vehicle.
         """
         logger.debug(f"Creating models for vehicle {self.unique_id}")
-        model_factory = ModelFactory()
-
         self._mobility_model = model_factory.create_mobility_model(
             model_data[ModelName.MOBILITY]
         )
