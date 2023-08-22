@@ -12,11 +12,6 @@ class StaticMobilityModel(Agent):
     def __init__(self):
         """
         Initialize the static mobility model.
-
-        Parameters
-        ----------
-        position : list[float]
-            The position of the vehicle.
         """
         super().__init__(0, None)
         self._type = ModelType.STATIC
@@ -56,7 +51,7 @@ class TraceMobilityModel(Agent):
         Initialize the trace mobility model.
         """
         super().__init__(0, None)
-        self._type: str = ModelType.TRACE
+        self._type: str = ModelType.SIMPLE
 
         self.current_time: int = 0
         self._current_velocity: float = 0.0
