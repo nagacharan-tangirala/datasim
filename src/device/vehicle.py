@@ -7,7 +7,7 @@ from pandas import DataFrame
 from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
-from src.device.payload import VehiclePayload, VehicleResponse
+from src.device.payload import VehiclePayload, VehicleResponse, RSUPayload
 import src.models.model_factory as model_factory
 
 logger = logging.getLogger(__name__)

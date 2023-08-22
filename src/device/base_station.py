@@ -11,6 +11,7 @@ from src.device.payload import (
     BaseStationResponse,
     VehiclePayload,
     VehicleResponse,
+    RSUPayload,
 )
 import src.models.model_factory as model_factory
 
@@ -57,10 +58,11 @@ class BaseStation(Agent):
         self._activation_settings: ActivationSettings = activation_settings
 
         # Incoming vehicle data from the vehicles, set by the edge orchestrator
-        self._uplink_vehicle_data: dict[int, VehiclePayload] = {}
+        self._received_v2b_data: dict[int, VehiclePayload] = {}
+        self._received_r2b_data: dict[int, RSUPayload] = {}
 
         # Uplink payload generated at the base station after receiving the vehicle data
-        self._uplink_payload: BaseStationPayload | None = None
+        self._b2c_payload: BaseStationPayload | None = None
 
         # Downlink response received from the controllers
         self.downlink_response: BaseStationResponse | None = None
@@ -86,7 +88,7 @@ class BaseStation(Agent):
     @property
     def uplink_payload(self) -> BaseStationPayload:
         """Get the uplink payload."""
-        return self._uplink_payload
+        return self._b2c_payload
 
     @property
     def downlink_vehicle_data(self) -> dict[int, VehicleResponse]:
@@ -125,6 +127,22 @@ class BaseStation(Agent):
         """
         return self._activation_settings.disable_times
 
+    def _create_models(self, base_station_models_data: dict) -> None:
+        """
+        Create the models for the base station.
+        """
+        self._mobility_model = model_factory.create_mobility_model(
+            base_station_models_data[ModelName.MOBILITY]
+        )
+
+        self._data_composer = model_factory.create_base_station_data_composer(
+            base_station_models_data[ModelName.DATA_COMPOSER]
+        )
+
+        self._data_simplifier = model_factory.create_base_station_data_simplifier(
+            base_station_models_data[ModelName.DATA_SIMPLIFIER]
+        )
+
     def update_mobility_data(self, mobility_data: dict | list[float]) -> None:
         """
         Update the mobility data of the base station.
@@ -156,38 +174,23 @@ class BaseStation(Agent):
         """
         pass
 
-    def set_uplink_vehicle_data(self, incoming_data: dict[int, VehiclePayload]) -> None:
+    def assign_v2b_data(self, incoming_data: VehiclePayload) -> None:
         """
         Set the incoming data for the base station.
         """
-        self._uplink_vehicle_data = incoming_data
-        logger.debug(
-            f"Vehicles near base station {self.unique_id} are "
-            f"{[x.source for x in self._uplink_vehicle_data.values()]}"
-            f" at time {self.model.current_time}."
-        )
+        self._received_v2b_data[incoming_data.source] = incoming_data
 
-    def _create_models(self, base_station_models_data: dict) -> None:
+    def assign_r2b_data(self, incoming_data: RSUPayload) -> None:
         """
-        Create the models for the base station.
+        Set the incoming data for the base station.
         """
-        self._mobility_model = model_factory.create_mobility_model(
-            base_station_models_data[ModelName.MOBILITY]
-        )
-
-        self._data_composer = model_factory.create_base_station_data_composer(
-            base_station_models_data[ModelName.DATA_COMPOSER]
-        )
-
-        self._data_simplifier = model_factory.create_base_station_data_simplifier(
-            base_station_models_data[ModelName.DATA_SIMPLIFIER]
-        )
+        self._received_r2b_data[incoming_data.source] = incoming_data
 
     def use_wired_for_uplink(self) -> None:
         """
         Use the network hardware to transfer data in the uplink direction.
         """
-        self._wired_hardware.consume_capacity(self._uplink_payload.uplink_data_size)
+        self._wired_hardware.consume_capacity(self._b2c_payload.uplink_data_size)
 
     def use_wired_for_downlink(self) -> None:
         """
@@ -195,18 +198,29 @@ class BaseStation(Agent):
         """
         self._wired_hardware.consume_capacity(sum(self.downlink_response.downlink_data))
 
-    def use_wireless_for_uplink(self) -> None:
+    def use_network_for_received_v2b(self) -> None:
         """
         Use the network hardware to transfer data in the uplink direction.
         """
         # Find the data size of the uplink data
         uplink_data_size = 0.0
-        for vehicle_payload in self._uplink_vehicle_data.values():
+        for vehicle_payload in self._received_v2b_data.values():
             uplink_data_size += vehicle_payload.total_data_size
 
         self._wireless_hardware.consume_capacity(uplink_data_size)
 
-    def use_wireless_for_downlink(self) -> None:
+    def use_network_for_received_r2b(self) -> None:
+        """
+        Use the network hardware to transfer data in the uplink direction.
+        """
+        # Find the data size of the uplink data
+        uplink_data_size = 0.0
+        for rsu_payload in self._received_r2b_data.values():
+            uplink_data_size += rsu_payload.total_data_size
+
+        self._wireless_hardware.consume_capacity(uplink_data_size)
+
+    def use_wireless_for_v2b_response(self) -> None:
         """
         Use the network hardware to transfer data in the downlink direction.
         """
@@ -236,21 +250,21 @@ class BaseStation(Agent):
             self.model.space.move_agent(self, self._location)
 
         # Create base station payload if the bs has received data from the vehicles.
-        self._uplink_payload = self._data_composer.compose_basestation_payload(
-            self.model.current_time, self._uplink_vehicle_data
+        self._b2c_payload = self._data_composer.compose_basestation_payload(
+            self.model.current_time, self._received_v2b_data
         )
-        self._received_veh_data_size = self._uplink_payload.uplink_data_size
-        self._vehicles_in_range = len(self._uplink_payload.sources)
+        self._received_veh_data_size = self._b2c_payload.uplink_data_size
+        self._vehicles_in_range = len(self._b2c_payload.sources)
 
         # Use the data processor to process the data.
-        self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
-        self._simplified_veh_data_size = self._uplink_payload.uplink_data_size
+        self._b2c_payload = self._data_simplifier.simplify_data(self._b2c_payload)
+        self._simplified_veh_data_size = self._b2c_payload.uplink_data_size
 
     def downlink_stage(self) -> None:
         """
         Downlink stage of the base station.
         """
-        self._uplink_vehicle_data.clear()
+        self._received_v2b_data.clear()
 
         logger.debug(
             f"Downlink stage for base station {self.unique_id}"
