@@ -1,6 +1,7 @@
 import logging
 from random import choices
 
+from device.road_side_unit import RoadsideUnit
 from numpy import asarray
 from pandas import DataFrame, Series
 
@@ -21,6 +22,7 @@ class DeviceFactory:
         vehicle_activations_data: DataFrame,
         base_station_activations_data: DataFrame,
         controller_activations_data: DataFrame,
+        rsu_activations_data: DataFrame,
         sim_start_time: int,
         sim_end_time: int,
     ):
@@ -30,6 +32,7 @@ class DeviceFactory:
         self._veh_activations: DataFrame = vehicle_activations_data
         self._bs_activations: DataFrame = base_station_activations_data
         self._controller_activations: DataFrame = controller_activations_data
+        self._rsu_activations: DataFrame = rsu_activations_data
 
         self._sim_start_time: int = sim_start_time
         self._sim_end_time: int = sim_end_time
@@ -37,6 +40,7 @@ class DeviceFactory:
         self._vehicles: dict[int, Vehicle] = {}
         self._base_stations: dict[int, BaseStation] = {}
         self._controllers: dict[int, CentralController] = {}
+        self._roadside_units: dict[int, RoadsideUnit] = {}
 
     @property
     def vehicles(self) -> dict[int, Vehicle]:
@@ -52,6 +56,11 @@ class DeviceFactory:
     def controllers(self) -> dict[int, CentralController]:
         """Get the controllers in the simulation."""
         return self._controllers
+
+    @property
+    def roadside_units(self) -> dict[int, RoadsideUnit]:
+        """Get the roadside units in the simulation."""
+        return self._roadside_units
 
     @staticmethod
     def _create_computing_hardware(computing_hardware_data: dict) -> ComputingHardware:
@@ -175,13 +184,13 @@ class DeviceFactory:
             logger.debug(f"Creating base station {station_id}")
             station_position: list[float] = [pos[0] for pos in station_data.values()]
             self._base_stations[station_id] = self._create_base_station(
-                station_id, station_position, base_station_models_data
+                station_id, base_station_models_data
             )
+            self._base_stations[station_id].update_mobility_data(station_position)
 
     def _create_base_station(
         self,
         base_station_id: int,
-        base_station_position: list[float],
         base_station_models_data: dict,
     ) -> BaseStation:
         """
@@ -242,11 +251,12 @@ class DeviceFactory:
                 pos[0] for pos in controller_info.values()
             ]
             self._controllers[controller_id] = self._create_controller(
-                controller_id, controller_position, controller_models_data
+                controller_id, controller_models_data
             )
+            self._controllers[controller_id].update_mobility_data(controller_position)
 
     def _create_controller(
-        self, controller_id, position: list[float], controller_models_data
+        self, controller_id, controller_models_data
     ) -> CentralController:
         """
         Create a controller from the given parameters.
@@ -255,8 +265,8 @@ class DeviceFactory:
         ----------
         controller_id : int
             The ID of the controller.
-        position : list[float]
-            The position of the controller.
+        controller_models_data : dict
+            The model data of the controller.
         """
         computing_hardware = DeviceFactory._create_computing_hardware(
             controller_models_data[HardwareKey.COMPUTING]
@@ -274,7 +284,6 @@ class DeviceFactory:
         )
         return CentralController(
             controller_id,
-            position,
             computing_hardware,
             wired_hardware,
             this_activation_settings,
@@ -420,5 +429,6 @@ class DeviceFactory:
                 pos[0] for pos in controller_info.values()
             ]
             self._controllers[controller_id] = self._create_controller(
-                controller_id, controller_position, controller_models_data
+                controller_id, controller_models_data
             )
+            self._controllers[controller_id].update_mobility_data(controller_position)
