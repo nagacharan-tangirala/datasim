@@ -282,7 +282,57 @@ class DeviceFactory:
         )
 
     def create_rsus(self, rsu_data: DataFrame, rsu_models: dict):
-        pass
+        """
+        Create the RSUs in the simulation.
+        """
+        rsu_dict = (
+            rsu_data.groupby(DeviceId.RSU)[[CoordSpace.X, CoordSpace.Y]]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        for rsu_id, rsu_info in rsu_dict.items():
+            rsu_position: list[float] = [pos[0] for pos in rsu_info.values()]
+            self._roadside_units[rsu_id] = self._create_rsu(rsu_id, rsu_models)
+            self._roadside_units[rsu_id].update_mobility_data(rsu_position)
+
+    def _create_rsu(self, rsu_id, rsu_models: dict):
+        """
+        Create an RSU from the given parameters.
+
+        Parameters
+        ----------
+        rsu_id : int
+            The ID of the RSU.
+        rsu_models : dict
+            The model data of the RSU.
+
+        Returns
+        -------
+        RoadsideUnit
+            The created RSU.
+        """
+        computing_hardware = DeviceFactory._create_computing_hardware(
+            rsu_models[HardwareKey.COMPUTING]
+        )
+        wireless_hardware = DeviceFactory._create_networking_hardware(
+            rsu_models[HardwareKey.NETWORKING]
+        )
+
+        this_activation_settings = ActivationSettings(
+            asarray([]),
+            asarray([]),
+            self._sim_start_time,
+            self._sim_end_time,
+            is_always_on=True,
+        )
+        return RoadsideUnit(
+            rsu_id,
+            computing_hardware,
+            wireless_hardware,
+            this_activation_settings,
+            rsu_models,
+        )
 
     def create_new_vehicles(
         self, vehicle_trace_data: DataFrame, vehicle_models: dict
