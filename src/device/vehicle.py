@@ -42,14 +42,18 @@ class Vehicle(Agent):
         self.model = None
 
         self._location: list[float] = []
+        self._velocity: float = 0.0
         self.type: str = MainKey.VEHICLES
 
-        self._uplink_payload: VehiclePayload | None = None
-        self.sidelink_payload: VehiclePayload | None = None
-        self.downlink_response: VehicleResponse | None = None
+        self._v2b_payload: VehiclePayload | None = None
+        self._v2v_payload: VehiclePayload | None = None
+        self._v2r_payload: VehiclePayload | None = None
 
-        # Received data from other vehicles
-        self._sidelink_received_data: dict[int, VehiclePayload] = {}
+        self._v2b_response: VehicleResponse | None = None
+        self._v2r_response: VehicleResponse | None = None
+        self._v2v_response: VehicleResponse | None = None
+
+        self._received_v2v_data: dict[int, VehiclePayload] = {}
 
         self._computing_hardware: ComputingHardware = computing_hardware
         self._network_hardware: NetworkHardware = wireless_hardware
@@ -63,9 +67,19 @@ class Vehicle(Agent):
         self._create_models(vehicle_models)
 
     @property
-    def uplink_payload(self) -> VehiclePayload:
-        """Get the uplink payload."""
-        return self._uplink_payload
+    def v2b_payload(self) -> VehiclePayload:
+        """Get the v2b payload."""
+        return self._v2b_payload
+
+    @property
+    def v2v_payload(self) -> VehiclePayload:
+        """Get the v2v payload."""
+        return self._v2v_payload
+
+    @property
+    def v2r_payload(self) -> VehiclePayload:
+        """Get the v2r payload."""
+        return self._v2r_payload
 
     @property
     def data_generated_at_device(self) -> float:
