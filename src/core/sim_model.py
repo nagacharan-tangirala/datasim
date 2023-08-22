@@ -4,6 +4,7 @@ from mesa import DataCollector, Model
 from mesa.space import ContinuousSpace
 from numpy import ndarray
 
+from device.road_side_unit import RoadsideUnit
 from src.core.common_constants import CoordSpace, DeviceName
 from src.core.constants import Defaults
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
@@ -22,6 +23,7 @@ class SimModel(Model):
         vehicles: dict[int, Vehicle],
         base_stations: dict[int, BaseStation],
         controllers: dict[int, CentralController],
+        roadside_units: dict[int, RoadsideUnit],
         edge_orchestrator: EdgeOrchestrator,
         cloud_orchestrator: CloudOrchestrator,
         space_settings: dict,
@@ -35,6 +37,7 @@ class SimModel(Model):
         self._vehicles: dict[int, Vehicle] = vehicles
         self._base_stations: dict[int, BaseStation] = base_stations
         self._controllers: dict[int, CentralController] = controllers
+        self._roadside_units: dict[int, RoadsideUnit] = roadside_units
 
         self._edge_orchestrator: EdgeOrchestrator = edge_orchestrator
         self._cloud_orchestrator: CloudOrchestrator = cloud_orchestrator
@@ -105,6 +108,21 @@ class SimModel(Model):
                 start_times, end_times, vehicle_id, DeviceName.VEHICLES
             )
 
+        logger.debug("Extracting activation and deactivation times for roadside units.")
+        for roadside_unit_id, roadside_unit in self._roadside_units.items():
+            start_times = roadside_unit.get_activation_times()
+            end_times = roadside_unit.get_deactivation_times()
+            logger.debug(
+                f"Roadside unit {roadside_unit_id} has activation times {start_times} "
+                f"and deactivation times {end_times}."
+            )
+            self._save_activation_data(
+                start_times,
+                end_times,
+                roadside_unit_id,
+                DeviceName.ROADSIDE_UNITS,
+            )
+
         logger.debug("Extracting activation and deactivation times for base stations.")
         for base_station_id, base_station in self._base_stations.items():
             start_times = base_station.get_activation_times()
@@ -152,30 +170,35 @@ class SimModel(Model):
         Controller
         """
         type_stage_list: list[TypeStage] = []
-        vehicle_type_stage = TypeStage(
+        vehicle_uplink = TypeStage(
             type=type(list(self._vehicles.values())[0]), stage="uplink_stage"
         )
-        type_stage_list.append(vehicle_type_stage)
+        type_stage_list.append(vehicle_uplink)
 
-        edge_orchestrator_type_stage = TypeStage(
+        rsu_uplink = TypeStage(
+            type=type(list(self._roadside_units.values())[0]), stage="uplink_stage"
+        )
+        type_stage_list.append(rsu_uplink)
+
+        edge_orchestrator_uplink = TypeStage(
             type=type(self._edge_orchestrator), stage="uplink_stage"
         )
-        type_stage_list.append(edge_orchestrator_type_stage)
+        type_stage_list.append(edge_orchestrator_uplink)
 
-        base_station_type_stage = TypeStage(
+        base_station_uplink = TypeStage(
             type=type(list(self._base_stations.values())[0]), stage="uplink_stage"
         )
-        type_stage_list.append(base_station_type_stage)
+        type_stage_list.append(base_station_uplink)
 
-        cloud_orchestrator_type_stage = TypeStage(
+        cloud_orchestrator_uplink = TypeStage(
             type=type(self._cloud_orchestrator), stage="uplink_stage"
         )
-        type_stage_list.append(cloud_orchestrator_type_stage)
+        type_stage_list.append(cloud_orchestrator_uplink)
 
-        controller_type_stage = TypeStage(
+        controller_uplink = TypeStage(
             type=type(list(self._controllers.values())[0]), stage="uplink_stage"
         )
-        type_stage_list.append(controller_type_stage)
+        type_stage_list.append(controller_uplink)
         return type_stage_list
 
     def _get_downlink_stages_in_order(self) -> list[TypeStage]:
@@ -186,30 +209,35 @@ class SimModel(Model):
         Edge Orchestrator, Vehicles
         """
         type_stage_list: list[TypeStage] = []
-        controller_type_stage = TypeStage(
+        controller_downlink = TypeStage(
             type=type(list(self._controllers.values())[0]), stage="downlink_stage"
         )
-        type_stage_list.append(controller_type_stage)
+        type_stage_list.append(controller_downlink)
 
-        cloud_orchestrator_type_stage = TypeStage(
+        cloud_orchestrator_downlink = TypeStage(
             type=type(self._cloud_orchestrator), stage="downlink_stage"
         )
-        type_stage_list.append(cloud_orchestrator_type_stage)
+        type_stage_list.append(cloud_orchestrator_downlink)
 
-        base_station_type_stage = TypeStage(
+        base_station_downlink = TypeStage(
             type=type(list(self._base_stations.values())[0]), stage="downlink_stage"
         )
-        type_stage_list.append(base_station_type_stage)
+        type_stage_list.append(base_station_downlink)
 
-        edge_orchestrator_type_stage = TypeStage(
+        edge_orchestrator_downlink = TypeStage(
             type=type(self._edge_orchestrator), stage="downlink_stage"
         )
-        type_stage_list.append(edge_orchestrator_type_stage)
+        type_stage_list.append(edge_orchestrator_downlink)
 
-        vehicle_type_stage = TypeStage(
+        rsu_downlink = TypeStage(
+            type=type(list(self._roadside_units.values())[0]), stage="downlink_stage"
+        )
+        type_stage_list.append(rsu_downlink)
+
+        vehicle_downlink = TypeStage(
             type=type(list(self._vehicles.values())[0]), stage="downlink_stage"
         )
-        type_stage_list.append(vehicle_type_stage)
+        type_stage_list.append(vehicle_downlink)
         return type_stage_list
 
     def _initialize_space(self) -> None:
@@ -240,6 +268,8 @@ class SimModel(Model):
         """
         for vehicle in self._vehicles.values():
             vehicle.model = self
+        for roadside_unit in self._roadside_units.values():
+            roadside_unit.model = self
         for base_station in self._base_stations.values():
             base_station.model = self
         for controller in self._controllers.values():
