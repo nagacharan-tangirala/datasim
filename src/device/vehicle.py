@@ -182,32 +182,65 @@ class Vehicle(Agent):
         self._mobility_model.step()
         self._location = self._mobility_model.current_location
 
-        # Place the vehicle in the network
         self.model.space.place_agent(self, self._location)
 
     def deactivate_vehicle(self, time_step: int) -> None:
         """
-        Deactivate the vehicle if the time step is correct.
+        Deactivate the vehicle.
         """
         pass
 
-    def use_network_for_uplink(self) -> None:
+    def use_network_for_v2b_payload(self) -> None:
         """
-        Use the network hardware to transfer data in the uplink direction.
+        Use the network hardware to transfer v2b payload.
         """
-        self._network_hardware.consume_capacity(self._uplink_payload.total_data_size)
+        self._network_hardware.consume_capacity(self._v2b_payload.total_data_size)
 
-    def use_network_for_sidelink(self, data_size: float) -> None:
+    def use_network_for_v2v_payload(self) -> None:
         """
-        Use the network hardware to transfer data in the sidelink direction.
+        Use the network hardware to transfer v2v payload.
+        """
+        self._network_hardware.consume_capacity(self._v2v_payload.total_data_size)
+
+    def use_network_for_v2r_payload(self) -> None:
+        """
+        Use the network hardware to transfer v2r payload.
+        """
+        self._network_hardware.consume_capacity(self._v2r_payload.total_data_size)
+
+    def use_network_for_v2v_response(self, data_size: float) -> None:
+        """
+        Use the network hardware to receive v2v response.
         """
         self._network_hardware.consume_capacity(data_size)
 
-    def use_network_for_downlink(self) -> None:
+    def use_network_for_v2r_response(self) -> None:
         """
-        Use the network hardware to transfer data in the downlink direction.
+        Use the network hardware to receive v2v response.
         """
-        self._network_hardware.consume_capacity(self.downlink_response.downlink_data)
+        self._network_hardware.consume_capacity(self._v2b_response.downlink_data)
+
+    def assign_v2v_data(self, payload: VehiclePayload) -> None:
+        """
+        Add received data from another vehicle.
+
+        Parameters
+        ----------
+        payload : VehiclePayload
+            The payload of the vehicle.
+        """
+        self._received_v2v_data[payload.source] = payload
+
+    def use_network_for_received_v2v(self) -> None:
+        """
+        Use the network hardware for receiving v2v data.
+        """
+        # Find the data size of the uplink data
+        uplink_data_size = 0.0
+        for vehicle_payload in self._received_v2v_data.values():
+            uplink_data_size += vehicle_payload.total_data_size
+
+        self._network_hardware.consume_capacity(uplink_data_size)
 
     def uplink_stage(self) -> None:
         """
