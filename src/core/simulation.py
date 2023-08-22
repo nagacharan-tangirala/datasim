@@ -205,6 +205,7 @@ class Simulation:
             self._vehicle_activations_data,
             self._base_station_activations_data,
             self._controller_activations_data,
+            self._rsu_activations_data,
             self.start_time,
             self.end_time,
         )
@@ -232,6 +233,7 @@ class Simulation:
         self._vehicles = self._device_factory.vehicles
         self._base_stations = self._device_factory.base_stations
         self._controllers = self._device_factory.controllers
+        self._roadside_units = self._device_factory.roadside_units
 
     def _create_orchestrators(self) -> None:
         """
@@ -240,6 +242,9 @@ class Simulation:
         self.edge_orchestrator = EdgeOrchestrator(
             self.v2v_links_data,
             self.v2b_links_data,
+            self.v2r_links_data,
+            self.r2b_links_data,
+            self.r2r_links_data,
             self.sim_input_helper.orchestrator_models_data[MainKey.EDGE_ORCHESTRATOR],
         )
 
@@ -270,6 +275,7 @@ class Simulation:
             self._vehicles,
             self._base_stations,
             self._controllers,
+            self._roadside_units,
             self.edge_orchestrator,
             self.cloud_orchestrator,
             self.sim_input_helper.space_settings,
@@ -325,6 +331,15 @@ class Simulation:
         )
         self.rsu_data = self._read_first_chunk(
             self.sim_input_helper.file_readers[FilenameKey.ROADSIDE_UNITS]
+        )
+        self.v2r_links_data = self._read_first_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.V2R_LINKS]
+        )
+        self.r2r_links_data = self._read_first_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.R2R_LINKS]
+        )
+        self.r2b_links_data = self._read_first_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.R2B_LINKS]
         )
 
     def _read_first_chunk(
