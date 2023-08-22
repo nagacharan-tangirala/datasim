@@ -118,17 +118,6 @@ class Vehicle(Agent):
         """
         return self._activation_settings.disable_times
 
-    def add_sidelink_received_data(self, payload: VehiclePayload) -> None:
-        """
-        Add received data from another vehicle.
-
-        Parameters
-        ----------
-        payload : VehiclePayload
-            The payload of the vehicle.
-        """
-        self._sidelink_received_data[payload.source] = payload
-
     def _create_models(self, model_data: dict) -> None:
         """
         Create the models for this vehicle.
@@ -261,20 +250,29 @@ class Vehicle(Agent):
             self._location = self._mobility_model.current_location
             self.model.space.move_agent(self, self._location)
 
-        # Compose the data using the data composer
-        self._uplink_payload = self._data_composer.compose_uplink_payload(
+        # Compose the payloads
+        self._v2b_payload = self._data_composer.compose_v2b_payload(
             self.model.current_time
         )
-        self._uplink_payload.source = self.unique_id
-        self._uplink_payload = self._data_simplifier.simplify_data(self._uplink_payload)
+        self._v2b_payload.source = self.unique_id
+        self._v2b_payload = self._data_simplifier.simplify_data(self._v2b_payload)
 
-        # Compose the side link payload
-        self.sidelink_payload = self._data_composer.compose_sidelink_payload(
+        self._v2r_payload = self._data_composer.compose_v2r_payload(
             self.model.current_time
         )
+        self._v2r_payload.source = self.unique_id
+        self._v2r_payload = self._data_simplifier.simplify_data(self._v2r_payload)
+
+        self._v2v_payload = self._data_composer.compose_v2v_payload(
+            self.model.current_time
+        )
+
+        self._data_composer.previous_time = self.model.current_time
 
         self._total_data_generated = (
-            self._uplink_payload.total_data_size + self.sidelink_payload.total_data_size
+            self._v2b_payload.total_data_size
+            + self._v2v_payload.total_data_size
+            + self._v2r_payload.total_data_size
         )
 
     def downlink_stage(self) -> None:
@@ -286,5 +284,5 @@ class Vehicle(Agent):
             f" {self.model.current_time}"
         )
 
-        self._vehicles_in_range = len(self._sidelink_received_data)
-        self._data_collector.collect_data(self._sidelink_received_data)
+        self._vehicles_in_range = len(self._received_v2v_data)
+        self._data_collector.collect_data(self._received_v2v_data)
