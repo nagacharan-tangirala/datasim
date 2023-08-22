@@ -1,5 +1,5 @@
 from src.core.constants import ModelParam
-from src.device.payload import BaseStationPayload, VehiclePayload
+from src.device.payload import BaseStationPayload, VehiclePayload, RSUPayload
 
 
 class VehicleDataSimplifier:
@@ -41,3 +41,18 @@ class BaseStationDataSimplifier:
         """
         # Simplify the data.
         return base_station_payload
+
+
+class RSUDataSimplifier:
+    def __init__(self, model_data: dict):
+        """
+        Simplify the vehicle data.
+        """
+        pass
+
+    def simplify_data(self, rsu_payload: RSUPayload) -> RSUPayload:
+        """
+        Simplify the base station payload.
+        """
+        # Simplify the data.
+        return rsu_payload
