@@ -71,8 +71,12 @@ class ModelName(StrEnum):
     DATA_COMPOSER: final(str) = "composer"
     DATA_SIMPLIFIER: final(str) = "simplifier"
     DATA_COLLECTOR: final(str) = "collector"
-    BASE_STATION_FINDER: final(str) = "base_station_finder"
-    NEIGHBOUR_FINDER: final(str) = "neighbour_finder"
+    V2V_ALLOCATOR: final(str) = "v2v_allocator"
+    V2B_ALLOCATOR: final(str) = "v2b_allocator"
+    V2R_ALLOCATOR: final(str) = "v2r_allocator"
+    B2C_ALLOCATOR: final(str) = "b2c_allocator"
+    R2R_ALLOCATOR: final(str) = "r2r_allocator"
+    R2B_ALLOCATOR: final(str) = "r2b_allocator"
 
 
 class ModelType(StrEnum):
@@ -81,9 +85,9 @@ class ModelType(StrEnum):
     """
 
     STATIC: final(str) = "static"
-    TRACE: final(str) = "trace"
     NEAREST: final(str) = "nearest"
     SIMPLE: final(str) = "simple"
+    RANDOM: final(str) = "random"
 
 
 class ModelParam(StrEnum):
@@ -96,6 +100,8 @@ class ModelParam(StrEnum):
     VEHICLE_RATIO: final(str) = "ratio"
     RETENTION_FACTOR: final(str) = "retention_factor"
     COMPRESSION_FACTOR: final(str) = "compression_factor"
+    STRATEGY: final(str) = "strategy"
+    VEHICLE_COUNT: final(str) = "vehicle_count"
 
 
 class DataSourceKey(StrEnum):
@@ -103,11 +109,22 @@ class DataSourceKey(StrEnum):
     Enum for the data source keys.
     """
 
-    DATA_SIZE: final(str) = "data_size"
-    DATA_COUNTS: final(str) = "data_counts"
-    DATA_SOURCE_TYPE: final(str) = "data_type"
-    DATA_SIDE_LINK: final(str) = "side_link"
-    DATA_PRIORITY: final(str) = "priority"
+    SIZE: final(str) = "data_size"
+    COUNTS: final(str) = "data_counts"
+    SOURCE_TYPE: final(str) = "data_type"
+    PRIORITY: final(str) = "priority"
+    TARGET_TYPE: final(str) = "target_type"
+
+
+class DataTargetType(StrEnum):
+    """
+    Enum for the data target types.
+    """
+
+    BASE_STATION: final(str) = "base_station"
+    CONTROLLER: final(str) = "controller"
+    ROADSIDE_UNIT: final(str) = "roadside_unit"
+    VEHICLE: final(str) = "vehicle"
 
 
 class ProgressBar(StrEnum):
