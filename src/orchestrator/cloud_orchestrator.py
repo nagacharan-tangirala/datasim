@@ -43,9 +43,6 @@ class CloudOrchestrator(Agent):
         ] = {}
 
         # Prepare the dict with second column as the key and the third column as the value
-        self._base_station_controller_dict = {
-            row[1]: row[2] for row in self._controller_links_df.values
-        }
 
         self._create_models(model_data)
 

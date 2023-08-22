@@ -191,8 +191,6 @@ class DeviceFactory:
         ----------
         base_station_id : int
             The ID of the base station.
-        base_station_position : list[float]
-            The position of the base station.
         base_station_models_data : dict
             The model data of the base station.
 
@@ -220,7 +218,6 @@ class DeviceFactory:
 
         return BaseStation(
             base_station_id,
-            base_station_position,
             computing_hardware,
             wireless_hardware,
             wired_hardware,
@@ -349,8 +346,10 @@ class DeviceFactory:
                 continue
             station_position: list[float] = [pos[0] for pos in station_data.values()]
             self._base_stations[station_id] = self._create_base_station(
-                station_id, station_position, base_station_models_data
+                station_id, base_station_models_data
             )
+
+            self._base_stations[station_id].update_mobility_data(station_position)
 
     def create_new_controllers(
         self, controller_data: DataFrame, controller_models_data: dict

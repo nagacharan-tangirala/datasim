@@ -133,7 +133,7 @@ class BaseStation(Agent):
             case ModelType.STATIC:
                 logger.debug(f"Updating position for base station {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
-            case ModelType.TRACE:
+            case ModelType.SIMPLE:
                 logger.debug(
                     f"Updating trace for base station {self.unique_id} with "
                     f"length {len(mobility_data)}"

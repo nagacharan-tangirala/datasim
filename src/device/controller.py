@@ -141,7 +141,7 @@ class CentralController(Agent):
             controller_models[ModelName.MOBILITY]
         )
 
-        self._controller_collector = model_factory.create_controller_collector(
+        self._controller_collector = model_factory.create_controller_data_collector(
             controller_models[ModelName.DATA_COLLECTOR]
         )
 

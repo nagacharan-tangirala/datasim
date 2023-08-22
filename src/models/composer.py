@@ -1,14 +1,18 @@
 import logging
 from dataclasses import dataclass
 
+from core.common_constants import DeviceName
+from core.exceptions import InvalidDataTargetError
 from device.payload import (
     BaseStationPayload,
     BaseStationResponse,
     DataPayload,
     VehiclePayload,
+    RSUPayload,
 )
 
-from src.core.constants import DataSourceKey, ModelName
+
+from src.core.constants import DataSourceKey, ModelName, DataTargetType
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +23,6 @@ class DataSource:
     data_size: float = 0.0
     data_counts: float = 0.0
     data_priority: int = 0
-    side_link: str = "no"
 
 
 class VehicleDataComposer:

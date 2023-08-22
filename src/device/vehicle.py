@@ -83,6 +83,11 @@ class Vehicle(Agent):
         return self._location
 
     @property
+    def velocity(self) -> float:
+        """Get the velocity of the vehicle."""
+        return self._velocity
+
+    @property
     def handover_count(self) -> int:
         """Check if the vehicle is in a handover."""
         return 1 if self._previous_bs != self.selected_bs else 0
@@ -144,7 +149,7 @@ class Vehicle(Agent):
             case ModelType.STATIC:
                 logger.debug(f"Updating position for vehicle {self.unique_id}")
                 self._mobility_model.update_position(mobility_data)
-            case ModelType.TRACE:
+            case ModelType.SIMPLE:
                 logger.debug(
                     f"Updating trace for vehicle {self.unique_id} with "
                     f"length {len(mobility_data)}"
@@ -153,7 +158,7 @@ class Vehicle(Agent):
 
     def activate_vehicle(self, time_step: int) -> None:
         """
-        Activate the vehicle if the time step is correct.
+        Activate the vehicle.
         """
         # Set previous time for data composer
         self._data_composer.previous_time = time_step
