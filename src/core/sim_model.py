@@ -285,59 +285,9 @@ class SimModel(Model):
             },
         )
 
-    def _save_activation_data(
-        self,
-        activate_time: ndarray[int],
-        deactivate_time: ndarray[int],
-        device_id: int,
-        device_type: str,
-    ) -> None:
+    def append_new_vehicles(self, vehicles: dict[int, Vehicle]) -> None:
         """
-        Update the activation time of the device.
-        """
-        for i in range(len(activate_time)):
-            start_time_stamp = activate_time[i]
-            if start_time_stamp not in self._activation_times[device_type]:
-                self._activation_times[device_type][start_time_stamp] = {device_id}
-            else:
-                self._activation_times[device_type][start_time_stamp].add(device_id)
-
-            end_time_stamp = deactivate_time[i]
-            if end_time_stamp not in self._deactivation_times[device_type]:
-                self._deactivation_times[device_type][end_time_stamp] = {device_id}
-            else:
-                self._deactivation_times[device_type][end_time_stamp].add(device_id)
-
-    def step(self) -> None:
-        """
-        Step through the simulation model.
-        """
-        logger.info(f"Running step {self._current_time}")
-        logger.debug(
-            f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}"
-        )
-        logger.debug(
-            f"Active base stations: {self._edge_orchestrator.active_base_station_count()}"
-        )
-        logger.debug(
-            f"Active controllers: {self._cloud_orchestrator.active_controller_count()}"
-        )
-
-        # Collect data from the previous time step
-        self.data_collector.collect(self)
-
-        # Activate the devices, if any
-        self._do_device_activations()
-
-        # Step through the schedule object
-        self.schedule.step()
-
-        # Deactivate the devices, if any
-        self._do_device_deactivations()
-
-    def update_vehicles(self, vehicles: dict[int, Vehicle]) -> None:
-        """
-        Update the vehicles in the model.
+        Appends the given vehicles to those in the model.
 
         Parameters
         ----------
