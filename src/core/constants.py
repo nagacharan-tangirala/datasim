@@ -30,6 +30,15 @@ class SimTimes(StrEnum):
     DATA_STREAMING_INTERVAL: final(str) = "data_streaming_interval"
 
 
+class Stage(StrEnum):
+    """
+    Enum for the stages of the simulation.
+    """
+
+    UPLINK: final(str) = "uplink_stage"
+    DOWNLINK: final(str) = "downlink_stage"
+
+
 class LogKey(StrEnum):
     """
     Enum for the logging keys.
