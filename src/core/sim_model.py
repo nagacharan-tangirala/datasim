@@ -154,32 +154,32 @@ class SimModel(Model):
         """
         type_stage_list: list[TypeStage] = []
         vehicle_uplink = TypeStage(
-            type=type(list(self._vehicles.values())[0]), stage="uplink_stage"
+            type=type(list(self._vehicles.values())[0]), stage=Stage.UPLINK
         )
         type_stage_list.append(vehicle_uplink)
 
         rsu_uplink = TypeStage(
-            type=type(list(self._roadside_units.values())[0]), stage="uplink_stage"
+            type=type(list(self._roadside_units.values())[0]), stage=Stage.UPLINK
         )
         type_stage_list.append(rsu_uplink)
 
         edge_orchestrator_uplink = TypeStage(
-            type=type(self._edge_orchestrator), stage="uplink_stage"
+            type=type(self._edge_orchestrator), stage=Stage.UPLINK
         )
         type_stage_list.append(edge_orchestrator_uplink)
 
         base_station_uplink = TypeStage(
-            type=type(list(self._base_stations.values())[0]), stage="uplink_stage"
+            type=type(list(self._base_stations.values())[0]), stage=Stage.UPLINK
         )
         type_stage_list.append(base_station_uplink)
 
         cloud_orchestrator_uplink = TypeStage(
-            type=type(self._cloud_orchestrator), stage="uplink_stage"
+            type=type(self._cloud_orchestrator), stage=Stage.UPLINK
         )
         type_stage_list.append(cloud_orchestrator_uplink)
 
         controller_uplink = TypeStage(
-            type=type(list(self._controllers.values())[0]), stage="uplink_stage"
+            type=type(list(self._controllers.values())[0]), stage=Stage.UPLINK
         )
         type_stage_list.append(controller_uplink)
         return type_stage_list
@@ -193,32 +193,32 @@ class SimModel(Model):
         """
         type_stage_list: list[TypeStage] = []
         controller_downlink = TypeStage(
-            type=type(list(self._controllers.values())[0]), stage="downlink_stage"
+            type=type(list(self._controllers.values())[0]), stage=Stage.DOWNLINK
         )
         type_stage_list.append(controller_downlink)
 
         cloud_orchestrator_downlink = TypeStage(
-            type=type(self._cloud_orchestrator), stage="downlink_stage"
+            type=type(self._cloud_orchestrator), stage=Stage.DOWNLINK
         )
         type_stage_list.append(cloud_orchestrator_downlink)
 
         base_station_downlink = TypeStage(
-            type=type(list(self._base_stations.values())[0]), stage="downlink_stage"
+            type=type(list(self._base_stations.values())[0]), stage=Stage.DOWNLINK
         )
         type_stage_list.append(base_station_downlink)
 
         edge_orchestrator_downlink = TypeStage(
-            type=type(self._edge_orchestrator), stage="downlink_stage"
+            type=type(self._edge_orchestrator), stage=Stage.DOWNLINK
         )
         type_stage_list.append(edge_orchestrator_downlink)
 
         rsu_downlink = TypeStage(
-            type=type(list(self._roadside_units.values())[0]), stage="downlink_stage"
+            type=type(list(self._roadside_units.values())[0]), stage=Stage.DOWNLINK
         )
         type_stage_list.append(rsu_downlink)
 
         vehicle_downlink = TypeStage(
-            type=type(list(self._vehicles.values())[0]), stage="downlink_stage"
+            type=type(list(self._vehicles.values())[0]), stage=Stage.DOWNLINK
         )
         type_stage_list.append(vehicle_downlink)
         return type_stage_list
