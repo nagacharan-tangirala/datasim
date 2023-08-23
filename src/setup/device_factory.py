@@ -5,8 +5,14 @@ from device.road_side_unit import RoadsideUnit
 from numpy import asarray
 from pandas import DataFrame, Series
 
-from src.core.common_constants import Column, CoordSpace, DeviceId, TraceTimes
-from src.core.constants import HardwareKey, ModelParam
+from src.core.common_constants import (
+    Column,
+    CoordSpace,
+    DeviceId,
+    DeviceName,
+    TraceTimes,
+)
+from src.core.constants import HardwareKey, ModelName, ModelParam
 from src.device.activation import ActivationSettings
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController
@@ -16,6 +22,20 @@ from src.device.vehicle import Vehicle
 logger = logging.getLogger(__name__)
 
 
+def _create_computing_hardware(computing_hardware_data: dict) -> ComputingHardware:
+    """
+    Create the computing hardware.
+    """
+    return ComputingHardware(computing_hardware_data)
+
+
+def _create_networking_hardware(networking_hardware: dict) -> NetworkHardware:
+    """
+    Create the networking hardware.
+    """
+    return NetworkHardware(networking_hardware)
+
+
 class DeviceFactory:
     def __init__(
         self,
@@ -23,16 +43,41 @@ class DeviceFactory:
         base_station_activations_data: DataFrame,
         controller_activations_data: DataFrame,
         rsu_activations_data: DataFrame,
+        data_source_config: dict,
         sim_start_time: int,
         sim_end_time: int,
     ):
         """
         Initialize the device factory object.
+
+        Parameters
+        ----------
+        vehicle_activations_data : DataFrame
+            The activation data of the vehicles.
+        base_station_activations_data : DataFrame
+            The activation data of the base stations.
+        controller_activations_data : DataFrame
+            The activation data of the controllers.
+        rsu_activations_data : DataFrame
+            The activation data of the RSUs.
+        data_source_config : dict
+            The data source configuration.
+        sim_start_time : int
+            The start time of the simulation.
+        sim_end_time : int
+            The end time of the simulation.
         """
         self._veh_activations: DataFrame = vehicle_activations_data
         self._bs_activations: DataFrame = base_station_activations_data
         self._controller_activations: DataFrame = controller_activations_data
         self._rsu_activations: DataFrame = rsu_activations_data
+
+        self._vehicle_sources: dict = data_source_config[DeviceName.VEHICLES][
+            ModelParam.DATA_SOURCE
+        ]
+        self._rsu_sources: dict = data_source_config[DeviceName.ROADSIDE_UNITS][
+            ModelParam.DATA_SOURCE
+        ]
 
         self._sim_start_time: int = sim_start_time
         self._sim_end_time: int = sim_end_time
@@ -61,20 +106,6 @@ class DeviceFactory:
     def roadside_units(self) -> dict[int, RoadsideUnit]:
         """Get the roadside units in the simulation."""
         return self._roadside_units
-
-    @staticmethod
-    def _create_computing_hardware(computing_hardware_data: dict) -> ComputingHardware:
-        """
-        Create the computing hardware.
-        """
-        return ComputingHardware(computing_hardware_data)
-
-    @staticmethod
-    def _create_networking_hardware(networking_hardware: dict) -> NetworkHardware:
-        """
-        Create the networking hardware.
-        """
-        return NetworkHardware(networking_hardware)
 
     def create_vehicles(
         self, vehicle_trace_data: DataFrame, vehicle_models: dict
