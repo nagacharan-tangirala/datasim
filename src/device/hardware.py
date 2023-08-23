@@ -11,9 +11,6 @@ class ComputingHardware:
         hardware_settings : dict
             The hardware settings.
         """
-        self._cpu: float = hardware_settings["cpu"]
-        self._gpu: float = hardware_settings["gpu"]
-        self._memory: float = hardware_settings["memory"]
         self._battery: float = hardware_settings["battery"]
         self._storage: float = hardware_settings["storage"]
 
@@ -72,7 +69,6 @@ class ComputingHardware:
 class NetworkHardware:
     def __init__(self, networking_hardware: dict):
         self._capacity: float = networking_hardware["capacity"]
-        self._max_connections: int = networking_hardware["max_connections"]
 
     @property
     def capacity(self) -> float:
