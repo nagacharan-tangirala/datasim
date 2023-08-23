@@ -68,7 +68,7 @@ class V2BAllocator(Agent):
 
         del self._v2b_links_df
 
-    def update_base_station_links(self, v2b_links_df: DataFrame) -> None:
+    def update_v2b_links(self, v2b_links_df: DataFrame) -> None:
         """
         Update the base station links.
         """
@@ -152,7 +152,7 @@ class V2VAllocator(Agent):
 
         del self._v2v_links_df
 
-    def update_base_station_links(self, v2v_links: DataFrame) -> None:
+    def update_v2v_links(self, v2v_links: DataFrame) -> None:
         """
         Update the vehicle neighbour links.
         """

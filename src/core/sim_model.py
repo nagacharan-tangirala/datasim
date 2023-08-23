@@ -262,19 +262,6 @@ class SimModel(Model):
         self.schedule.add(self._edge_orchestrator)
         self.schedule.add(self._cloud_orchestrator)
 
-    def _assign_sim_model_to_devices(self) -> None:
-        """
-        Assign the simulation model to the devices.
-        """
-        for vehicle in self._vehicles.values():
-            vehicle.model = self
-        for roadside_unit in self._roadside_units.values():
-            roadside_unit.model = self
-        for base_station in self._base_stations.values():
-            base_station.model = self
-        for controller in self._controllers.values():
-            controller.model = self
-
     def _create_data_collector(self) -> None:
         """
         Create the data collector.
@@ -284,7 +271,7 @@ class SimModel(Model):
                 "active_vehicles": self._edge_orchestrator.active_vehicle_count,
                 "active_base_stations": self._edge_orchestrator.active_base_station_count,
                 "total_data": self._cloud_orchestrator.get_total_data_at_controllers,
-                "visible_vehicles": self._cloud_orchestrator.get_visible_vehicles_at_controllers,
+                "visible_vehicles": self._cloud_orchestrator.get_visible_vehicles,
                 "side_link_data": self._edge_orchestrator.get_total_sidelink_data_size,
                 "data_sizes_by_type": self._cloud_orchestrator.get_data_sizes_by_type,
                 "data_counts_by_type": self._cloud_orchestrator.get_data_counts_by_type,
@@ -365,9 +352,25 @@ class SimModel(Model):
                 self._vehicles[vehicle_id] = vehicle
                 self._vehicles[vehicle_id].model = self
 
-    def update_base_stations(self, base_stations: dict[int, BaseStation]) -> None:
+    def append_new_roadside_units(
+        self, roadside_units: dict[int, RoadsideUnit]
+    ) -> None:
         """
-        Update the base stations in the model.
+        Appends the given roadside units to those in the model.
+
+        Parameters
+        ----------
+        roadside_units : dict[int, RoadsideUnit]
+            The roadside units to update.
+        """
+        for roadside_unit_id, roadside_unit in roadside_units.items():
+            if roadside_unit_id not in self._roadside_units:
+                self._roadside_units[roadside_unit_id] = roadside_unit
+                self._roadside_units[roadside_unit_id].model = self
+
+    def append_new_base_stations(self, base_stations: dict[int, BaseStation]) -> None:
+        """
+        Appends the given base stations to those in the model.
 
         Parameters
         ----------
@@ -478,19 +481,19 @@ class SimModel(Model):
         """
         Deactivate the base stations in the current time step.
         """
-        stations_to_deactivate = self._deactivation_times[DeviceName.BASE_STATIONS][
-            self._current_time
+        stations_to_deactivate = self._base_station_deactivation_times[
+            self.current_time
         ]
         logger.debug(
             f"Deactivating base stations {stations_to_deactivate}"
-            f" at time {self._current_time}"
+            f" at time {self.current_time}"
         )
 
         for base_station_id in stations_to_deactivate:
             base_station = self._base_stations[base_station_id]
-            base_station.deactivate_base_station(self._current_time)
+            base_station.deactivate_base_station(self.current_time)
 
-            # Remove from the schedule and orchestrator and set the mesa model to None
+            # Remove from the schedule and both the orchestrators
             self.schedule.remove(base_station)
             self._edge_orchestrator.remove_base_station(base_station_id)
             self._cloud_orchestrator.remove_base_station(base_station_id)
@@ -499,19 +502,17 @@ class SimModel(Model):
         """
         Activate the controllers in the current time step.
         """
-        controllers_to_activate = self._activation_times[DeviceName.CONTROLLERS][
-            self._current_time
-        ]
+        controllers_to_activate = self._controller_activation_times[self.current_time]
         logger.debug(
             f"Activating controllers {controllers_to_activate}"
-            f" at time {self._current_time}"
+            f" at time {self.current_time}"
         )
 
         for controller_id in controllers_to_activate:
             controller = self._controllers[controller_id]
-            controller.activate_controller(self._current_time)
+            controller.activate_controller(self.current_time)
 
-            # Add to the schedule and orchestrator and set the mesa model to this
+            # Add to the schedule and to cloud orchestrator
             self.schedule.add(controller)
             self._cloud_orchestrator.add_controller(controller)
 
@@ -519,18 +520,18 @@ class SimModel(Model):
         """
         Deactivate the controllers in the current time step.
         """
-        controllers_to_deactivate = self._deactivation_times[DeviceName.CONTROLLERS][
-            self._current_time
+        controllers_to_deactivate = self._controller_deactivation_times[
+            self.current_time
         ]
         logger.debug(
             f"Deactivating controllers {controllers_to_deactivate}"
-            f" at time {self._current_time}"
+            f" at time {self.current_time}"
         )
 
         for controller_id in controllers_to_deactivate:
             controller = self._controllers[controller_id]
-            controller.deactivate_controller(self._current_time)
+            controller.deactivate_controller(self.current_time)
 
-            # Remove from the schedule and orchestrator and set the mesa model to None
+            # Remove from the schedule and cloud orchestrator
             self.schedule.remove(controller)
             self._cloud_orchestrator.remove_controller(controller_id)

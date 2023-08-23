@@ -270,11 +270,9 @@ class EdgeOrchestrator(Agent):
         for vehicle_id, vehicle_data in self.v2b_payload_map.items():
             station_ids = self._v2b_allocator.get_basestation_for_vehicle(vehicle_id)
 
-            # Update the vehicle with the selected base station.
             base_station_id = station_ids[0]
             self._vehicles[vehicle_id].selected_bs = base_station_id
 
-            # Send the data to the base station and consume vehicle bandwidth.
             self._base_stations[base_station_id].assign_v2b_data(vehicle_data)
             received_base_stations.append(base_station_id)
 
@@ -374,8 +372,6 @@ class EdgeOrchestrator(Agent):
             self.downlink_response_at_basestations[
                 base_station_id
             ] = base_station.downlink_vehicle_data
-
-            # Consume the wireless network bandwidth in the base station.
             base_station.use_wireless_for_v2b_response()
 
     def _send_data_to_vehicles(self):

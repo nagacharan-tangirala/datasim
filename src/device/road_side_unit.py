@@ -29,8 +29,9 @@ class RoadsideUnit(Agent):
 
         self._r2b_payload: RSUPayload | None = None
         self._r2r_payload: RSUPayload | None = None
+        self._r2v_payload: RSUPayload | None = None
 
-        self._v2b_response: RSUResponse | None = None
+        self._r2b_response: RSUResponse | None = None
         self._v2r_response: RSUResponse | None = None
 
         self._received_v2r_data: dict[int, VehiclePayload] = {}

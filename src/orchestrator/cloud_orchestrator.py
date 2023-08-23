@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class CloudOrchestrator(Agent):
-    def __init__(self, controller_links_df: DataFrame, model_data: dict):
+    def __init__(self, b2c_links_df: DataFrame, model_data: dict):
         """
         Initialize the cloud orchestrator.
 
         Parameters
         ----------
-        controller_links_df : DataFrame
+        b2c_links_df : DataFrame
             The links between the controllers.
         model_data : dict
             The model data.
@@ -29,7 +29,7 @@ class CloudOrchestrator(Agent):
 
         self._controllers: dict[int, CentralController] = {}
         self._base_stations: dict[int, BaseStation] = {}
-        self._controller_links_df: DataFrame = controller_links_df
+        self._b2c_links_df: DataFrame = b2c_links_df
 
         # Uplink data generated at the basestations
         self.data_at_basestations: dict[int, BaseStationPayload] = {}
@@ -124,7 +124,7 @@ class CloudOrchestrator(Agent):
         -------
         None
         """
-        self._controller_links_df = b2c_links
+        self._b2c_links_df = b2c_links
 
     def _prepare_network_mappings(self) -> None:
         """
@@ -146,7 +146,7 @@ class CloudOrchestrator(Agent):
             total_data += controller.total_data_received
         return total_data
 
-    def get_visible_vehicles_at_controllers(self) -> int:
+    def get_visible_vehicles(self) -> int:
         """
         Get the total number of vehicles visible to the controllers.
 
