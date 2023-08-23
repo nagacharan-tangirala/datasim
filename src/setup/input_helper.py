@@ -29,7 +29,9 @@ class SimulationInputHelper:
         """
         self.config_file: Path = config_file
         self.project_path: Path = config_file.parent
+
         self.config_data: dict = {}
+        self.data_source_config: dict = {}
 
         self.file_readers: dict[str, CSVDataReader | ParquetDataReader | None] = {}
 
@@ -49,6 +51,15 @@ class SimulationInputHelper:
         """Read the config file."""
         with self.config_file.open(mode="r") as f:
             self.config_data = toml.load(f)
+
+    def read_data_source_config_file(self) -> None:
+        """Reads the data source configuration from the toml file."""
+        data_source_file = self.config_data[MainKey.INPUT_FILES][
+            FilenameKey.DATA_SOURCE_CONFIG
+        ]
+        data_source_filepath = self.project_path / data_source_file
+        with data_source_filepath.open(mode="r") as f:
+            self.data_source_config = toml.load(f)
 
     @property
     def output_dir(self) -> Path:
