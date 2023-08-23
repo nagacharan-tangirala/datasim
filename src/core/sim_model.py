@@ -438,38 +438,72 @@ class SimModel(Model):
         """
         Deactivate the vehicles in the current time step.
         """
-        vehicles_to_deactivate = self._deactivation_times[DeviceName.VEHICLES][
-            self._current_time
-        ]
+        vehicles_to_deactivate = self._vehicle_deactivation_times[self.current_time]
         logger.debug(
-            f"Deactivating vehicles {vehicles_to_deactivate} at time {self._current_time}"
+            f"Deactivating vehicles {vehicles_to_deactivate} at time {self.current_time}"
         )
 
         for vehicle_id in vehicles_to_deactivate:
             vehicle = self._vehicles[vehicle_id]
-            vehicle.deactivate_vehicle(self._current_time)
+            vehicle.deactivate_vehicle(self.current_time)
 
-            # Remove from the schedule and orchestrator and set the mesa model to None
+            # Remove from the schedule and edge orchestrator
             self.schedule.remove(vehicle)
             self._edge_orchestrator.remove_vehicle(vehicle_id)
+
+    def _activate_roadside_units(self) -> None:
+        """
+        Activate the roadside units in the current time step.
+        """
+        rsus_to_activate = self._roadside_unit_activation_times[self.current_time]
+        logger.debug(
+            f"Activating roadside units {rsus_to_activate}"
+            f" at time {self.current_time}"
+        )
+
+        for roadside_unit_id in rsus_to_activate:
+            roadside_unit = self._roadside_units[roadside_unit_id]
+            roadside_unit.activate_roadside_unit(self.current_time)
+
+            # Add to the schedule and edge orchestrator
+            self.schedule.add(roadside_unit)
+            self._edge_orchestrator.add_roadside_unit(roadside_unit)
+
+    def _deactivate_roadside_units(self) -> None:
+        """
+        Deactivate the roadside units in the current time step.
+        """
+        rsus_to_deactivate = self._roadside_unit_deactivation_times[self.current_time]
+        logger.debug(
+            f"Deactivating roadside units {rsus_to_deactivate}"
+            f" at time {self.current_time}"
+        )
+
+        for roadside_unit_id in rsus_to_deactivate:
+            roadside_unit = self._roadside_units[roadside_unit_id]
+            roadside_unit.deactivate_roadside_unit(self.current_time)
+
+            # Remove from the schedule and edge orchestrator
+            self.schedule.remove(roadside_unit)
+            self._edge_orchestrator.remove_roadside_unit(roadside_unit_id)
 
     def _activate_base_stations(self) -> None:
         """
         Activate the base stations in the current time step.
         """
-        base_stations_to_activate = self._activation_times[DeviceName.BASE_STATIONS][
-            self._current_time
+        base_stations_to_activate = self._base_station_activation_times[
+            self.current_time
         ]
         logger.debug(
             f"Activating base stations {base_stations_to_activate}"
-            f" at time {self._current_time}"
+            f" at time {self.current_time}"
         )
 
         for base_station_id in base_stations_to_activate:
             base_station = self._base_stations[base_station_id]
-            base_station.activate_base_station(self._current_time)
+            base_station.activate_base_station(self.current_time)
 
-            # Add to the schedule and orchestrator and set the mesa model to this
+            # Add to the schedule and both orchestrators
             self.schedule.add(base_station)
             self._edge_orchestrator.add_base_station(base_station)
             self._cloud_orchestrator.add_base_station(base_station)
