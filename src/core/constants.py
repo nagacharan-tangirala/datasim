@@ -76,7 +76,6 @@ class ModelName(StrEnum):
     """
 
     MOBILITY: final(str) = "mobility"
-    DATA_SOURCE: final(str) = "data_source"
     DATA_COMPOSER: final(str) = "composer"
     DATA_SIMPLIFIER: final(str) = "simplifier"
     DATA_COLLECTOR: final(str) = "collector"
@@ -106,6 +105,8 @@ class ModelParam(StrEnum):
 
     MODEL_NAME: final(str) = "name"
     POSITION: final(str) = "position"
+    DATA_SOURCE_LIST: final(str) = "data_source_list"
+    DATA_SOURCE: final(str) = "data_source"
     VEHICLE_RATIO: final(str) = "ratio"
     RETENTION_FACTOR: final(str) = "retention_factor"
     COMPRESSION_FACTOR: final(str) = "compression_factor"
