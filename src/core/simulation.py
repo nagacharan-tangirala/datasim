@@ -72,9 +72,11 @@ class Simulation:
         Set up the simulation.
         """
         self._read_config()
+        self._read_data_source_config()
         self._perform_initial_setup()
         self._read_input_data()
         self._create_simulation_entities()
+        self._create_output_writers()
         self._create_simulation_model()
         self._simulation_model.do_model_setup()
 
@@ -84,6 +86,12 @@ class Simulation:
         """
         self.sim_input_helper = SimulationInputHelper(self.config_filepath)
         self.sim_input_helper.read_config_file()
+
+    def _read_data_source_config(self) -> None:
+        """
+        Reads the data source config.
+        """
+        self.sim_input_helper.read_data_source_config_file()
 
     def _perform_initial_setup(self) -> None:
         """
@@ -201,11 +209,13 @@ class Simulation:
         Create the devices in the simulation.
         """
         logger.debug("Creating the device factory.")
+        data_source_config = self.sim_input_helper.data_source_config
         self._device_factory = DeviceFactory(
             self._vehicle_activations_data,
             self._base_station_activations_data,
             self._controller_activations_data,
             self._rsu_activations_data,
+            data_source_config,
             self.start_time,
             self.end_time,
         )
