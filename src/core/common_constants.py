@@ -24,6 +24,8 @@ class FilenameKey(StrEnum):
     BASE_STATION_ACTIVATIONS: final(str) = "base_station_activations"
     RSU_ACTIVATIONS: final(str) = "rsu_activations"
 
+    DATA_SOURCE_CONFIG: final(str) = "data_source_config"
+
 
 class DeviceName(StrEnum):
     """
