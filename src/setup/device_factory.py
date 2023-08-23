@@ -142,6 +142,14 @@ class DeviceFactory:
             veh_choice = choices(vehicle_types, weights=veh_weights, k=1)[0]
             selected_vehicle_models = vehicle_models[veh_choice].copy()
 
+            # Append data source configuration to the composer model.
+            data_source_ids = selected_vehicle_models[ModelName.DATA_COMPOSER][
+                ModelParam.DATA_SOURCE_LIST
+            ]
+            selected_vehicle_models[ModelName.DATA_COMPOSER][ModelParam.DATA_SOURCE] = [
+                self._vehicle_sources[ds_id] for ds_id in data_source_ids
+            ]
+
             this_activation_data: Series = self._veh_activations[
                 self._veh_activations[DeviceId.DEVICE] == vehicle_id
             ]
