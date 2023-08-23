@@ -309,7 +309,7 @@ def create_v2b_allocator(v2b_links_df: DataFrame, model_data: dict) -> V2BAlloca
         The v2b allocator model.
     """
     match model_data[ModelParam.MODEL_NAME]:
-        case ModelType.NEAREST:
+        case ModelType.SIMPLE:
             logger.debug("Creating nearest base station finder.")
             return V2BAllocator(v2b_links_df, model_data[ModelParam.STRATEGY])
         case _:
@@ -336,7 +336,7 @@ def create_v2r_allocator(v2r_links_df: DataFrame, model_data: dict) -> V2RAlloca
         The v2r allocator model.
     """
     match model_data[ModelParam.MODEL_NAME]:
-        case ModelType.NEAREST:
+        case ModelType.SIMPLE:
             logger.debug("Creating nearest RSU finder.")
             return V2RAllocator(v2r_links_df, model_data[ModelParam.STRATEGY])
         case _:
@@ -415,7 +415,7 @@ def create_r2b_allocator(r2b_links: DataFrame, model_data: dict) -> R2BAllocator
         The r2b allocator model.
     """
     match model_data[ModelParam.MODEL_NAME]:
-        case ModelType.STATIC:
+        case ModelType.SIMPLE:
             return R2BAllocator(r2b_links, model_data[ModelParam.STRATEGY])
         case _:
             raise ModelTypeNotImplementedError(
@@ -441,7 +441,7 @@ def create_r2r_allocator(r2r_links: DataFrame, model_data: dict) -> R2RAllocator
         The r2r allocator model.
     """
     match model_data[ModelParam.MODEL_NAME]:
-        case ModelType.STATIC:
+        case ModelType.SIMPLE:
             return R2RAllocator(r2r_links, model_data[ModelParam.STRATEGY])
         case _:
             raise ModelTypeNotImplementedError(
