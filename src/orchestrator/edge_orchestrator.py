@@ -131,18 +131,38 @@ class EdgeOrchestrator(Agent):
         """
         self._base_stations.pop(base_station_id)
 
+    def add_roadside_unit(self, roadside_unit: RoadsideUnit) -> None:
+        """
+        Add a new roadside unit.
+        """
+        self._roadside_units[roadside_unit.unique_id] = roadside_unit
+
+    def remove_roadside_unit(self, roadside_unit_id: int) -> None:
+        """
+        Remove the roadside unit.
+        """
+        self._roadside_units.pop(roadside_unit_id)
+
     def update_v2v_links(self, v2v_links: DataFrame) -> None:
         """
         Update the V2V links.
         """
         self._v2v_links = v2v_links
+        self._v2v_allocator.update_v2v_links(v2v_links)
 
     def update_v2b_links(self, v2b_links: DataFrame) -> None:
         """
         Update the V2B links.
         """
         self._v2b_links = v2b_links
-        self._v2b_allocator.update_base_station_links(v2b_links)
+        self._v2b_allocator.update_v2b_links(v2b_links)
+
+    def update_v2r_links(self, v2r_links: DataFrame) -> None:
+        """
+        Update the V2R links.
+        """
+        self._v2r_links = v2r_links
+        self._v2r_allocator.update_v2r_links(v2r_links)
 
     def _create_models(self, model_data: dict):
         """
