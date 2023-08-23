@@ -69,69 +69,35 @@ class SimModel(Model):
         logger.debug("Add orchestrators to the scheduler.")
         self._add_orchestrators_to_scheduler()
 
-        logger.debug("Assign simulation model to all the ")
-        self._assign_sim_model_to_devices()
+        logger.debug("Reading activation and deactivation times for all the devices.")
+        self.save_device_activation_times()
+
+        # logger.debug("Assign simulation model to all the devices.")
+        # self.assign_sim_model_to_devices()
 
         logger.debug("Create data collector.")
         self._create_data_collector()
 
-    def save_device_activation_times(self) -> None:
+    def step(self) -> None:
         """
-        Extract the activation and deactivation times of the devices.
+        Step through the simulation model.
         """
-        logger.debug("Extracting activation and deactivation times for vehicles.")
-        for vehicle_id, vehicle in self._vehicles.items():
-            start_times = vehicle.get_activation_times()
-            end_times = vehicle.get_deactivation_times()
-            logger.debug(
-                f"Vehicle {vehicle_id} has activation times {start_times} "
-                f"and deactivation times {end_times}."
-            )
-            self._save_activation_data(
-                start_times, end_times, vehicle_id, DeviceName.VEHICLES
-            )
+        logger.info(f"Running step {self.current_time}")
+        logger.debug(
+            f"Active vehicles: {self._edge_orchestrator.active_vehicle_count()}"
+        )
+        logger.debug(
+            f"Active base stations: {self._edge_orchestrator.active_base_station_count()}"
+        )
+        logger.debug(
+            f"Active controllers: {self._cloud_orchestrator.active_controller_count()}"
+        )
 
-        logger.debug("Extracting activation and deactivation times for roadside units.")
-        for roadside_unit_id, roadside_unit in self._roadside_units.items():
-            start_times = roadside_unit.get_activation_times()
-            end_times = roadside_unit.get_deactivation_times()
-            logger.debug(
-                f"Roadside unit {roadside_unit_id} has activation times {start_times} "
-                f"and deactivation times {end_times}."
-            )
-            self._save_activation_data(
-                start_times,
-                end_times,
-                roadside_unit_id,
-                DeviceName.ROADSIDE_UNITS,
-            )
-
-        logger.debug("Extracting activation and deactivation times for base stations.")
-        for base_station_id, base_station in self._base_stations.items():
-            start_times = base_station.get_activation_times()
-            end_times = base_station.get_deactivation_times()
-            logger.debug(
-                f"Base station {base_station_id} has activation times {start_times}"
-                f" and deactivation times {end_times}."
-            )
-            self._save_activation_data(
-                start_times,
-                end_times,
-                base_station_id,
-                DeviceName.BASE_STATIONS,
-            )
-
-        logger.debug("Extracting activation and deactivation times for controllers.")
-        for controller_id, controller in self._controllers.items():
-            start_times = controller.get_activation_times()
-            end_times = controller.get_deactivation_times()
-            logger.debug(
-                f"Controller {controller_id} has activation times {start_times} "
-                f"and deactivation times {end_times}."
-            )
-            self._save_activation_data(
-                start_times, end_times, controller_id, DeviceName.CONTROLLERS
-            )
+        # Collect data from the previous time step
+        self.data_collector.collect(self)
+        self._do_device_activations()
+        self.schedule.step()
+        self._do_device_deactivations()
 
     def _initialize_scheduler(self) -> None:
         """
@@ -234,6 +200,54 @@ class SimModel(Model):
             x_min=self._space_settings[CoordSpace.X_MIN] - Defaults.BUFFER_SPACE,
             y_min=self._space_settings[CoordSpace.Y_MIN] - Defaults.BUFFER_SPACE,
         )
+
+    def save_device_activation_times(self) -> None:
+        """
+        Extract the activation and deactivation times of the devices.
+        """
+        logger.debug("Extracting activation and deactivation times for vehicles.")
+        for vehicle_id, vehicle in self._vehicles.items():
+            start_times = vehicle.get_activation_times()
+            end_times = vehicle.get_deactivation_times()
+            logger.debug(
+                f"Vehicle {vehicle_id} has activation times {start_times} "
+                f"and deactivation times {end_times}."
+            )
+            self._vehicle_activation_times[vehicle_id].update(start_times)
+            self._vehicle_deactivation_times[vehicle_id].update(end_times)
+
+        logger.debug("Extracting activation and deactivation times for roadside units.")
+        for roadside_unit_id, roadside_unit in self._roadside_units.items():
+            start_times = roadside_unit.get_activation_times()
+            end_times = roadside_unit.get_deactivation_times()
+            logger.debug(
+                f"Roadside unit {roadside_unit_id} has activation times {start_times} "
+                f"and deactivation times {end_times}."
+            )
+            self._roadside_unit_activation_times[roadside_unit_id].update(start_times)
+            self._roadside_unit_deactivation_times[roadside_unit_id].update(end_times)
+
+        logger.debug("Extracting activation and deactivation times for base stations.")
+        for base_station_id, base_station in self._base_stations.items():
+            start_times = base_station.get_activation_times()
+            end_times = base_station.get_deactivation_times()
+            logger.debug(
+                f"Base station {base_station_id} has activation times {start_times}"
+                f" and deactivation times {end_times}."
+            )
+            self._base_station_activation_times[base_station_id].update(start_times)
+            self._base_station_deactivation_times[base_station_id].update(end_times)
+
+        logger.debug("Extracting activation and deactivation times for controllers.")
+        for controller_id, controller in self._controllers.items():
+            start_times = controller.get_activation_times()
+            end_times = controller.get_deactivation_times()
+            logger.debug(
+                f"Controller {controller_id} has activation times {start_times} "
+                f"and deactivation times {end_times}."
+            )
+            self._controller_activation_times[controller_id].update(start_times)
+            self._controller_deactivation_times[controller_id].update(end_times)
 
     def _add_orchestrators_to_scheduler(self) -> None:
         """
