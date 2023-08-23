@@ -379,9 +379,9 @@ class SimModel(Model):
                 self._base_stations[base_station_id] = base_station
                 self._base_stations[base_station_id].model = self
 
-    def update_controllers(self, controllers: dict[int, CentralController]) -> None:
+    def append_new_controllers(self, controllers: dict[int, CentralController]) -> None:
         """
-        Update the controllers in the model.
+        Appends the given controllers to those in the model.
 
         Parameters
         ----------
@@ -397,40 +397,42 @@ class SimModel(Model):
         """
         Activate the devices in the current time step.
         """
-        if self._current_time in self._activation_times[DeviceName.VEHICLES]:
+        if self.current_time in self._vehicle_activation_times:
             self._activate_vehicles()
-        if self._current_time in self._activation_times[DeviceName.BASE_STATIONS]:
+        if self.current_time in self._roadside_unit_activation_times:
+            self._activate_roadside_units()
+        if self.current_time in self._base_station_activation_times:
             self._activate_base_stations()
-        if self._current_time in self._activation_times[DeviceName.CONTROLLERS]:
+        if self.current_time in self._controller_activation_times:
             self._activate_controllers()
 
     def _do_device_deactivations(self) -> None:
         """
         Deactivate the devices in the current time step.
         """
-        if self._current_time in self._deactivation_times[DeviceName.VEHICLES]:
+        if self.current_time in self._vehicle_deactivation_times:
             self._deactivate_vehicles()
-        if self._current_time in self._deactivation_times[DeviceName.BASE_STATIONS]:
+        if self.current_time in self._roadside_unit_deactivation_times:
+            self._deactivate_roadside_units()
+        if self.current_time in self._base_station_deactivation_times:
             self._deactivate_base_stations()
-        if self._current_time in self._deactivation_times[DeviceName.CONTROLLERS]:
+        if self.current_time in self._controller_deactivation_times:
             self._deactivate_controllers()
 
     def _activate_vehicles(self) -> None:
         """
         Activate the vehicles in the current time step.
         """
-        vehicles_to_activate = self._activation_times[DeviceName.VEHICLES][
-            self._current_time
-        ]
+        vehicles_to_activate = self._vehicle_activation_times[self.current_time]
         logger.debug(
-            f"Activating vehicles {vehicles_to_activate} at time {self._current_time}"
+            f"Activating vehicles {vehicles_to_activate} at time {self.current_time}"
         )
 
         for vehicle_id in vehicles_to_activate:
             vehicle = self._vehicles[vehicle_id]
-            vehicle.activate_vehicle(self._current_time)
+            vehicle.activate_vehicle(self.current_time)
 
-            # Add to the schedule and orchestrator and set the mesa model to this
+            # Add to the schedule and edge orchestrator
             self.schedule.add(vehicle)
             self._edge_orchestrator.add_vehicle(vehicle)
 
