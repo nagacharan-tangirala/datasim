@@ -167,6 +167,64 @@ class DeviceFactory:
 
             logger.debug(f"Created vehicle {vehicle_id} of type {veh_choice}")
 
+    def create_new_vehicles(
+        self, vehicle_trace_data: DataFrame, vehicle_models: dict
+    ) -> None:
+        """
+        Creates new vehicles based on the newly streamed data.
+
+        Parameters
+        ----------
+        vehicle_trace_data : DataFrame
+            The trace data of the vehicles.
+        vehicle_models : dict
+            The model data of the vehicles.
+        """
+        vehicle_trace_dict = (
+            vehicle_trace_data.groupby(DeviceId.VEHICLE)[
+                [TraceTimes.TIME_STEP, CoordSpace.X, CoordSpace.Y, Column.VELOCITY]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        vehicle_weights = [
+            float(ue_data[ModelParam.VEHICLE_RATIO])
+            for ue_data in vehicle_models.values()
+        ]
+        vehicle_types = list(vehicle_models.keys())
+
+        for vehicle_id, vehicle_trace in vehicle_trace_dict.items():
+            if vehicle_id in self._vehicles:
+                self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
+                continue
+
+            type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[0]
+            selected_vehicle_models = vehicle_models[type_choice].copy()
+
+            # Append data source configuration to the composer model.
+            data_source_ids = selected_vehicle_models[ModelName.DATA_COMPOSER][
+                ModelParam.DATA_SOURCE_LIST
+            ]
+            selected_vehicle_models[ModelName.DATA_COMPOSER][ModelParam.DATA_SOURCE] = [
+                self._vehicle_sources[ds_id] for ds_id in data_source_ids
+            ]
+            this_activation_data: Series = self._veh_activations[
+                self._veh_activations[DeviceId.DEVICE] == vehicle_id
+            ]
+
+            this_activation_settings = ActivationSettings(
+                this_activation_data[TraceTimes.START_TIME].values,
+                this_activation_data[TraceTimes.END_TIME].values,
+                self._sim_start_time,
+                self._sim_end_time,
+            )
+
+            self._vehicles[vehicle_id] = self._create_vehicle(
+                vehicle_id, this_activation_settings, selected_vehicle_models
+            )
+            self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
+
     @staticmethod
     def _create_vehicle(
         vehicle_id: int,
@@ -190,10 +248,10 @@ class DeviceFactory:
         Vehicle
             The created vehicle.
         """
-        computing_hardware = DeviceFactory._create_computing_hardware(
+        computing_hardware = _create_computing_hardware(
             vehicle_models[HardwareKey.COMPUTING]
         )
-        wireless_hardware = DeviceFactory._create_networking_hardware(
+        wireless_hardware = _create_networking_hardware(
             vehicle_models[HardwareKey.NETWORKING]
         )
 
@@ -227,6 +285,37 @@ class DeviceFactory:
             )
             self._base_stations[station_id].update_mobility_data(station_position)
 
+    def create_new_base_stations(
+        self, base_station_data: DataFrame, base_station_models_data: dict
+    ) -> None:
+        """
+        Creates new base stations based on the newly streamed data.
+
+        Parameters
+        ----------
+        base_station_data : DataFrame
+            The position data of the base stations.
+        base_station_models_data : dict
+            The model data of the base stations.
+        """
+        base_station_dict = (
+            base_station_data.groupby(DeviceId.BASE_STATION)[
+                [CoordSpace.X, CoordSpace.Y]
+            ]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        for station_id, station_data in base_station_dict.items():
+            if station_id in self._base_stations:
+                continue
+            station_position: list[float] = [pos[0] for pos in station_data.values()]
+            self._base_stations[station_id] = self._create_base_station(
+                station_id, base_station_models_data
+            )
+
+            self._base_stations[station_id].update_mobility_data(station_position)
+
     def _create_base_station(
         self,
         base_station_id: int,
@@ -247,13 +336,13 @@ class DeviceFactory:
         BaseStation
             The created base station.
         """
-        computing_hardware = DeviceFactory._create_computing_hardware(
+        computing_hardware = _create_computing_hardware(
             base_station_models_data[HardwareKey.COMPUTING]
         )
-        wired_hardware = DeviceFactory._create_networking_hardware(
+        wired_hardware = _create_networking_hardware(
             base_station_models_data[HardwareKey.NETWORKING][HardwareKey.WIRED]
         )
-        wireless_hardware = DeviceFactory._create_networking_hardware(
+        wireless_hardware = _create_networking_hardware(
             base_station_models_data[HardwareKey.NETWORKING][HardwareKey.WIRELESS]
         )
         this_activation_settings = ActivationSettings(
@@ -294,6 +383,36 @@ class DeviceFactory:
             )
             self._controllers[controller_id].update_mobility_data(controller_position)
 
+    def create_new_controllers(
+        self, controller_data: DataFrame, controller_models_data: dict
+    ) -> None:
+        """
+        Creates new controllers based on the newly streamed data.
+
+        Parameters
+        ----------
+        controller_data : DataFrame
+            The position data of the controllers.
+        controller_models_data : dict
+            The model data of the controllers.
+        """
+        controller_dict = (
+            controller_data.groupby(DeviceId.CONTROLLER)[[CoordSpace.X, CoordSpace.Y]]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        for controller_id, controller_info in controller_dict.items():
+            if controller_id in self._controllers:
+                continue
+            controller_position: list[float] = [
+                pos[0] for pos in controller_info.values()
+            ]
+            self._controllers[controller_id] = self._create_controller(
+                controller_id, controller_models_data
+            )
+            self._controllers[controller_id].update_mobility_data(controller_position)
+
     def _create_controller(
         self, controller_id, controller_models_data
     ) -> CentralController:
@@ -307,10 +426,10 @@ class DeviceFactory:
         controller_models_data : dict
             The model data of the controller.
         """
-        computing_hardware = DeviceFactory._create_computing_hardware(
+        computing_hardware = _create_computing_hardware(
             controller_models_data[HardwareKey.COMPUTING]
         )
-        wired_hardware = DeviceFactory._create_networking_hardware(
+        wired_hardware = _create_networking_hardware(
             controller_models_data[HardwareKey.NETWORKING]
         )
 
@@ -348,98 +467,22 @@ class DeviceFactory:
 
         for rsu_id, rsu_info in rsu_dict.items():
             rsu_position: list[float] = [pos[0] for pos in rsu_info.values()]
+
+            if len(rsu_models) == 1:
+                rsu_models = next(iter(rsu_models.values()))
+
+            # Append data source configuration to the composer model.
+            data_source_ids = rsu_models[ModelName.DATA_COMPOSER][
+                ModelParam.DATA_SOURCE_LIST
+            ]
+            rsu_models[ModelName.DATA_COMPOSER][ModelParam.DATA_SOURCE] = [
+                self._rsu_sources[ds_id] for ds_id in data_source_ids
+            ]
+
             self._roadside_units[rsu_id] = self._create_roadside_unit(
                 rsu_id, rsu_models
             )
             self._roadside_units[rsu_id].update_mobility_data(rsu_position)
-
-    def _create_roadside_unit(self, rsu_id, rsu_models: dict):
-        """
-        Create an RSU from the given parameters.
-
-        Parameters
-        ----------
-        rsu_id : int
-            The ID of the RSU.
-        rsu_models : dict
-            The model data of the RSU.
-
-        Returns
-        -------
-        RoadsideUnit
-            The created RSU.
-        """
-        computing_hardware = DeviceFactory._create_computing_hardware(
-            rsu_models[HardwareKey.COMPUTING]
-        )
-        wireless_hardware = DeviceFactory._create_networking_hardware(
-            rsu_models[HardwareKey.NETWORKING]
-        )
-
-        this_activation_settings = ActivationSettings(
-            asarray([]),
-            asarray([]),
-            self._sim_start_time,
-            self._sim_end_time,
-            is_always_on=True,
-        )
-        return RoadsideUnit(
-            rsu_id,
-            computing_hardware,
-            wireless_hardware,
-            this_activation_settings,
-            rsu_models,
-        )
-
-    def create_new_vehicles(
-        self, vehicle_trace_data: DataFrame, vehicle_models: dict
-    ) -> None:
-        """
-        Creates new vehicles based on the newly streamed data.
-
-        Parameters
-        ----------
-        vehicle_trace_data : DataFrame
-            The trace data of the vehicles.
-        vehicle_models : dict
-            The model data of the vehicles.
-        """
-        vehicle_trace_dict = (
-            vehicle_trace_data.groupby(DeviceId.VEHICLE)[
-                [TraceTimes.TIME_STEP, CoordSpace.X, CoordSpace.Y, Column.VELOCITY]
-            ]
-            .apply(lambda x: x.to_dict(orient="list"))
-            .to_dict()
-        )
-
-        vehicle_weights = [
-            float(ue_data[ModelParam.VEHICLE_RATIO])
-            for ue_data in vehicle_models.values()
-        ]
-        vehicle_types = list(vehicle_models.keys())
-
-        for vehicle_id, vehicle_trace in vehicle_trace_dict.items():
-            if vehicle_id in self._vehicles:
-                self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
-                continue
-
-            type_choice = choices(vehicle_types, weights=vehicle_weights, k=1)[0]
-            selected_vehicle_models = vehicle_models[type_choice].copy()
-            this_activation_data: Series = self._veh_activations[
-                self._veh_activations[DeviceId.DEVICE] == vehicle_id
-            ]
-
-            this_activation_settings = ActivationSettings(
-                this_activation_data[TraceTimes.START_TIME].values,
-                this_activation_data[TraceTimes.END_TIME].values,
-                self._sim_start_time,
-                self._sim_end_time,
-            )
-
-            self._vehicles[vehicle_id] = self._create_vehicle(
-                vehicle_id, this_activation_settings, selected_vehicle_models
-            )
-            self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
 
     def create_new_roadside_units(self, rsu_data: DataFrame, rsu_models: dict) -> None:
         """
@@ -462,68 +505,57 @@ class DeviceFactory:
             if rsu_id in self._roadside_units:
                 continue
             rsu_position: list[float] = [pos[0] for pos in rsu_info.values()]
+
+            if len(rsu_models) == 1:
+                rsu_models = next(iter(rsu_models.values()))
+
+            # Append data source configuration to the composer model.
+            data_source_ids = rsu_models[ModelName.DATA_COMPOSER][
+                ModelParam.DATA_SOURCE_LIST
+            ]
+            rsu_models[ModelName.DATA_COMPOSER][ModelParam.DATA_SOURCE] = [
+                self._rsu_sources[ds_id] for ds_id in data_source_ids
+            ]
+
             self._roadside_units[rsu_id] = self._create_roadside_unit(
                 rsu_id, rsu_models
             )
             self._roadside_units[rsu_id].update_mobility_data(rsu_position)
 
-    def create_new_base_stations(
-        self, base_station_data: DataFrame, base_station_models_data: dict
-    ) -> None:
+    def _create_roadside_unit(self, rsu_id, rsu_models: dict):
         """
-        Creates new base stations based on the newly streamed data.
+        Create an RSU from the given parameters.
 
         Parameters
         ----------
-        base_station_data : DataFrame
-            The position data of the base stations.
-        base_station_models_data : dict
-            The model data of the base stations.
+        rsu_id : int
+            The ID of the RSU.
+        rsu_models : dict
+            The model data of the RSU.
+
+        Returns
+        -------
+        RoadsideUnit
+            The created RSU.
         """
-        base_station_dict = (
-            base_station_data.groupby(DeviceId.BASE_STATION)[
-                [CoordSpace.X, CoordSpace.Y]
-            ]
-            .apply(lambda x: x.to_dict(orient="list"))
-            .to_dict()
+        computing_hardware = _create_computing_hardware(
+            rsu_models[HardwareKey.COMPUTING]
+        )
+        wireless_hardware = _create_networking_hardware(
+            rsu_models[HardwareKey.NETWORKING]
         )
 
-        for station_id, station_data in base_station_dict.items():
-            if station_id in self._base_stations:
-                continue
-            station_position: list[float] = [pos[0] for pos in station_data.values()]
-            self._base_stations[station_id] = self._create_base_station(
-                station_id, base_station_models_data
-            )
-
-            self._base_stations[station_id].update_mobility_data(station_position)
-
-    def create_new_controllers(
-        self, controller_data: DataFrame, controller_models_data: dict
-    ) -> None:
-        """
-        Creates new controllers based on the newly streamed data.
-
-        Parameters
-        ----------
-        controller_data : DataFrame
-            The position data of the controllers.
-        controller_models_data : dict
-            The model data of the controllers.
-        """
-        controller_dict = (
-            controller_data.groupby(DeviceId.CONTROLLER)[[CoordSpace.X, CoordSpace.Y]]
-            .apply(lambda x: x.to_dict(orient="list"))
-            .to_dict()
+        this_activation_settings = ActivationSettings(
+            asarray([]),
+            asarray([]),
+            self._sim_start_time,
+            self._sim_end_time,
+            is_always_on=True,
         )
-
-        for controller_id, controller_info in controller_dict.items():
-            if controller_id in self._controllers:
-                continue
-            controller_position: list[float] = [
-                pos[0] for pos in controller_info.values()
-            ]
-            self._controllers[controller_id] = self._create_controller(
-                controller_id, controller_models_data
-            )
-            self._controllers[controller_id].update_mobility_data(controller_position)
+        return RoadsideUnit(
+            rsu_id,
+            computing_hardware,
+            wireless_hardware,
+            this_activation_settings,
+            rsu_models,
+        )
