@@ -290,9 +290,16 @@ class DeviceFactory:
             controller_models_data,
         )
 
-    def create_rsus(self, rsu_data: DataFrame, rsu_models: dict):
+    def create_roadside_units(self, rsu_data: DataFrame, rsu_models: dict):
         """
         Create the RSUs in the simulation.
+
+        Parameters
+        ----------
+        rsu_data : DataFrame
+            The position data of the RSUs.
+        rsu_models : dict
+            The model data of the RSUs.
         """
         rsu_dict = (
             rsu_data.groupby(DeviceId.RSU)[[CoordSpace.X, CoordSpace.Y]]
@@ -302,10 +309,12 @@ class DeviceFactory:
 
         for rsu_id, rsu_info in rsu_dict.items():
             rsu_position: list[float] = [pos[0] for pos in rsu_info.values()]
-            self._roadside_units[rsu_id] = self._create_rsu(rsu_id, rsu_models)
+            self._roadside_units[rsu_id] = self._create_roadside_unit(
+                rsu_id, rsu_models
+            )
             self._roadside_units[rsu_id].update_mobility_data(rsu_position)
 
-    def _create_rsu(self, rsu_id, rsu_models: dict):
+    def _create_roadside_unit(self, rsu_id, rsu_models: dict):
         """
         Create an RSU from the given parameters.
 
@@ -347,7 +356,14 @@ class DeviceFactory:
         self, vehicle_trace_data: DataFrame, vehicle_models: dict
     ) -> None:
         """
-        Update the vehicles based on the new trace data.
+        Creates new vehicles based on the newly streamed data.
+
+        Parameters
+        ----------
+        vehicle_trace_data : DataFrame
+            The trace data of the vehicles.
+        vehicle_models : dict
+            The model data of the vehicles.
         """
         vehicle_trace_dict = (
             vehicle_trace_data.groupby(DeviceId.VEHICLE)[
@@ -386,11 +402,44 @@ class DeviceFactory:
             )
             self._vehicles[vehicle_id].update_mobility_data(vehicle_trace)
 
+    def create_new_roadside_units(self, rsu_data: DataFrame, rsu_models: dict) -> None:
+        """
+        Creates new RSUs based on the newly streamed data.
+
+        Parameters
+        ----------
+        rsu_data : DataFrame
+            The position data of the RSUs.
+        rsu_models : dict
+            The model data of the RSUs.
+        """
+        rsu_dict = (
+            rsu_data.groupby(DeviceId.RSU)[[CoordSpace.X, CoordSpace.Y]]
+            .apply(lambda x: x.to_dict(orient="list"))
+            .to_dict()
+        )
+
+        for rsu_id, rsu_info in rsu_dict.items():
+            if rsu_id in self._roadside_units:
+                continue
+            rsu_position: list[float] = [pos[0] for pos in rsu_info.values()]
+            self._roadside_units[rsu_id] = self._create_roadside_unit(
+                rsu_id, rsu_models
+            )
+            self._roadside_units[rsu_id].update_mobility_data(rsu_position)
+
     def create_new_base_stations(
         self, base_station_data: DataFrame, base_station_models_data: dict
     ) -> None:
         """
-        Update the base stations based on the new trace data.
+        Creates new base stations based on the newly streamed data.
+
+        Parameters
+        ----------
+        base_station_data : DataFrame
+            The position data of the base stations.
+        base_station_models_data : dict
+            The model data of the base stations.
         """
         base_station_dict = (
             base_station_data.groupby(DeviceId.BASE_STATION)[
@@ -414,7 +463,14 @@ class DeviceFactory:
         self, controller_data: DataFrame, controller_models_data: dict
     ) -> None:
         """
-        Update the controllers based on the new trace data.
+        Creates new controllers based on the newly streamed data.
+
+        Parameters
+        ----------
+        controller_data : DataFrame
+            The position data of the controllers.
+        controller_models_data : dict
+            The model data of the controllers.
         """
         controller_dict = (
             controller_data.groupby(DeviceId.CONTROLLER)[[CoordSpace.X, CoordSpace.Y]]
