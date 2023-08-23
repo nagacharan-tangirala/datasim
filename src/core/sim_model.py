@@ -1,12 +1,12 @@
 import logging
-
-from mesa import DataCollector, Model
-from mesa.space import ContinuousSpace
-from numpy import ndarray
+from collections import defaultdict
 
 from device.road_side_unit import RoadsideUnit
+from mesa import DataCollector, Model
+from mesa.space import ContinuousSpace
+
 from src.core.common_constants import CoordSpace, DeviceName
-from src.core.constants import Defaults
+from src.core.constants import Defaults, Stage
 from src.core.scheduler import OrderedMultiStageScheduler, TypeStage
 from src.device.base_station import BaseStation
 from src.device.controller import CentralController

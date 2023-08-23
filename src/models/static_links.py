@@ -1,9 +1,8 @@
 from random import choice
 
-from allocator import _validate_strategy
 from core.common_constants import DeviceId
 from core.constants import ModelParam, ModelType
-
+from models.allocator import _validate_strategy
 from pandas import DataFrame
 
 

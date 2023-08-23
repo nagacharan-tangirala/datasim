@@ -1,12 +1,12 @@
 import logging
 import random
 
+from core.constants import ModelParam, ModelType
+from core.exceptions import InvalidStrategyError
 from mesa import Agent
 from numpy import array, empty, ndarray
 from pandas import DataFrame
 
-from core.constants import ModelParam, ModelType
-from core.exceptions import InvalidStrategyError
 from src.core.common_constants import Column, DeviceId, TraceTimes
 
 logger = logging.getLogger(__name__)

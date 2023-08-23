@@ -1,6 +1,3 @@
-from collections.abc import dict_keys
-
-
 class UnsupportedInputFormatError(Exception):
     """The input file is not supported."""
 

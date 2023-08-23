@@ -7,12 +7,11 @@ from device.payload import (
     BaseStationPayload,
     BaseStationResponse,
     DataPayload,
-    VehiclePayload,
     RSUPayload,
+    VehiclePayload,
 )
 
-
-from src.core.constants import DataSourceKey, ModelName, DataTargetType
+from src.core.constants import DataSourceKey, DataTargetType, ModelName
 
 logger = logging.getLogger(__name__)
 

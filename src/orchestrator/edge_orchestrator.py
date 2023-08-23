@@ -1,13 +1,13 @@
 import logging
 
+from device.road_side_unit import RoadsideUnit
 from mesa import Agent
+from models import model_factory
 from pandas import DataFrame
 
-from device.road_side_unit import RoadsideUnit
-from models import model_factory
 from src.core.constants import MainKey, ModelName
 from src.device.base_station import BaseStation
-from src.device.payload import VehiclePayload, VehicleResponse, RSUPayload
+from src.device.payload import RSUPayload, VehiclePayload, VehicleResponse
 from src.device.vehicle import Vehicle
 from src.models.allocator import V2BAllocator, V2RAllocator
 

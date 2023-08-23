@@ -3,17 +3,17 @@ import logging
 from mesa import Agent
 from numpy import ndarray
 
+import src.models.model_factory as model_factory
 from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
 from src.device.payload import (
     BaseStationPayload,
     BaseStationResponse,
+    RSUPayload,
     VehiclePayload,
     VehicleResponse,
-    RSUPayload,
 )
-import src.models.model_factory as model_factory
 
 logger = logging.getLogger(__name__)
 

@@ -4,11 +4,11 @@ from mesa import Agent
 from numpy import ndarray
 from pandas import DataFrame
 
+import src.models.model_factory as model_factory
 from src.core.constants import MainKey, ModelName, ModelType
 from src.device.activation import ActivationSettings
 from src.device.hardware import ComputingHardware, NetworkHardware
-from src.device.payload import VehiclePayload, VehicleResponse, RSUPayload
-import src.models.model_factory as model_factory
+from src.device.payload import RSUPayload, VehiclePayload, VehicleResponse
 
 logger = logging.getLogger(__name__)
 

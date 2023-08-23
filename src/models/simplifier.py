@@ -1,5 +1,5 @@
 from src.core.constants import ModelParam
-from src.device.payload import BaseStationPayload, VehiclePayload, RSUPayload
+from src.device.payload import BaseStationPayload, RSUPayload, VehiclePayload
 
 
 class VehicleDataSimplifier:
