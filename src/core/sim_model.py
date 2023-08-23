@@ -213,8 +213,10 @@ class SimModel(Model):
                 f"Vehicle {vehicle_id} has activation times {start_times} "
                 f"and deactivation times {end_times}."
             )
-            self._vehicle_activation_times[vehicle_id].update(start_times)
-            self._vehicle_deactivation_times[vehicle_id].update(end_times)
+            for st_time in start_times:
+                self._vehicle_activation_times[st_time].add(vehicle_id)
+            for end_time in end_times:
+                self._vehicle_deactivation_times[end_time].add(vehicle_id)
 
         logger.debug("Extracting activation and deactivation times for roadside units.")
         for roadside_unit_id, roadside_unit in self._roadside_units.items():
@@ -224,8 +226,10 @@ class SimModel(Model):
                 f"Roadside unit {roadside_unit_id} has activation times {start_times} "
                 f"and deactivation times {end_times}."
             )
-            self._roadside_unit_activation_times[roadside_unit_id].update(start_times)
-            self._roadside_unit_deactivation_times[roadside_unit_id].update(end_times)
+            for st_time in start_times:
+                self._roadside_unit_activation_times[st_time].add(roadside_unit_id)
+            for end_time in end_times:
+                self._roadside_unit_activation_times[end_time].add(roadside_unit_id)
 
         logger.debug("Extracting activation and deactivation times for base stations.")
         for base_station_id, base_station in self._base_stations.items():
@@ -235,8 +239,10 @@ class SimModel(Model):
                 f"Base station {base_station_id} has activation times {start_times}"
                 f" and deactivation times {end_times}."
             )
-            self._base_station_activation_times[base_station_id].update(start_times)
-            self._base_station_deactivation_times[base_station_id].update(end_times)
+            for st_time in start_times:
+                self._base_station_activation_times[st_time].add(base_station_id)
+            for end_time in end_times:
+                self._base_station_deactivation_times[end_time].add(base_station_id)
 
         logger.debug("Extracting activation and deactivation times for controllers.")
         for controller_id, controller in self._controllers.items():
@@ -246,8 +252,10 @@ class SimModel(Model):
                 f"Controller {controller_id} has activation times {start_times} "
                 f"and deactivation times {end_times}."
             )
-            self._controller_activation_times[controller_id].update(start_times)
-            self._controller_deactivation_times[controller_id].update(end_times)
+            for st_time in start_times:
+                self._controller_activation_times[st_time].add(controller_id)
+            for end_time in end_times:
+                self._controller_deactivation_times[end_time].add(controller_id)
 
     def _add_orchestrators_to_scheduler(self) -> None:
         """
