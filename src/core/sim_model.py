@@ -42,41 +42,24 @@ class SimModel(Model):
         self._edge_orchestrator: EdgeOrchestrator = edge_orchestrator
         self._cloud_orchestrator: CloudOrchestrator = cloud_orchestrator
 
-        self._activation_times: dict[str, dict[int, set[int]]] = {
-            DeviceName.VEHICLES: {},
-            DeviceName.BASE_STATIONS: {},
-            DeviceName.CONTROLLERS: {},
-            DeviceName.ROADSIDE_UNITS: {},
-        }
-        self._deactivation_times: dict[str, dict[int, set[int]]] = {
-            DeviceName.VEHICLES: {},
-            DeviceName.BASE_STATIONS: {},
-            DeviceName.CONTROLLERS: {},
-            DeviceName.ROADSIDE_UNITS: {},
-        }
+        self._vehicle_activation_times: dict[int, set[int]] = defaultdict(set)
+        self._vehicle_deactivation_times: dict[int, set[int]] = defaultdict(set)
+        self._roadside_unit_activation_times: dict[int, set[int]] = defaultdict(set)
+        self._roadside_unit_deactivation_times: dict[int, set[int]] = defaultdict(set)
+        self._base_station_activation_times: dict[int, set[int]] = defaultdict(set)
+        self._base_station_deactivation_times: dict[int, set[int]] = defaultdict(set)
+        self._controller_activation_times: dict[int, set[int]] = defaultdict(set)
+        self._controller_deactivation_times: dict[int, set[int]] = defaultdict(set)
 
         self._space_settings: dict = space_settings
         self._start_time: int = start_time
         self._end_time: int = end_time
-        self._current_time: int = -1
-
-    @property
-    def current_time(self) -> int:
-        """Get the current time."""
-        return self._current_time
-
-    @current_time.setter
-    def current_time(self, value: int) -> None:
-        """Set the current time."""
-        self._current_time = value
+        self.current_time: int = -1
 
     def do_model_setup(self) -> None:
         """
         Set up the model before the simulation starts.
         """
-        logger.debug("Reading activation and deactivation times for all the ")
-        self.save_device_activation_times()
-
         logger.debug("Initializing the scheduler.")
         self._initialize_scheduler()
 
