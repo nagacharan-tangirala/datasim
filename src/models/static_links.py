@@ -1,6 +1,6 @@
 from random import choice
 
-from core.common_constants import DeviceId
+from core.common_constants import ColumnNames, DeviceId
 from core.constants import ModelParam, ModelType
 from models.allocator import _validate_strategy
 from pandas import DataFrame
@@ -11,7 +11,6 @@ class B2CAllocator:
         """
         Initialize the b2c allocator.
         """
-        super().__init__(0, None)
         self._b2c_links_df: DataFrame = b2c_links_df
 
         self._b2c_links_data: dict = {}
@@ -24,10 +23,12 @@ class B2CAllocator:
         Create the b2c links data.
         """
         # Convert the b2c links df to dictionary
-        self._b2c_links_data = zip(
-            self._b2c_links_df[DeviceId.BASE_STATION],
-            self._b2c_links_df[DeviceId.CONTROLLER],
-        ).to_dict()
+        self._b2c_links_data = dict(
+            zip(
+                self._b2c_links_df[ColumnNames.B2C_LINKS[1]],
+                self._b2c_links_df[ColumnNames.B2C_LINKS[2]],
+            )
+        )
 
     def get_controller(self, base_station: int) -> int:
         """
@@ -41,7 +42,6 @@ class R2BAllocator:
         """
         Initialize the r2b allocator.
         """
-        super().__init__(0, None)
         self._r2b_links_df: DataFrame = r2b_links_df
 
         self._r2b_links_data: dict = {}
@@ -55,11 +55,12 @@ class R2BAllocator:
         """
         # Convert the r2b links df to dictionary
         # Distances are in the trace, can be used later.
-        self._r2b_links_data = zip(
-            self._r2b_links_df[DeviceId.RSU],
-            self._r2b_links_df[DeviceId.BASE_STATION],
-        ).to_dict()
-
+        self._r2b_links_data = dict(
+            zip(
+                self._r2b_links_df[ColumnNames.R2B_LINKS[1]],
+                self._r2b_links_df[ColumnNames.R2B_LINKS[2]],
+            )
+        )
         # for rsu_id, base_stations in r2b_dict.items():
         #     match self._strategy_name:
         #         case "random":
@@ -84,7 +85,6 @@ class R2RAllocator:
         """
         Initialize the r2r allocator.
         """
-        super().__init__(0, None)
         self._r2r_links_df: DataFrame = r2r_links_df
 
         self._r2r_links_data: dict = {}
@@ -98,10 +98,12 @@ class R2RAllocator:
         """
         # Convert the r2r links df to dictionary
         # Distances are in the trace, can be used later.
-        self._r2r_links_data = zip(
-            self._r2r_links_df[DeviceId.RSU],
-            self._r2r_links_df[DeviceId.RSU],
-        ).to_dict()
+        self._r2r_links_data = dict(
+            zip(
+                self._r2r_links_df[ColumnNames.R2R_LINKS[1]],
+                self._r2r_links_df[ColumnNames.R2R_LINKS[2]],
+            )
+        )
 
     def get_roadside_unit(self, roadside_unit: int) -> int:
         """
