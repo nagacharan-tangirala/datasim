@@ -226,7 +226,7 @@ class Simulation:
         )
 
         logger.debug("Creating the RSUs.")
-        self._device_factory.create_rsus(
+        self._device_factory.create_roadside_units(
             self.rsu_data, self.sim_input_helper.rsu_models_data
         )
 
@@ -377,22 +377,29 @@ class Simulation:
             self._device_factory.create_new_vehicles(
                 self.vehicle_trace_data, self.sim_input_helper.vehicle_models_data
             )
-            updated_vehicles = self._device_factory.vehicles
-            self._simulation_model.update_vehicles(updated_vehicles)
+            new_vehicles = self._device_factory.vehicles
+            self._simulation_model.append_new_vehicles(new_vehicles)
+
+        if not self.rsu_data.empty:
+            self._device_factory.create_new_roadside_units(
+                self.rsu_data, self.sim_input_helper.rsu_models_data
+            )
+            new_roadside_units = self._device_factory.roadside_units
+            self._simulation_model.append_new_roadside_units(new_roadside_units)
 
         if not self.base_stations_data.empty:
             self._device_factory.create_new_base_stations(
                 self.base_stations_data, self.sim_input_helper.base_station_models_data
             )
-            updated_base_stations = self._device_factory.base_stations
-            self._simulation_model.update_base_stations(updated_base_stations)
+            new_base_stations = self._device_factory.base_stations
+            self._simulation_model.append_new_base_stations(new_base_stations)
 
         if not self.controller_data.empty:
             self._device_factory.create_new_controllers(
                 self.controller_data, self.sim_input_helper.controller_models_data
             )
-            updated_controllers = self._device_factory.controllers
-            self._simulation_model.update_controllers(updated_controllers)
+            new_controllers = self._device_factory.controllers
+            self._simulation_model.append_new_controllers(new_controllers)
 
         self._simulation_model.save_device_activation_times()
 
@@ -405,6 +412,9 @@ class Simulation:
 
         if not self.v2b_links_data.empty:
             self.edge_orchestrator.update_v2b_links(self.v2b_links_data)
+
+        if not self.v2r_links_data.empty:
+            self.edge_orchestrator.update_v2r_links(self.v2r_links_data)
 
         if not self.b2c_links_data.empty:
             self.cloud_orchestrator.update_b2c_links(self.b2c_links_data)
@@ -425,8 +435,14 @@ class Simulation:
         self.v2b_links_data = self._read_next_chunk(
             self.sim_input_helper.file_readers[FilenameKey.V2B_LINKS]
         )
+        self.v2r_links_data = self._read_next_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.V2R_LINKS]
+        )
         self.controller_data = self._read_next_chunk(
             self.sim_input_helper.file_readers[FilenameKey.CONTROLLERS]
+        )
+        self.rsu_data = self._read_next_chunk(
+            self.sim_input_helper.file_readers[FilenameKey.ROADSIDE_UNITS]
         )
         self.b2c_links_data = self._read_next_chunk(
             self.sim_input_helper.file_readers[FilenameKey.B2C_LINKS]
